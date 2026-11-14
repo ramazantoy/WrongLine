@@ -1,0 +1,40 @@
+{
+    "name": "AF.Platform.Steam.Tests",
+    "rootNamespace": "AF.Platform.Steam.Tests",
+    "references": [
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:49a10fdb401f355489a4b9579e7f2b80",
+        "GUID:f1a32c34bd30d9f47b82d745368269d5",
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:08b38f39e2d9e594389b7a4cf4c2c338",
+        "GUID:4f682e06dbb3e624faedad9cc27106cc",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:dc04f38471c3a459fb4d31124ee9127d",
+        "GUID:68bd7fdb68ef2684e982e8a9825b18a5",
+        "GUID:1fbaab1da723b554db64930609833de6"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "AF_STEAMWORKS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.rlabrecque.steamworks.net",
+            "expression": "",
+            "define": "AF_STEAMWORKS"
+        }
+    ],
+    "noEngineReferences": false
+}

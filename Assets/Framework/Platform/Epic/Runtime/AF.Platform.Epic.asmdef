@@ -1,0 +1,32 @@
+{
+    "name": "AF.Platform.Epic",
+    "rootNamespace": "AF.Platform.Epic",
+    "references": [
+        "GUID:49a10fdb401f355489a4b9579e7f2b80",
+        "GUID:f1a32c34bd30d9f47b82d745368269d5",
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:08b38f39e2d9e594389b7a4cf4c2c338",
+        "GUID:2ced8f3cc58f63843bc26c7591a35628",
+        "GUID:3a63500f0eef43a438c0553491f7c5da",
+        "GUID:be1f6e9efffcfce41aeb5c2f4c27cf75"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "AF_EOS",
+        "STORE_EPIC || UNITY_EDITOR"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.playeveryware.eos",
+            "expression": "",
+            "define": "AF_EOS"
+        }
+    ],
+    "noEngineReferences": false
+}
