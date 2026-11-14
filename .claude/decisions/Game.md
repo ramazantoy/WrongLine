@@ -31,3 +31,12 @@ dosyalarda; bu dosya template'te yok, bu yüzden cherry-pick'lerle çakışmaz. 
 - Console 0 error, Validate All 0/0. Play: Intro → Menu → (Play) → Gameplay; Menu'den ve Gameplay'den doğrudan Play; console
   temiz. Play etiketi sistem diline göre ("Oyna").
 - Check Release: placeholder hatası yok (yalnız kirli ağaç uyarısı).
+
+## Intro (2026-11-14, M1 öncesi)
+| Konu | Karar | Gerekçe |
+|---|---|---|
+| Splash | `Assets/Game/Video/Splash.mp4` (kullanıcının kendi videosu: 1080×1920, 3,4 sn, ses yok). `VideoPlayer` kameranın arka düzleminde, FitInside, kamera arka planı siyah, unscaled zaman, Play On Awake kapalı. `IntroFlow` video **ve** boot bitince Menu'yü yükler; boot adımı hata verirse intro'da kalır. `IntroVideoView` önce `Prepare` eder (6 sn'de hazır olmazsa uyarı ve geçilir), sonra klibin süresi kadar unscaled bekler; player event'i dinlenmez | Kullanıcı isteği, kullanıcının önceki çalışmasından birebir. Decoder açılışı ilk kareleri takıltabildiği için süre `Play()`'den sayılır. Ses kanalı yok, mixer/AudioSource kuralına girmiyor |
+| Testler | `Game.Tests` asmdef'i bu işle açıldı (`WrongLine.Tests`, Editor, `UNITY_INCLUDE_TESTS`); `Game` internal'ları `AssemblyInfo.cs` ile açar. Ortak test sahteleri `TestDoubles.cs`'te (`FakeSceneLoader`) | `IntroFlow` internal |
+
+Doğrulananlar: `IntroFlowTests` 3/3; `IntroFlow` boot'u beklemeyecek şekilde bozulunca 2'si kırıldı. Validate All 0/0. Play
+Intro'dan: video süresince Intro, sonra Menu; console temiz.
