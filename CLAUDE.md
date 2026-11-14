@@ -1,24 +1,51 @@
 # CLAUDE.md
 
-Unity 6.3 LTS + URP template'i. Sonraki oyunlara (PC ve mobil) hızlı başlangıç sağlayan hazır sistemler: DI context, GameManager,
-SceneManager, Save, Audio, Input, Pool, Settings, Localization, Platform, Build. Kararlar ve gerekçeleri: `.claude/decisions/` (indeks `README.md`, modül başına dosya).
-UI ve oyuna özel oynanış sistemleri template'e girmez.
+WrongLine: Unity 6.3 LTS + URP ile Android araba oyunu. Lunapark rayı gibi spline yol: yokuş aşağı, yokuş yukarı, sağa sola
+kıvrılır; ufuk curve shader'la bükülür, kamera aracı takip eder. Fikir oynadıkça netleşir. Oyun mağazaya çıkmaz; amaç public
+GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir: DI context, GameManager, SceneManager, Save,
+Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
+modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** F1 (framework iskeleti) 2026-10-29'da, inceleme düzeltmeleri ve F2 Save 2026-10-30'da, F3 Input 2026-10-31'de
-commit edildi. F4 Build + Platform Windows IL2CPP build'leriyle doğrulandı ve 2026-10-31'de commit edildi (`315b0c6`).
-F1–F3 kodunun yeni stile toplu dönüşümü 2026-10-31'de commit edildi (`e03f4a0`). Unity 6000.3.27f2 yükseltmesi (`3dfd061`)
-ve F5 SceneManager + intro (`de5f091`), F6 Pool + tween yaşam döngüsü + Audio (`0ef8253`) commit edildi. F7 Settings +
-Localization (`183cb96`) commit edildi. Template doğrulaması + README (EN/TR) commit edildi (`a949bbd`; 393 test, Windows IL2CPP Release build, bağımsız inceleme); kayıt
-`.claude/decisions/README.md` → "Template doğrulaması". Mağaza kapısı (achievement gate, Steam/Epic build ekseni; SDK ve
-backend yok) 2026-11-02'de commit edildi: `.claude/decisions/Platform.md` → "Mağaza kapısı kararları". F8'in kalanı: Steam ve
-Epic backend'leri 2026-11-03'te SDK paketleri kurulu olmadan (uyur) commit edildi (`0b00f0b` ve öncesi; Steam Spacewar dev
-build'iyle çalıştı, Epic yalnız derleme + test): `Platform.md` → "Steam/Epic backend kararları". Sıradaki: template'ten
-ayrı repo'da mobil portfolyo oyunu; orada çıkan template sorunları bu repoda düzeltilip oyuna taşınır. Faz sırası
-`.claude/decisions/README.md` → "Fazlar".
-Faz başlarken plan moduna geç.
+**Durum:** template'ten açıldı (template `4cd74e6` ile tree aynı; `template` remote'u). Henüz kod yok. Sıradaki: M0.
+Yeni milestone başlarken plan moduna geç.
 
-**Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`), oyun
-`Assets/Game/` (`Game` asmdef). Framework oyuna referans vermez. İnsan için doküman: `Assets/Framework/Documentation~/`.
+**Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`).
+Oyun `Assets/Game/`: asmdef `Game`, namespace `WrongLine`, özellik klasörü `WrongLine.<Özellik>`.
+Testler `Assets/Game/Tests/` (`Game.Tests`), editor kodu ilk editor script'iyle `Game.Editor`. Framework oyuna referans
+vermez. İnsan için doküman: `Assets/Framework/Documentation~/`. Tasarım `Design/`'da (gitignored, yalnız yerel).
+
+## WrongLine
+Oyuna özel her şey bu bölümde ve dosyanın başında durur. Aşağıdaki bölümler template'le aynı kalır; template'ten gelen
+cherry-pick'ler çakışmasın diye.
+- **Dil:** kullanıcıyla Türkçe konuşulur. CLAUDE.md, `.claude/` ve `Design/` Türkçe yazılır. Kod, yorum, commit mesajı ve
+  framework dokümanı İngilizce.
+- **Kaynaklar:** `Design/WrongLane_GDD.md` ve `Design/wronglane.html` (three.js) gevşek referanstır: kullanıcının fikrine
+  yakın değil, birebir izlenmez, kodu port edilmez. Path space `(s, x)`, spline'dan yol ve fiziksiz çarpışma gibi teknik
+  fikirler alınabilir. Kalıcı karar `decisions/Game.md`'ye yazılır; çelişkide CLAUDE.md ve decisions önce gelir.
+- **Template:** framework burada yamanmaz. Kapsam: `Assets/Framework/`, `.claude/scripts/`, `.claude/decisions/`'ın
+  framework dosyaları ve bu dosyanın WrongLine dışı bölümleri. Bulunan sorun `GameOpen.md` → "Template'e gidenler"e yazılır,
+  template'te düzeltilir, sonra `git fetch template` + `git cherry-pick -x <sha>` ile alınır.
+- **Faz = milestone:** template'in faz kuralları milestone'lar için de geçerli. Her milestone oynanabilir halde biter.
+  Milestone'lar önceden dizilmez: biri bitince oynanır, sonraki o zaman yazılır. Dış asset'i (model, ses) bekleyen milestone
+  açılmaz; placeholder'la biter, asset işi `GameOpen.md`'de ayrı madde olur. Commit mesajı kısa, emir kipinde ve İngilizce.
+- **Oyun kuralları:**
+  - Kurallar (yol örnekleme, path space, hareket, çarpışma, puan) saf C# ile yazılır; MonoBehaviour yalnız view içindir.
+  - Her kural sınıfının EditMode testi aynı milestone'da yazılır. Her test dosyasında kod bir kez bilerek bozulur; test yine
+    geçiyorsa işe yaramıyordur.
+  - Testleri kullanıcı Test Runner'da koşar ve kırılanları söyler. Claude derlemeyi (`console status`) kontrol eder, yeni
+    yazdığı test dosyasını gerekirse filtreyle koşar; tam koşu yapmaz.
+  - Ayarlanabilir her sayı ScriptableObject config'de durur.
+  - Özellikler birbirini interface ve MessagePipe mesajıyla tanır (aşağıdaki mimari kurallar).
+  - Oynanış kodu input'u yalnız kendi arayüzünden okur; legacy `Input.*` kullanılmaz.
+  - Dosyalar küçük ve tek amaçlı olur. Template API'si uydurulmaz; eksikse söylenir ve öneri yapılır.
+  - Ekranlar ve HUD Canvas (uGUI) + TextMeshPro ile, her ekran bir prefab.
+  - Repo public olacak: asset yalnız CC0 ya da kendi işin olur; font OFL olabilir, `OFL.txt` yanında durur. Ücretli paket
+    (Asset Store, Synty) repoya girmez.
+
+### Milestone'lar
+| # | İçerik | Bitti sayılır |
+|---|---|---|
+| M0 | Kimlik (Company, Product, identifier), Android, namespace, scope'lar ve servis iskeleti, boş sürüş sahnesi | Android build açılır, sahne her yerden Play'de çalışır |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.
