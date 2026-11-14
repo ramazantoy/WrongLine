@@ -6,7 +6,8 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** template'ten açıldı (template `4cd74e6` ile tree aynı; `template` remote'u). Henüz kod yok. Sıradaki: M0.
+**Durum:** M0 bitti (2026-11-14): kimlik, dikey ekran, Editor Android hedefinde, Intro/Menu/Driving scope'ları, Play
+butonlu menü, boş sürüş sahnesi. Template tabanı `4cd74e6` (`template` remote'u). Sıradaki milestone M0 oynanınca yazılır.
 Yeni milestone başlarken plan moduna geç.
 
 **Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`).
@@ -45,7 +46,7 @@ cherry-pick'ler çakışmasın diye.
 ### Milestone'lar
 | # | İçerik | Bitti sayılır |
 |---|---|---|
-| M0 | Kimlik (Company, Product, identifier), Android, namespace, scope'lar ve servis iskeleti, boş sürüş sahnesi | Android build açılır, sahne her yerden Play'de çalışır |
+| M0 | Kimlik (Company, Product, identifier), Android, namespace, scope'lar ve servis iskeleti, boş sürüş sahnesi | ~~Android build açılır~~ Editor Android hedefinde açılır (build `GameOpen.md`'ye ertelendi), sahne her yerden Play'de çalışır. Bitti 2026-11-14 |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

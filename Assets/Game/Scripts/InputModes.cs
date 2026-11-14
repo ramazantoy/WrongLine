@@ -1,7 +1,7 @@
 using AF.Core;
 using AF.Input;
 
-namespace Game
+namespace WrongLine
 {
     /// <summary>
     /// The game's input modes: which action maps of Controls.inputactions are enabled together. Add a mode here and request it

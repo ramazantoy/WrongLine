@@ -17,7 +17,7 @@ using AF.Platform.Steam;
 using AF.Platform.Epic;
 #endif
 
-namespace Game
+namespace WrongLine
 {
     /// <summary>
     /// The game's project-wide composition root. It sits on the root scope prefab that VContainerSettings points to.

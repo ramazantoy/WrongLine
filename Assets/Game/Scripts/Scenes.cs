@@ -1,4 +1,4 @@
-namespace Game
+namespace WrongLine
 {
     /// <summary>The build's scenes, by the names <c>ISceneLoader</c> takes.</summary>
     public static class Scenes
