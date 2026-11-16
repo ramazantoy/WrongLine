@@ -4,6 +4,7 @@ using AF.Core;
 using MessagePipe;
 using VContainer.Unity;
 using WrongLine.Road;
+using WrongLine.World;
 
 namespace WrongLine.Driving
 {
@@ -15,16 +16,20 @@ namespace WrongLine.Driving
     {
         private readonly IRoadPiecePool _pool;
         private readonly RoadConfig _road;
+        private readonly CurveWorldConfig _curve;
         private readonly FollowerConfig _follower;
         private readonly DummyFollowerView _followerView;
         private readonly IGameClock _clock;
+        private const float BoundsDistanceMargin = 50f; // The camera sits behind the follower; pieces ahead are this much further from it than AheadMeters.
+
         private readonly IPublisher<RoadOriginShifted> _shifted;
         private readonly IRoadDebugHud _hud;
         private readonly Dictionary<int, RoadPieceView> _views = new Dictionary<int, RoadPieceView>();
         private RoadRun _run;
 
-        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, FollowerConfig follower, DummyFollowerView followerView, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud)
+        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, FollowerConfig follower, DummyFollowerView followerView, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud)
         {
+            _curve = curve;
             _pool = pool;
             _road = road;
             _follower = follower;
@@ -69,7 +74,9 @@ namespace WrongLine.Driving
             foreach (int index in _run.Spawned)
             {
                 PlacedPiece placed = _run.Path[index];
-                _views.Add(index, _pool.Spawn(index, placed.Piece, RoadPlacement.Position(placed, _run.Origin), RoadPlacement.Rotation(placed)));
+                RoadPieceView view = _pool.Spawn(index, placed.Piece, RoadPlacement.Position(placed, _run.Origin), RoadPlacement.Rotation(placed));
+                view.ExpandBounds(CurveBend.MaxDrop(_curve.Settings, _road.AheadMeters + BoundsDistanceMargin));
+                _views.Add(index, view);
             }
 
             if (_run.OriginShifted)

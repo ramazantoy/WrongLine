@@ -20,6 +20,9 @@ namespace WrongLine.Road
         [SerializeField] private RoadPieceRecipe _recipe;
         [SerializeField] private int _bakedHash;
 
+        private MeshRenderer _renderer;
+        private MeshFilter _filter;
+
         public RoadPieceRecipe Recipe => _recipe;
 
         /// <summary>The recipe's <see cref="TrackRecipe.StableHash"/> when the mesh was last built.</summary>
@@ -31,6 +34,24 @@ namespace WrongLine.Road
         internal void Bind(int placedIndex)
         {
             PlacedIndex = placedIndex;
+        }
+
+        /// <summary>
+        /// Makes the renderer's culling bounds this much bigger on every side, measured from the mesh's own bounds (so calling
+        /// it again does not grow them). A bent world pulls vertices away from where the mesh says they are; without the
+        /// margin a piece could be culled while part of it is still on screen. Only this renderer changes, never the shared mesh.
+        /// </summary>
+        public void ExpandBounds(float margin)
+        {
+            if (_renderer == null)
+            {
+                _renderer = GetComponent<MeshRenderer>();
+                _filter = GetComponent<MeshFilter>();
+            }
+
+            Bounds bounds = _filter.sharedMesh.bounds;
+            bounds.Expand(2f * Mathf.Max(0f, margin));
+            _renderer.localBounds = bounds;
         }
 
         void IPoolable.OnSpawned(PoolLife life)

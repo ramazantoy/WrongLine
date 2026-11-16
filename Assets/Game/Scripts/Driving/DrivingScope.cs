@@ -3,6 +3,7 @@ using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using WrongLine.World;
 
 namespace WrongLine.Driving
 {
@@ -14,6 +15,9 @@ namespace WrongLine.Driving
     {
         [SerializeField, Required] private FollowerConfig _followerConfig;
         [SerializeField, Required] private ChaseCameraConfig _cameraConfig;
+        [SerializeField, Required] private CurveWorldConfig _curveConfig;
+        [SerializeField, Required] private DayNightConfig _dayNightConfig;
+        [SerializeField, Required] private Light _sun;
         [SerializeField, Required] private DummyFollowerView _follower;
         [SerializeField, Required] private ChaseCameraView _camera;
         [SerializeField, Required] private RoadDebugHud _hud;
@@ -24,12 +28,17 @@ namespace WrongLine.Driving
 
             builder.RegisterInstance(_followerConfig);
             builder.RegisterInstance(_cameraConfig);
+            builder.RegisterInstance(_curveConfig);
+            builder.RegisterInstance(_dayNightConfig);
+            builder.RegisterComponent(_sun);
             builder.RegisterComponent(_follower);
             builder.RegisterComponent(_camera);
             builder.RegisterComponent(_hud).As<IRoadDebugHud>();
 
             builder.RegisterEntryPoint<RoadStreamer>();
             builder.RegisterEntryPoint<ChaseCameraDriver>();
+            builder.RegisterEntryPoint<CurveWorldDriver>(); // After the camera driver: it reads where the camera ended up.
+            builder.RegisterEntryPoint<DayNightDriver>();
         }
     }
 }
