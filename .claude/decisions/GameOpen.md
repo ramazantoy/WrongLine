@@ -16,8 +16,9 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
 - **Uç yol parçaları:** dik düşüş, loop; up vektörü ve kamera zorlanırsa M1'de çözülmez, M2'ye ertelenir.
 - **Sonraki milestone adayları:** curve shader, yol kenarı dekoru ve engeller, araç ve oyuncu kontrolü (`x` sürükleme,
   arcade, bankta görsel yatma), kamera cilası. Sırası M1 oynanınca yazılır.
-- **Kalıcı havuz:** parça havuzu önce oyunun kendi root singleton'ı olur; `IPools`'a root-lifetime modu gerekiyorsa
-  "Template'e gidenler"e taşınır.
+- ~~**Kalıcı havuz:** parça havuzu önce oyunun kendi root singleton'ı olur; `IPools`'a root-lifetime modu gerekiyorsa
+  "Template'e gidenler"e taşınır.~~ Template'e gidecek bir şey yok: root singleton `IPools`'tan root'un havuzunu alır
+  (2026-11-16, `Game.md` M1 kararları "Havuz").
 
 ## Template'e gidenler
 - ~~**`Application.runInBackground` Editor'da ayarı da değiştirir (2026-11-14):** CLAUDE.md "yalnız o oturum, ayar değişmez"
