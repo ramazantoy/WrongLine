@@ -63,5 +63,56 @@ namespace WrongLine.Road.Tests
             Assert.AreEqual(1, report.ErrorCount);
             StringAssert.Contains("bad", report.Issues[0].Message);
         }
+
+        [Test]
+        public void TheDefaultMotifs_OnlyNamePiecesTheDefaultCatalogHas()
+        {
+            var report = new ValidationReport();
+            var names = new System.Collections.Generic.HashSet<string>(System.Linq.Enumerable.Select(RoadPieceSpecs.Defaults, spec => spec.Name));
+
+            RoadConfigValidator.CheckMotifs(_kit.MakeConfig(), names, "defaults", report);
+
+            Assert.AreEqual(0, report.ErrorCount, string.Join("; ", System.Linq.Enumerable.Select(report.Issues, issue => issue.Message)));
+        }
+
+        [Test]
+        public void AMotifNamingAPieceTheCatalogLacks_IsAnError()
+        {
+            var report = new ValidationReport();
+            var names = new System.Collections.Generic.HashSet<string> { "CurveSoft_R", "CurveSoft_L" }; // No banks, no ramps.
+
+            RoadConfigValidator.CheckMotifs(_kit.MakeConfig(), names, "short catalog", report);
+
+            Assert.Greater(report.ErrorCount, 0);
+            StringAssert.Contains("which the catalog does not have", report.Issues[0].Message);
+        }
+
+        [TestCase("")]
+        public void AMotifWithoutAName_IsRejected(string name)
+        {
+            var settings = new RoadGeneratorSettings();
+            settings.Motifs.Add(new RoadMotifDef { Name = name, Weight = 1f, Pieces = new[] { "Straight_S", "Straight_M" } });
+
+            Assert.Throws<ArgumentException>(() => settings.Validate());
+        }
+
+        [TestCase(0f, 2)]
+        [TestCase(-1f, 2)]
+        [TestCase(1f, 1)]
+        [TestCase(1f, 0)]
+        public void AMotifWithABadWeightOrTooFewPieces_IsRejected(float weight, int pieces)
+        {
+            var settings = new RoadGeneratorSettings();
+            settings.Motifs.Add(new RoadMotifDef { Name = "Bad", Weight = weight, Pieces = new string[pieces] });
+
+            Assert.Throws<ArgumentException>(() => settings.Validate());
+        }
+
+        [TestCase(-0.1f)]
+        [TestCase(1f)]
+        public void ANonsenseMotifChance_IsRejected(float chance)
+        {
+            Assert.Throws<ArgumentException>(() => new RoadGeneratorSettings { MotifChance = chance }.Validate());
+        }
     }
 }

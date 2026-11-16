@@ -107,7 +107,7 @@ namespace WrongLine.Road.Tests
             RoadLayout layout = RoadTestPieces.Layout(5);
             var cursor = new RoadCursor(layout);
             var window = new RoadWindow(layout, Ahead, 0.0);
-            cursor.Advance(400.0);
+            cursor.Advance(403.7); // Not exactly at a joint: pieces are whole multiples of 10 m, and at a joint the previous piece still touches the cursor.
 
             window.Update(cursor, new List<int>(), new List<int>());
 

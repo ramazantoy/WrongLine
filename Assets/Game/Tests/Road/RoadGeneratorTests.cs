@@ -90,7 +90,8 @@ namespace WrongLine.Road.Tests
         [Test]
         public void NoPieceRepeatsWithinTheWindow()
         {
-            var settings = new RoadGeneratorSettings { RepeatWindow = 3 };
+            // Motifs are fixed runs and repeat pieces on purpose (a slalom is the same curve twice); the window rules single picks.
+            var settings = new RoadGeneratorSettings { RepeatWindow = 3, MotifChance = 0f };
             int[] ids = Ids(RoadTestPieces.Layout(21, settings), Pieces);
 
             for (int i = 1; i < ids.Length; i++)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace WrongLine.Road
 {
@@ -24,12 +25,12 @@ namespace WrongLine.Road
         public int RepeatWindow = 2;
 
         /// <summary>How strongly a piece that steers back towards the middle of the yaw or height band is favoured.</summary>
-        public float YawPull = 1f;
+        public float YawPull = 0.6f;
 
         public float HeightPull = 1f;
 
         /// <summary>How much a piece is liked, per tag. A piece with several tags gets the mean.</summary>
-        public float WeightStraight = 3f;
+        public float WeightStraight = 2f;
 
         public float WeightCurve = 2f;
         public float WeightSCurve = 1.5f;
@@ -47,8 +48,27 @@ namespace WrongLine.Road
 
         public float HardGain = 1.2f;
 
+        /// <summary>
+        /// A curve that turns the same way as the last curve is this many times more likely. Above 1 the road keeps turning
+        /// (sweeping bends); 1 leaves it to the pull back to the middle, which alternates left and right.
+        /// </summary>
+        public float TurnMomentum = 4f;
+
+        /// <summary>Chance per pick that a whole motif (a fixed run of pieces) is placed instead of one piece.</summary>
+        public float MotifChance = 0.12f;
+
+        /// <summary>The motifs: named runs of pieces, by piece name. A motif is placed only where it fits the yaw and height bands as a whole.</summary>
+        public List<RoadMotifDef> Motifs = RoadMotifDef.Defaults();
+
         public void Validate()
         {
+            Require(TurnMomentum > 0f, nameof(TurnMomentum), "must be positive");
+            Require(MotifChance >= 0f && MotifChance < 1f, nameof(MotifChance), "must be in [0, 1)");
+            foreach (RoadMotifDef motif in Motifs)
+            {
+                motif.Validate();
+            }
+
             Require(MaxYawDegrees > 0f && MaxYawDegrees < 90f, nameof(MaxYawDegrees), "must be between 0 and 90 degrees");
             Require(MinHeight < 0f && MaxHeight > 0f, nameof(MinHeight), "the height band must contain the start height 0");
             Require(DifficultyRampMeters > 0f, nameof(DifficultyRampMeters), "must be positive");

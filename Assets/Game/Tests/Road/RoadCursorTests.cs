@@ -102,7 +102,7 @@ namespace WrongLine.Road.Tests
         public void CrossingAJoint_IsContinuous()
         {
             RoadLayout layout = RoadTestPieces.Layout(5);
-            layout.EnsureCovered(2000.0);
+            layout.EnsureCovered(6000.0); // Enough for 30 pieces however long the generator makes them.
 
             for (int i = 1; i < 30; i++)
             {

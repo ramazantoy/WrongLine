@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RoadConfig
   m_EditorClassIdentifier: Game::WrongLine.Road.RoadConfig
   _seed: 0
-  _aheadMeters: 300
+  _aheadMeters: 400
   _behindMeters: 60
   _originShiftMeters: 500
   _prewarmPerPiece: 3
@@ -23,9 +23,9 @@ MonoBehaviour:
     MaxHeight: 60
     DifficultyRampMeters: 6000
     RepeatWindow: 2
-    YawPull: 1
+    YawPull: 0.6
     HeightPull: 1
-    WeightStraight: 3
+    WeightStraight: 2
     WeightCurve: 2
     WeightSCurve: 1.5
     WeightClimb: 1
@@ -36,3 +36,41 @@ MonoBehaviour:
     EasyIntensityPenalty: 0.8
     HardBase: 0.4
     HardGain: 1.2
+    TurnMomentum: 4
+    MotifChance: 0.12
+    Motifs:
+    - Name: SlalomRight
+      Weight: 1
+      Pieces:
+      - CurveSoft_R
+      - CurveSoft_L
+      - CurveSoft_R
+    - Name: SlalomLeft
+      Weight: 1
+      Pieces:
+      - CurveSoft_L
+      - CurveSoft_R
+      - CurveSoft_L
+    - Name: SweepRight
+      Weight: 1.2
+      Pieces:
+      - BankSoft_R
+      - BankSoft_R
+    - Name: SweepLeft
+      Weight: 1.2
+      Pieces:
+      - BankSoft_L
+      - BankSoft_L
+    - Name: Roller
+      Weight: 0.8
+      Pieces:
+      - RampUp_L
+      - Straight_S
+      - SteepDown_S
+    - Name: Rise
+      Weight: 0.8
+      Pieces:
+      - RampUp_S
+      - Straight_S
+      - RampUp_L
+      - Straight_M
