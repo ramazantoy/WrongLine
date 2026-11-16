@@ -6,10 +6,9 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** M0 bitti (2026-11-14): kimlik, dikey ekran, Editor Android hedefinde, Intro/Menu/Driving scope'ları, Play
-butonlu menü, boş sürüş sahnesi. Template tabanı `4cd74e6` (`template` remote'u). M0 oynandı (2026-11-16). M1a bitti (2026-11-16): sonsuz prosedürel yol
-(tariften pişirilen gri kutu parçalar, seed'li birleştirici, root'ta kalıcı havuz, dummy follower, takip kamerası), kararlar ve ölçümler
-`decisions/Game.md`'de; M1b (gerçek parçalar) artist akışını bekliyor, brif `GameOpen.md`'de. Yeni milestone başlarken plan moduna geç.
+**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
+kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
+moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
 **Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`).
 Oyun `Assets/Game/`: asmdef `Game`, namespace `WrongLine`, özellik klasörü `WrongLine.<Özellik>`.
@@ -45,10 +44,13 @@ cherry-pick'ler çakışmasın diye.
     (Asset Store, Synty) repoya girmez.
 
 ### Milestone'lar
-| # | İçerik | Bitti sayılır |
+Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
+
+| # | İçerik | Durum |
 |---|---|---|
-| M0 | Kimlik (Company, Product, identifier), Android, namespace, scope'lar ve servis iskeleti, boş sürüş sahnesi | ~~Android build açılır~~ Editor Android hedefinde açılır (build `GameOpen.md`'ye ertelendi), sahne her yerden Play'de çalışır. Bitti 2026-11-14 |
-| M1 | Sonsuz prosedürel yol: Editor'da tariften pişirilen parçalar (Splines paketi kullanılmadı), saf C# birleştirici, root scope'ta kalıcı havuz, dummy follower ve takip kamerası. M1a gri kutu parçalar, M1b gerçek low-poly hand-paint parçalar. Ayrıntı `decisions/Game.md` | Dummy follower sonsuz yolda sorunsuz ilerler (oynanış halkası yok; kural M1 için esnetildi), testler ve validator geçer, havuz sızıntısız. M1a bitti 2026-11-16 (M1b asset bekliyor) |
+| M0 | Kimlik, Android, scope'lar, boş sürüş sahnesi | Bitti 2026-11-14 |
+| M1 | Sonsuz prosedürel yol (tariften pişirilen parçalar, saf C# birleştirici, kalıcı havuz, dummy follower, takip kamerası) | M1a bitti 2026-11-16; gerçek parçalar M2'de geldi |
+| M2 | Yol hissi: curve shader, gökyüzü ve gece/gündüz, sis, dağıtım ince ayarı, gerçek yol parçaları | Bitti 2026-11-17 |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

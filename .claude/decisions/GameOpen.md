@@ -10,11 +10,9 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
 - **İlk Android build:** `AF/Build` Development, cihazda açılış, dikey ekran, Menu → Gameplay; `adb logcat -s Unity`. Template'in
   "İlk mobil oyunda doğrulanacaklar" listesi (`decisions/README.md`) bununla birlikte. İlk build'in yeniden yazdığı URP
   asset'leri ayrı commit.
-- **M1b gerçek yol parçaları:** low-poly hand-paint yol parçaları ve araç (ayrı parçalı: gövde, kapı, tampon, tekerlek),
-  Blender tabanlı asset akışıyla. **Sözleşme hazır** (2026-11-16): `Assets/Game/Road/Contract/` (26 parça + `section.json`,
-  `WrongLine/Road/Export Recipes`), brif taslağı yerel `.claude/notes/m1b/brief.md`; My3DArtist'e **gönderilmedi**, kullanıcı
-  onayı bekliyor. Yol tarifi Unity'den çıkar, Blender okur. Referans paketler yerelde kalır. Asset gelince: import, parça
-  prefab'ının mesh'i değişir (tarif/hash aynı), `RoadCatalogValidator` 1 cm uç oturmasını ölçer.
+- ~~**M1b gerçek yol parçaları**~~ Yapıldı (2026-11-17, `Game.md` M2 kararları): 33 parça sanatçıdan geldi, hepsi sözleşme
+  ölçümünden geçti, oyunda. **Kalan:** araç (aşağıdaki "Araç" maddesi) ve CurveEasy/BankEasy/CurveWide'ın 2 m halka aralığıyla
+  yeniden üretimi (3840 üçgen çok; sanatçıdan istendi, araçtan sonra).
 - ~~**Uç yol parçaları:** dik düşüş, loop; up vektörü ve kamera zorlanırsa M1'de çözülmez, M2'ye ertelenir.~~ Dik düşüş ve
   dik tırmanış yapıldı (`SteepDown_S/L` −60°/−70°, `SteepUp_S/L` +60°/+70°; yarıçap ≥ 12 m, katalogda 26 parça). **Loop
   M2'ye ertelendi** (tasarım çözümlenip uygulanmadı); neden:
@@ -27,19 +25,79 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   4. *Doğrulama:* en dar yarıçap (≈ 8 m için ≥ 100 m'lik loop) ve up dönüş sınırı loop'a özel olmalı; `Intensity` ve
      yükseklik bandı (loop ≈ 2R yüksek) yeniden düşünülmeli.
   Çözüm yolu: yeni `PitchProfile.Loop` (tek yönlü tam devir, `θ(u) = 360° (u − sin 2πu / 2π)`) + vida için yaw profili.
-- **M1 elle denemesinden (2026-11-16, kullanıcı):** kamera fena değil, M1 için yol gayet iyi. İleri fazlar için: (1) **curve
+- ~~**M1 elle denemesinden (2026-11-16, kullanıcı):**~~ Curve shader, sis ve dağıtım ince ayarı M2'de yapıldı
+  (`Game.md` M2 kararları, 2026-11-17); kamera maddesi ayrı ("Keskin virajlarda ileriyi görmek zor"). Eski not: kamera fena değil, M1 için yol gayet iyi. İleri fazlar için: (1) **curve
   shader** gerekli görünüyor (ufuk bükülmesi); (2) **yol "doğal" hissi bir tık eksik**: oluşan yola bakınca dağıtım
   algoritmasının izi görülüyor (ağırlıklar, `RepeatWindow`, bantlar: `RoadGeneratorSettings`; parça tipleri ve boyları da
   tekrarı belli ediyor); (3) bunun bir kısmı **sis (fog)** ile ilgili: yolun uzakta bitişi ve parça ritmi görünüyor. Bir
   sonraki milestone'da önce fog + curve shader, sonra dağıtımın ince ayarı (daha uzun yumuşak virajlar, parça uzunluğu
   çeşitliliği, ardışık parça "motifleri") denenir.
-- **Sonraki milestone adayları:** curve shader, yol kenarı dekoru ve engeller, araç ve oyuncu kontrolü (`x` sürükleme,
-  arcade, bankta görsel yatma), kamera cilası. Sırası M1 oynanınca yazılır.
+- **Sonraki milestone adayları (M2 sonrası, 2026-11-17):** araç Unity'de (placeholder küpün yerine, sonra oyuncu kontrolü:
+  `x` sürükleme, arcade, bankta görsel yatma), kamera cilası (keskin virajda ileriyi görme, hıza bağlı FOV, Cinemachine
+  kararı), takip glitch'i, trafik, yol kenarı dekoru ve engeller, ara katılım yolları, kazada parça fırlatma. Sırası M2
+  oynanınca yazılır.
+- **Kamera: Cinemachine mi? (2026-11-16, kullanıcı önerisi, karar M3'te):** takip kamerası şimdi saf C# `ChaseCameraRule` +
+  `ChaseCameraDriver`; kullanıcı yönetimin basitleşmesi ve hızla FOV'un (hızlanmada açılma) bedavaya gelmesi için Cinemachine
+  3'e geçmeyi öneriyor. Değerlendirme: FOV hıza bağlama Cinemachine'siz de tek satır (`ChaseCameraRule`'a `Fov(hız)` +
+  config eğrisi, testli). Cinemachine'in asıl kazancı sarsıntı/blend/ek kamera; bedeli yeni paket (onay ister), floating origin
+  kaymasında `OnTargetObjectWarped` bağı, `UpBlend` (bank'a yatma) kuralının Cinemachine'e taşınması ve "kurallar saf C#"
+  ilkesinden sapma. Karar M3'te (araç + oyuncu kontrolü + hıza bağlı FOV ihtiyacı netleşince): önce `Fov(hız)`'ı kural olarak
+  yaz, sonra Cinemachine'in neyi kolaylaştırdığına bak. M2'de kamera değişmez.
+- **Keskin virajlarda ileriyi görmek zor (2026-11-16, M2 elle denemesi, kullanıcı):** kamera hep aracın baktığı yöne
+  bakıyor, viraj dönmeden önce yolun devamı görünmüyor (özellikle CurveSharp/BankSharp). Çözüm adayı kamera cilasında
+  (M3, Cinemachine kararıyla birlikte): bakış noktası aracın önündeki yol üzerinde (`s + LookAhead` noktası, yani yol
+  eğrisini izleyen hedef; şimdi düz `LookAhead` metre ileri), kamerayı viraj yönüne doğru yaw kaydırma, viraja girerken hafif
+  FOV açma. Ölçü: viraj girişinde viraj çıkışı ekranın içinde kalmalı.
+- **Araç cilası (2026-11-17, araç Unity'de placeholder olarak):** (1) FBX import uyarısı: "A polygon of Mesh 'Body' … is
+  self-intersecting and has been discarded" (küçük delik olabilir, sanatçıya iletildi); (2) gölge: yakın araç gölgesi pikselli ve
+  spoiler'da kendi gölgesinden "diş" deseni (shadow acne): ışığın bias ve normal bias ayarı ya da gölge çözünürlüğü, mobil
+  gölge kalitesi kararıyla birlikte; (3) ~~cam opak~~ yarı saydam yapıldı (2026-11-17); iç mekân kabuğu eksik: iç mekânda yalnız gösterge paneli ve koltuklar var, tavan, zemin ve kapı iç panelleri yok (gövdenin iç yüzü çift taraflı çizimle görünüyor, sanatçıdan gerçek iç yüzeyler istenecek); (4)
+  far/fren lambası emission maskesi bağlı değil; (5) kapının arka yüzü tek katman (kopunca culling'le görünmez: çift taraflı
+  materyal ya da ince kalınlık); (6) araç başına boya rengi (`_PaintColor`, `MaterialPropertyBlock`); (7) kazada kopan
+  parçaların ayrılması (hiyerarşi hazır: Hinge_* child'ları, kütle merkezli pivotlar).
+- **Trafik araçları için LOD (2026-11-17, kullanıcı):** yol ve sis uzaklığı 300 → 400 m'ye çıktı (sis 100–360 m), trafik
+  araçları artık daha uzaktan görünür. Araç (≈2400 üçgen, 12+ parça) uzakta pahalı: trafik sistemi gelince araç başına LOD
+  ya da uzak mesafe sadeleştirmesi kurulur. Öneri: `LOD0` tam model (kopan parçalarla), `LOD1` (~35 m'den, ~600 üçgen,
+  parçalar gövdeye birleşik, tek mesh), `LOD2` (~120 m'den, küp/kapsül silüeti ya da ~150 üçgen), sis bitişinden önce
+  `LOD2`'ye düşmüş olmalı. Seçim saf C# kural (`mesafe → LOD`, histerezisle titremesiz) + view; `LODGroup` ya da elle
+  geçiş kararı trafik milestone'unda; sanatçıdan LOD brifi o zaman. Kaza anında yalnız yakın araç (`LOD0`) parçalarına ayrılır.
+- **Ara katılım (yan) yolları (2026-11-17, kullanıcı fikri, tasarım notu):** ara sıra ana yolun yanından ayrılıp kısa bir
+  süre sonra geri katılan yan yollar; araç oraya girerse kısa bir "gir-çık" kestirme yaşar, o yollarda trafik yok (güvenli
+  alan / ödül ya da risk, ayrıca karar). Teknik değerlendirme: yol uzayı `(s, x)` olduğundan gerçek dallanma (iki ayrı spline,
+  seçim) gerekmez; yan yol, o parçada ana yolun kenarında ek bir yanal bant olarak modellenir (yol genişliği o aralıkta
+  artar, bant ana yoldan ayrılıp dönerek geri birleşir). Gerekenler: (1) yeni parça türü `Bypass` (etiket, katalog, jeneratör
+  ağırlığı) ve kesit sözleşmesinin genişlemesi (asimetrik kesit, kaldırım ve gövde yan banda uyum; artist akışında yeni
+  brif), (2) trafik üreticisi ve çarpışma yan bantta farklı kural (`x` aralığı bazlı), (3) kamera ve curve shader değişmez.
+  Trafik ve oyuncu kontrolü (`x` sürükleme) olmadan anlam taşımaz: M3/M4 sonrası, trafik sistemiyle birlikte.
+- **Takip (spline follower) bazı yollarda glitch atıyor (2026-11-17, kullanıcı, M2 elle denemesi):** M1'de yoktu; M2'de
+  eklenenler: gerçek sanatçı mesh'leri, curve shader (köşe bükme), gece/gündüz ve sis, motifler ve yeni parçalar. "Bazı
+  yollarda" yani seed/parçaya bağlı. Henüz araştırılmadı; kullanıcı kararı: gerçek araç gelince ele alınır. İlk bakılacaklar:
+  (1) follower `RoadCursor`'ın parça çerçeve tablosundan konum alıyor, sanatçı mesh'i ile tarif aynı merkez hattında mı
+  (uçlarda 1 cm ölçüldü, ortada değil), (2) curve shader'ın bükmesi yalnız görüntüyü değiştirir, follower'ın konumunu değil:
+  araç yol yüzeyinden ayrık görünebilir, (3) floating origin kayması karesinde follower/kamera/parça yerleşimi, (4) yeni
+  parçalarla yaw/yükseklik bandında geçişler. Tekrarlamak için seed + kare numarası kaydedilmeli.
+- **Yol şerit çizgisi (2026-11-16, kullanıcı):** şeritler şimdi düz sürekli çizgi; kesik kesik olmalı. Yaklaşım: çizgi
+  texture'ına alfa ile kesik desen (9 m'lik karo: ~3 m çizgi, ~6 m boşluk), `CurvedLit`'e alfa kesme (`_Cutoff`), mesh ve UV
+  sözleşmesi değişmez. Sanatçıdan yeni `Road_Line_Base.png` (alfa kanallı) gerekir.
+- **Araç (M3 hazırlığı, 2026-11-16):** stil referansı yerelde duran satın alınmış bir araç paketi (~2900 poligon: yuvarlak hatlı kompakt 4 kapılı araba, büyük
+  tekerlek ve çamurluk kemeri, açılı far panelleri, spoiler). Doğrudan ona yakın
+  istenir, mesh sıfırdan. Ayrı parçalı: gövde, kapı, tampon, 4 tekerlek; tek materyal. İlk teslim (kama coupe) reddedildi. Brif yerel
+  `.claude/notes/m1b/vehicle-brief.md`, sanatçıya gönderildi; Unity'ye M3'te bağlanır. Boya: gövdede tek renklendirilebilir
+  boya alanı (GDD'deki araç başına renk için), `MaterialPropertyBlock` M3'te.
+  **Kazada kopan parçalar (kullanıcı):** 4 kapı, kaput, bagaj, 2 tampon, 4 tekerlek, 2 ayna, spoiler, direksiyon ayrı obje ve
+  kendi pivotuyla; Body kabuk, Interior sabit; cam yarı saydam ayrı materyal; kaput/bagaj altında koyu boşluk kapağı.
+  Bütçe ~2400 üçgen. Fırlatma mantığı (parçaları ayırıp fizik/tween ile savurma, havuz) kaza milestone'unda; saf C# kural
+  + view ayrımı.
 - ~~**Kalıcı havuz:** parça havuzu önce oyunun kendi root singleton'ı olur; `IPools`'a root-lifetime modu gerekiyorsa
   "Template'e gidenler"e taşınır.~~ Template'e gidecek bir şey yok: root singleton `IPools`'tan root'un havuzunu alır
   (2026-11-16, `Game.md` M1 kararları "Havuz").
 
 ## Template'e gidenler
+- **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"
+  tercihi varsayılan "Recompile And Continue Playing"; Play sırasında derleme olunca (ya da `wait-editor.sh --refresh`)
+  domain reload sonrası `RootScope(Clone)` ikilenir ve konsola "2 event systems" / "2 audio listeners" uyarıları basılır.
+  Temiz Play'de tek (doğrulandı). Öneri: template bir Editor betiğiyle `EditorPrefs` `ScriptCompilationDuringPlay`'i 2
+  ("Stop Playing And Recompile") yapsın ya da dokümana "Play'de kodu değiştirme, durdurup derle" kuralı yazsın.
 - **Root havuz instance'ının sahne scope'unda geri verilmesi, Play durma anında (2026-11-16):** root `IPools`'tan spawn edilip
   (parent'sız) bir sahne scope'unun `Dispose`'unda `Despawn` edilen instance, Editor'da Play durunca assertion basıyor
   (`'t.GetParent() == nullptr'`, `SetParent(_container)`): o anda instance'ın sahnesi (DDOL) geçersiz (`IsValid() == false`),
