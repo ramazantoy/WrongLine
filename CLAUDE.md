@@ -82,7 +82,7 @@ cherry-pick'ler çakışmasın diye.
   - Editor kapalıysa: `unity open <proje yolu>`; hazır olana kadar `editor status` "isn't reachable" der.
   - `EditorSceneManager.OpenScene(Single)` başka referansı olmayan asset'leri bellekten atar: açmadan önce yüklenen asset
     referansı "yok edilmiş" null'a döner ve atama boş yazılır (hata vermez). Asset'i sahneyi açtıktan sonra yükle.
-  - Odaksız Editor'da Play: `Application.runInBackground = true` (yalnız o oturum, ayar değişmez) loop'u döndürür.
+  - Odaksız Editor'da Play: `Application.runInBackground = true` loop'u döndürür ama ayarı da değiştirir (`ProjectSettings.asset`'i bellekte kirletir, sonraki `SaveAssets` `runInBackground: 1` yazar). Play'den sonra `PlayerSettings.runInBackground = false` geri al; `SaveAssets`'ten önce diff'e bak.
     `script run`'dan `QueueStateEvent` oyuna ulaşmaz: sanal cihaz + `InputSystem.Update()` kullan. Custom Inspector görsel
     olarak doğrulanamaz (repaint yok); `CreateEditor` doğru tipi verir, görsel kontrol kullanıcıya kalır.
   - `script run`'dan UniTask döndüren metodu reflection'la `Invoke` etmek hatayı yutar: doğrudan çağır + `Forget()`.
