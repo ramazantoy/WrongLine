@@ -112,7 +112,7 @@ namespace WrongLine.Road.Tests
 
             RoadCatalogValidator.CheckPiece(view, LOCATION, _report);
 
-            AssertIssue("does not sit on the recipe's centre line");
+            AssertIssue("breaks the road piece contract");
         }
 
         // --- One centre line ---

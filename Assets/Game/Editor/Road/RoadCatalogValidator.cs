@@ -20,7 +20,6 @@ namespace WrongLine.Road.Editor
         private const float AngleToleranceDegrees = 0.1f;
         private const float LevelTolerance = 1e-3f;
         private const float PositionTolerance = 1e-3f;
-        private const float MeshGapTolerance = 0.01f;
 
         /// <summary>The tightest bend allowed. The road is 10.2 m wide with its curbs, so the inside edge must not fold over.</summary>
         private const float MinTurnRadius = 8f;
@@ -265,11 +264,10 @@ namespace WrongLine.Road.Editor
                 }
             }
 
-            float entryGap = RoadMeshBuilder.EntryGap(mesh, shape);
-            float exitGap = RoadMeshBuilder.ExitGap(mesh, shape);
-            if (entryGap > MeshGapTolerance || exitGap > MeshGapTolerance)
+            // By where the vertices are, not how the mesh is built: a mesh from another tool passes if its shape is right.
+            foreach (string problem in RoadMeshContractCheck.Check(mesh, shape))
             {
-                report.Error($"{location}: the mesh does not sit on the recipe's centre line (entry off by {entryGap:F3} m, exit by {exitGap:F3} m). {REBUILD_HINT}", view);
+                report.Error($"{location}: the mesh breaks the road piece contract: {problem}.", view);
             }
         }
 
