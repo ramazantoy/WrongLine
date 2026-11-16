@@ -1,3 +1,4 @@
+using AF.Core;
 using UnityEngine;
 
 namespace WrongLine.Road
@@ -5,9 +6,14 @@ namespace WrongLine.Road
     /// <summary>
     /// The root of a road piece prefab. Holds the recipe the piece was built from and the hash of its parameters at build
     /// time, so a validator can tell a stale mesh. The pivot is the piece's entry frame.
+    /// While pooled it carries the index of the road piece it currently stands for; going back to the pool clears that and
+    /// the transform, so a waiting piece holds nothing from its last use.
     /// </summary>
-    public sealed class RoadPieceView : MonoBehaviour
+    public sealed class RoadPieceView : MonoBehaviour, IPoolable
     {
+        /// <summary>The value of <see cref="PlacedIndex"/> while the piece is not in use.</summary>
+        public const int NotPlaced = -1;
+
         private const float GizmoStep = 2f;
         private const float GizmoUpLength = 1.5f;
 
@@ -18,6 +24,24 @@ namespace WrongLine.Road
 
         /// <summary>The recipe's <see cref="TrackRecipe.StableHash"/> when the mesh was last built.</summary>
         public int BakedHash => _bakedHash;
+
+        /// <summary>The index of the road piece this instance stands for, or <see cref="NotPlaced"/>.</summary>
+        public int PlacedIndex { get; private set; } = NotPlaced;
+
+        internal void Bind(int placedIndex)
+        {
+            PlacedIndex = placedIndex;
+        }
+
+        void IPoolable.OnSpawned(PoolLife life)
+        {
+        }
+
+        void IPoolable.OnDespawned()
+        {
+            PlacedIndex = NotPlaced;
+            transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+        }
 
         private void OnDrawGizmosSelected()
         {

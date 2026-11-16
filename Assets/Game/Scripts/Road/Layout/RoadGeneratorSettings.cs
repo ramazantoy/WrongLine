@@ -3,6 +3,7 @@ using System;
 namespace WrongLine.Road
 {
     /// <summary>The numbers the road generator's rules run on. A plain object so the rules stay testable; the config asset fills one in.</summary>
+    [Serializable]
     public sealed class RoadGeneratorSettings
     {
         /// <summary>

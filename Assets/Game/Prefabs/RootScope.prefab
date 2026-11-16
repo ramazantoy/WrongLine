@@ -51,6 +51,8 @@ MonoBehaviour:
   autoInjectGameObjects: []
   _inputActions: {fileID: -944628639613478452, guid: d888f29cedf3bb1448da19b23af9daa6, type: 3}
   _audioMixer: {fileID: 24100000, guid: 36ef3796a4d428e45acb0db9a9774cfe, type: 2}
+  _roadCatalog: {fileID: 11400000, guid: dc0d8c2057795e248aa3bcf9319136ec, type: 2}
+  _roadConfig: {fileID: 11400000, guid: 2bc23ab6ad89cae418f5d3dc8f7b06c5, type: 2}
 --- !u!1 &7598658697932928154
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using VContainer;
+using WrongLine.Road;
 #if STORE_STEAM
 using AF.Platform.Steam;
 #elif STORE_EPIC
@@ -30,6 +31,12 @@ namespace WrongLine
 
         [SerializeField, Required, Tooltip("The game's mixer. Its groups and volume parameters are listed in AudioChannels.")]
         private AudioMixer _audioMixer;
+
+        [SerializeField, Required, Tooltip("The road pieces: the start piece and the ones the generator picks from. Rebuilt by WrongLine/Road/Rebuild Pieces.")]
+        private RoadCatalog _roadCatalog;
+
+        [SerializeField, Required, Tooltip("The road's tunable numbers: seed, window, floating origin, generator rules.")]
+        private RoadConfig _roadConfig;
 
         protected override void ConfigureGame(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
@@ -54,6 +61,11 @@ namespace WrongLine
             builder.UseLocalization(messagePipe);
             // After UseSave, UseAudio and UseInput: display settings, and saving the channel volumes.
             builder.UseSettings(messagePipe);
+
+            // The road pieces live in the root's pools, so they are made once and outlast every scene.
+            builder.RegisterInstance(_roadCatalog);
+            builder.RegisterInstance(_roadConfig);
+            builder.Register<RoadPiecePool>(Lifetime.Singleton).As<IRoadPiecePool>();
         }
     }
 }

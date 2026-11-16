@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e527a473d04f28f498095ef2cbb6f807, type: 3}
+  m_Name: RoadConfig
+  m_EditorClassIdentifier: Game::WrongLine.Road.RoadConfig
+  _seed: 0
+  _aheadMeters: 300
+  _behindMeters: 60
+  _originShiftMeters: 500
+  _prewarmPerPiece: 3
+  _generator:
+    MaxYawDegrees: 75
+    MinHeight: -30
+    MaxHeight: 60
+    DifficultyRampMeters: 6000
+    RepeatWindow: 2
+    YawPull: 1
+    HeightPull: 1
+    WeightStraight: 3
+    WeightCurve: 2
+    WeightSCurve: 1.5
+    WeightClimb: 1
+    WeightDrop: 1
+    WeightHill: 1
+    WeightDip: 1
+    WeightBanked: 1.5
+    EasyIntensityPenalty: 0.8
+    HardBase: 0.4
+    HardGain: 1.2

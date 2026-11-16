@@ -12,7 +12,10 @@ namespace WrongLine.Menu
         [SerializeField, Required, Tooltip("The menu screen in this scene.")]
         private MenuScreen _screen;
 
-        protected override void ConfigureScene(IContainerBuilder builder, MessagePipeOptions messagePipe) =>
+        protected override void ConfigureScene(IContainerBuilder builder, MessagePipeOptions messagePipe)
+        {
             builder.RegisterComponent(_screen);
+            builder.RegisterEntryPoint<RoadPrewarm>();
+        }
     }
 }
