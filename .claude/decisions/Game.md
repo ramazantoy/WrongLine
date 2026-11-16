@@ -40,3 +40,25 @@ dosyalarda; bu dosya template'te yok, bu yüzden cherry-pick'lerle çakışmaz. 
 
 Doğrulananlar: `IntroFlowTests` 3/3; `IntroFlow` boot'u beklemeyecek şekilde bozulunca 2'si kırıldı. Validate All 0/0. Play
 Intro'dan: video süresince Intro, sonra Menu; console temiz.
+
+## M1 kararları (2026-11-16, plan yazılmadan önce konuşuldu)
+Plan onayında kesinleşir; plan çelişirse buraya yeni satır eklenir, eskinin üstü çizilir.
+
+| Konu | Karar | Gerekçe |
+|---|---|---|
+| Kapsam | M1 yalnız yol: sonsuz, prosedürel, devir daimli. Araç ve oyuncu kontrolü yok; görünür bir dummy follower (küp/kapsül) yol üzerinde `s` boyunca config'teki sabit hızla ilerler, basit arkadan takip kamerası izler, debug bilgisi gösterilir | Önce yol sistemi tamamlanır; araç ve kontrol bağlamı şişirmesin |
+| "Oynanabilir biter" kuralı | M1 için "dummy follower sonsuz yolda sorunsuz ilerler" olarak okunur; kural M1'de esnetildi. Milestone sıralaması M serisine bağlı kalmak zorunda değil | Kullanıcı kararı |
+| Yol üretimi | Runtime'da mesh üretilmez. Parçalar Editor'da parametrik (eğim, viraj açısı ve yarıçapı, uzunluk, bank) üretilip prefab olur; runtime'da kuralla yapboz gibi birleştirilir | Mesh üretimi ve GC mobilde pahalı; parça sanatsal olarak kontrol edilir, hand-paint atlas doğrudan oturur |
+| Spline | Unity Splines paketi. Her parçanın kendi spline'ı prefab'ının içindedir; tek sonsuz uzayan spline yok. Parça yerel koordinatta yaşar, giriş ve çıkış bağlantısı (konum, teğet, up) vardır | Sonsuz `s` hassasiyeti bozar; havuz ve floating origin ile doğal uyuşur |
+| Birleştirici | Saf C#, seed'li, `IRoadPath` arayüzünün arkasında; Splines yalnız adaptörde. Parça seçip zincirler (sıralama kuralları, çeşitlilik eğrisi). Aynı seed aynı yolu üretir | Kurallar saf C#; EditMode'da test edilir |
+| Başlangıç parçası | Birleştiricinin dışında, sabit düz parça; ilk bağlantı durumunu o verir, birleştirici çıkışından devam eder. Eğim ve viraj kuralları ona uygulanmaz | Oyun başı eğimli olmamalı; yeniden başlatma aynı yapıyla çalışır |
+| Float hassasiyeti | Floating origin (ya da parça yerel koordinatı) planın baştan kararıdır; öneri floating origin | Sonradan eklemek zor |
+| Parça doğrulama | Editor validator (`IValidator`): bağlantı uyumu, etiketler, up sürekliliği; yanlış parça oyuna giremez | Zincir hatalarını erken yakalar |
+| Yol görünümü | "Normal" yol (asfalt, şerit, kaldırım), kalınlığı vardır, altı sis ya da boşluk. Lunapark hissi geometri ve kameradan gelir. Arcade, gerçek fizik yok | Kullanıcı kararı |
+| Yol mesh'i UV | `s` boyunca akar, genişlik 0–1 | M1b'de tekrar eden yol texture'ı mesh koduna dokunmadan oturur |
+| Havuz | Parçalar root scope'ta kalıcı havuzda yaşar (gameplay'ler arası yok edilmez), ön ısıtma Menu'de, kapalı kök objenin altında beklerler. `IPools.For` root'ta Scoped olduğundan yetmez: önce oyunun kendi root singleton'ı, genelleşirse template'e taşınır | Kullanıcı kararı; her oyunda destroy/yeniden yaratma olmasın |
+| Havuz kuralları | Havuza dönen parça `Release` içinde kapatılır ve sıfırlanır (çağıran hatırlamaz, EditMode testi); sahneye bağlı referans tutmaz; paylaşılan materyale runtime'da yazılmaz; yaratma `IObjectResolver.Instantiate`; ön ısıtma adedi config'de | Havuzdaki parçanın yanlışlıkla aktif ya da kirli kalması tek gerçek risk |
+| Alt aşamalar | M1a: sözleşme (bağlantılar, ölçüler, pivotlar, UV), Editor parça üretici, gri kutu parçalar, validator, birleştirici, havuz, dummy follower, kamera, testler; placeholder'la tek başına biter. M1b: sözleşmeye uyan gerçek low-poly hand-paint parçalar (Blender tabanlı ayrı asset akışı); yol tarifi tek kaynaktır, Unity üretir, Blender o tarifi okur | Asset bekleyen milestone açılmaz kuralı; kullanıcı gerçek görünümü görmek istiyor |
+| Kapsam dışı | Araç, oyuncu kontrolü, curve shader, yol kenarı dekoru, engeller sonraki milestone'larda | Kullanıcı kararı |
+| Parça tipleri | Düz, viraj, yokuş yukarı/aşağı, bank, up sürekliliği; uç parçalar (dik düşüş, loop) en sona, çözülemezse M2'ye ertelenir. Başlangıç önerisi ~10 tip, tip başına 2–3 varyant | Up vektörü ve kamera uçlarda zorlanır; milestone bitmez hale gelmesin |
+| Referans asset | Satın alınmış referans paketler yalnız yerelde (repo dışı, gitignore'lu klasör), repoya girmez. Kendi tasarımımız olacak; mesh, UV ve texture kopyalanmaz | Repo public olacak; yalnız CC0 ya da kendi işimiz |
