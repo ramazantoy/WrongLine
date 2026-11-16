@@ -74,12 +74,21 @@ namespace WrongLine.Road
 
         public void Release(RoadPieceView view)
         {
-            if (view == null || !_out.TryGetValue(view, out IPool<RoadPieceView> pool))
+            // A destroyed piece still compares equal to null; only a real null is a mistake.
+            if (ReferenceEquals(view, null) || !_out.TryGetValue(view, out IPool<RoadPieceView> pool))
             {
                 throw new ArgumentException("The piece is not out of this pool (released already, or not from it).", nameof(view));
             }
 
             _out.Remove(view);
+            if (view == null || !view.gameObject.scene.IsValid())
+            {
+                // Destroyed meanwhile, or its scene is already gone: stopping Play takes the root's scene away before its
+                // objects are destroyed, and putting a piece back then makes Unity assert inside SetParent. The root's
+                // pools destroy the instance themselves; nothing is left to give back.
+                return;
+            }
+
             pool.Despawn(view);
         }
 

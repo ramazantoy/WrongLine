@@ -129,6 +129,44 @@ namespace WrongLine.Road.Tests
         }
 
         [Test]
+        public void APieceDestroyedMeanwhile_IsLetGo_NotAnError()
+        {
+            // Stopping Play destroys the root's pooled instances before the scene scope releases what it still holds.
+            _pool.Prewarm();
+            RoadPieceView doomed = _pool.Spawn(1, _pool.Set.Infos[1], Vector3.zero, Quaternion.identity);
+            RoadPieceView alive = _pool.Spawn(2, _pool.Set.Infos[2], Vector3.zero, Quaternion.identity);
+            UnityEngine.Object.DestroyImmediate(doomed.gameObject);
+
+            Assert.DoesNotThrow(() => _pool.Release(doomed));
+            Assert.AreEqual(1, _pool.CountActive);
+
+            UnityEngine.Object.DestroyImmediate(alive.gameObject);
+            Assert.DoesNotThrow(() => _pool.ReleaseAll());
+            Assert.AreEqual(0, _pool.CountActive);
+        }
+
+        [Test]
+        public void APieceWhoseSceneIsGone_IsNotPutBack_BecauseTheRootIsBeingTornDown()
+        {
+            // Stopping Play takes the root's scene away before its objects are destroyed. Putting a piece back then makes
+            // Unity assert inside SetParent. A prefab asset has no scene either, which stands in for that state here.
+            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Game/Road/Prefabs" });
+            Assume.That(guids.Length, Is.GreaterThan(0), "The road prefabs are not built.");
+            var orphan = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0])).GetComponent<RoadPieceView>();
+            Assert.IsFalse(orphan.gameObject.scene.IsValid(), "Precondition: it has no scene.");
+
+            FakeRoadPool pool = _pools.Pools[_prefabs[0]];
+            pool.NextSpawnOverride = orphan;
+            RoadPieceView spawned = _pool.Spawn(3, _pool.Set.Infos[1], Vector3.zero, Quaternion.identity);
+            Assert.AreSame(orphan, spawned);
+
+            Assert.DoesNotThrow(() => _pool.ReleaseAll());
+
+            Assert.AreEqual(0, _pool.CountActive);
+            Assert.AreEqual(0, pool.DespawnCalls, "Not handed back to a pool that is going away.");
+        }
+
+        [Test]
         public void ReleaseAll_TakesEverythingBack()
         {
             _pool.Prewarm();

@@ -54,6 +54,11 @@ namespace WrongLine.Road.Tests
 
         public int PrewarmCalls { get; private set; }
 
+        public int DespawnCalls { get; private set; }
+
+        /// <summary>When set, the next spawn returns this object untouched instead of an instance (a piece whose scene is gone).</summary>
+        public RoadPieceView NextSpawnOverride { get; set; }
+
         /// <summary>Instances ever made. A pool that leaks makes more of them as it is used.</summary>
         public int CreatedCount { get; private set; }
 
@@ -64,6 +69,14 @@ namespace WrongLine.Road.Tests
 
         public RoadPieceView Spawn(Vector3 position, Quaternion rotation, Transform parent = null)
         {
+            if (NextSpawnOverride != null)
+            {
+                RoadPieceView overridden = NextSpawnOverride;
+                NextSpawnOverride = null;
+                _spawned.Add(overridden);
+                return overridden;
+            }
+
             RoadPieceView view = _inactive.Count > 0 ? _inactive.Pop() : Create();
             view.transform.SetParent(parent, false);
             view.transform.SetPositionAndRotation(position, rotation);
@@ -75,6 +88,7 @@ namespace WrongLine.Road.Tests
 
         public void Despawn(RoadPieceView instance)
         {
+            DespawnCalls++;
             if (!_spawned.Remove(instance))
             {
                 throw new InvalidOperationException("Not spawned from this pool.");
