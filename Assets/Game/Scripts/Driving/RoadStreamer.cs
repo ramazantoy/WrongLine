@@ -3,41 +3,47 @@ using System.Collections.Generic;
 using AF.Core;
 using MessagePipe;
 using VContainer.Unity;
+using WrongLine.Car;
 using WrongLine.Road;
 using WrongLine.World;
 
 namespace WrongLine.Driving
 {
     /// <summary>
-    /// The view side of a run: brings road pieces in from the pool and sends them back as the follower advances, places the
-    /// follower on the road, and tells the camera when the scene origin moves. The rules live in <see cref="RoadRun"/>.
+    /// The view side of a run: brings road pieces in from the pool and sends them back as the car advances, and tells the others
+    /// when the scene origin moves. The rules live in <see cref="RoadRun"/>; the car and the camera read where the car is
+    /// through <see cref="IRoadFrame"/>.
     /// </summary>
-    internal sealed class RoadStreamer : IStartable, ITickable, IDisposable
+    internal sealed class RoadStreamer : IStartable, ITickable, IDisposable, IRoadFrame
     {
         private readonly IRoadPiecePool _pool;
         private readonly RoadConfig _road;
         private readonly CurveWorldConfig _curve;
-        private readonly FollowerConfig _follower;
-        private readonly DummyFollowerView _followerView;
+        private readonly ICarMotion _motion;
         private readonly IGameClock _clock;
-        private const float BoundsDistanceMargin = 50f; // The camera sits behind the follower; pieces ahead are this much further from it than AheadMeters.
+        private const float BoundsDistanceMargin = 50f; // The camera sits behind the car; pieces ahead are this much further from it than AheadMeters.
 
         private readonly IPublisher<RoadOriginShifted> _shifted;
         private readonly IRoadDebugHud _hud;
         private readonly Dictionary<int, RoadPieceView> _views = new Dictionary<int, RoadPieceView>();
         private RoadRun _run;
 
-        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, FollowerConfig follower, DummyFollowerView followerView, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud)
+        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, ICarMotion motion, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud)
         {
             _curve = curve;
             _pool = pool;
             _road = road;
-            _follower = follower;
-            _followerView = followerView;
+            _motion = motion;
             _clock = clock;
             _shifted = shifted;
             _hud = hud;
         }
+
+        public IRoadPath Path => _run.Path;
+
+        public double Distance => _run.Cursor.Distance;
+
+        public WorldPoint Origin => _run.Origin;
 
         public void Start()
         {
@@ -53,7 +59,7 @@ namespace WrongLine.Driving
 
         public void Tick()
         {
-            _run.Advance(_follower.SpeedMetersPerSecond * _clock.DeltaTime);
+            _run.Advance(_motion.Speed * _clock.DeltaTime);
             Apply();
         }
 
@@ -86,18 +92,14 @@ namespace WrongLine.Driving
                 {
                     pair.Value.transform.position = RoadPlacement.Position(_run.Path[pair.Key], _run.Origin);
                 }
-            }
 
-            RoadCursor cursor = _run.Cursor;
-            _followerView.Place(cursor.WorldPosition.RelativeTo(_run.Origin), cursor.WorldRotation);
-
-            if (_run.OriginShifted)
-            {
                 _shifted.Publish(new RoadOriginShifted(_run.OriginShiftVector));
             }
 
+            RoadCursor cursor = _run.Cursor;
             PlacedPiece current = cursor.Piece;
-            _hud.Show(new RoadDebugInfo(cursor.Distance, current.Index, current.Piece.Name, cursor.LocalS, current.Piece.Length, _run.Seed, _follower.SpeedMetersPerSecond, _views.Count, _run.ShiftCount));
+            string signal = _motion.Signal == SignalDirection.None ? "off" : _motion.Signal.ToString().ToLowerInvariant();
+            _hud.Show(new RoadDebugInfo(cursor.Distance, current.Index, current.Piece.Name, cursor.LocalS, current.Piece.Length, _run.Seed, _motion.Speed, _views.Count, _run.ShiftCount, _motion.X, _motion.Lane, signal));
         }
     }
 }

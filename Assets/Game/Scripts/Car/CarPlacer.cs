@@ -1,0 +1,37 @@
+using AF.Core;
+using UnityEngine;
+using VContainer.Unity;
+using WrongLine.Driving;
+using WrongLine.Road;
+
+namespace WrongLine.Car
+{
+    /// <summary>Puts the car on the road where its rules say, after the road has moved this frame and before the camera looks at it.</summary>
+    internal sealed class CarPlacer : ILateTickable
+    {
+        private readonly CarView _view;
+        private readonly IRoadFrame _road;
+        private readonly ICarMotion _motion;
+        private readonly IGameClock _clock;
+        private readonly CarPoseRule _pose;
+
+        public CarPlacer(CarView view, CarConfig config, IRoadFrame road, ICarMotion motion, IGameClock clock)
+        {
+            _view = view;
+            _road = road;
+            _motion = motion;
+            _clock = clock;
+            _pose = new CarPoseRule(config.Settings);
+        }
+
+        public void LateTick()
+        {
+            RoadSample sample = RoadSampler.At(_road.Path, _road.Distance, _motion.X);
+            _pose.Update(_motion.Velocity, _motion.Speed, _clock.DeltaTime);
+
+            _view.Place(sample.Position.RelativeTo(_road.Origin), sample.Rotation * Quaternion.Euler(0f, _pose.YawDegrees, 0f));
+            _view.Pose(_pose);
+            _view.ShowSignal(_motion.Signal, _motion.LampOn);
+        }
+    }
+}

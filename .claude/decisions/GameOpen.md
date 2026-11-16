@@ -36,18 +36,18 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   `x` sürükleme, arcade, bankta görsel yatma), kamera cilası (keskin virajda ileriyi görme, hıza bağlı FOV, Cinemachine
   kararı), takip glitch'i, trafik, yol kenarı dekoru ve engeller, ara katılım yolları, kazada parça fırlatma. Sırası M2
   oynanınca yazılır.
-- **Kamera: Cinemachine mi? (2026-11-16, kullanıcı önerisi, karar M3'te):** takip kamerası şimdi saf C# `ChaseCameraRule` +
+- ~~**Kamera: Cinemachine mi? (2026-11-16, kullanıcı önerisi, karar M3'te):** takip kamerası şimdi saf C# `ChaseCameraRule` +
   `ChaseCameraDriver`; kullanıcı yönetimin basitleşmesi ve hızla FOV'un (hızlanmada açılma) bedavaya gelmesi için Cinemachine
   3'e geçmeyi öneriyor. Değerlendirme: FOV hıza bağlama Cinemachine'siz de tek satır (`ChaseCameraRule`'a `Fov(hız)` +
   config eğrisi, testli). Cinemachine'in asıl kazancı sarsıntı/blend/ek kamera; bedeli yeni paket (onay ister), floating origin
   kaymasında `OnTargetObjectWarped` bağı, `UpBlend` (bank'a yatma) kuralının Cinemachine'e taşınması ve "kurallar saf C#"
   ilkesinden sapma. Karar M3'te (araç + oyuncu kontrolü + hıza bağlı FOV ihtiyacı netleşince): önce `Fov(hız)`'ı kural olarak
-  yaz, sonra Cinemachine'in neyi kolaylaştırdığına bak. M2'de kamera değişmez.
-- **Keskin virajlarda ileriyi görmek zor (2026-11-16, M2 elle denemesi, kullanıcı):** kamera hep aracın baktığı yöne
+  yaz, sonra Cinemachine'in neyi kolaylaştırdığına bak. M2'de kamera değişmez.~~ Hayır (Faz A, 2026-11-17, `Game.md` Faz A kararları): FOV hıza bağlama kural olarak yazıldı, kamera yol uzayında.
+- ~~**Keskin virajlarda ileriyi görmek zor (2026-11-16, M2 elle denemesi, kullanıcı):** kamera hep aracın baktığı yöne
   bakıyor, viraj dönmeden önce yolun devamı görünmüyor (özellikle CurveSharp/BankSharp). Çözüm adayı kamera cilasında
   (M3, Cinemachine kararıyla birlikte): bakış noktası aracın önündeki yol üzerinde (`s + LookAhead` noktası, yani yol
   eğrisini izleyen hedef; şimdi düz `LookAhead` metre ileri), kamerayı viraj yönüne doğru yaw kaydırma, viraja girerken hafif
-  FOV açma. Ölçü: viraj girişinde viraj çıkışı ekranın içinde kalmalı.
+  FOV açma. Ölçü: viraj girişinde viraj çıkışı ekranın içinde kalmalı.~~ Yapıldı (Faz A): bakış yoldaki `s + 30 m` noktasına, araç kadrajda kalacak şekilde kenetli; viraj çıkışı giriş anında kadrajda, testle ölçüldü.
 - **Araç cilası (2026-11-17, araç Unity'de placeholder olarak):** (1) FBX import uyarısı: "A polygon of Mesh 'Body' … is
   self-intersecting and has been discarded" (küçük delik olabilir, sanatçıya iletildi); (2) gölge: yakın araç gölgesi pikselli ve
   spoiler'da kendi gölgesinden "diş" deseni (shadow acne): ışığın bias ve normal bias ayarı ya da gölge çözünürlüğü, mobil
@@ -55,6 +55,11 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   far/fren lambası emission maskesi bağlı değil; (5) kapının arka yüzü tek katman (kopunca culling'le görünmez: çift taraflı
   materyal ya da ince kalınlık); (6) araç başına boya rengi (`_PaintColor`, `MaterialPropertyBlock`); (7) kazada kopan
   parçaların ayrılması (hiyerarşi hazır: Hinge_* child'ları, kütle merkezli pivotlar).
+- **Yollar 4 şeritli olmalı (2026-11-17, kullanıcı, ayrı context'te çözülecek):** şimdi 3 şerit (asfalt 9 m, `RoadSection.HalfWidth` 4,5). Etkilenenler: kesit sözleşmesi ve 33 parça mesh'i (sanatçıdan yeniden üretim; `RoadMeshContractCheck` ve `section.json`), şerit çizgisi sayısı, `CarSettings.LateralLimit`, `TurnSignalRule` (şerit sınırları `LineOffset` ±1,5 m'ye ve üç şeride sabit: dört şeritte çizgiler −3, 0, +3 olur), kamera ve yol genişliğine bağlı her sabit. Ara katılım yolları (Faz B) bu karardan sonra planlanır.
+- **Gün-gece her oyunda aynı saatte başlıyor (2026-11-17, kullanıcı):** `DayNightConfig` başlangıç fazı sabit (0,15). Öneri: başlangıç fazı seed'den ya da gerçek saatten, config'te kapatılabilir (testli: aynı seed aynı faz).
+- **Gece far yanmıyor (2026-11-17, kullanıcı):** hava kararınca araç farları ve (ileride) stop lambası yanmalı. Emission maskesi bağlı değil (Araç cilası 4 ile aynı iş); `CurvedLit`'e `_LIGHTMASK_ON` + `HeadlightRule` (saf C#: `DayNightRule` karanlığı eşiği histerezisle aşınca aç/kapat, yumuşak geçiş, testli) + `Car_LightMask.png` (sanatçı brifi aşağıda).
+- **Araç mesh'leri havada duruyor (2026-11-17, kullanıcı notu, bu iş bitince bakılacak):** orijinal FBX'te böyle bir durum yok. İlk şüphe `Car.prefab` sarmalayıcısı (`Chassis` y +0,4, iç içe `Car_Sport` y −0,4 olmalı), ikincisi `CarPlacer`'ın kökü yol yüzeyine koyması (tekerlek altı y 0 mı). Önce prefab'da kök ve `Chassis` ofsetlerini ve tekerlek tabanını ölç.
+- **Sanatçı brifi (hazır, gönderilmedi; sanatçı oturumu `my3dartist-f9`):** (1) 4 amber sinyal lambası (ön far panelinin dış köşesi, arka stop grubunun dışı), sol ve sağ ayrı UV adası, ≥ 4 px boşluk, `Car_Base.png`'de sönük amber; (2) `Car_LightMask.png` (atlasla aynı boyut, sRGB kapalı): R far, G stop/fren, B sol sinyal, A sağ sinyal, gerisi siyah (şimdiki `Car_Emission.png` far ve freni tek blokta tutuyor); (3) iç mekân kabuğu: tavan, taban, kapı iç panelleri gerçek iç yüzey (+~200 üçgen), gövdenin çift taraflı çizimi kalksın; (4) direksiyon pivotu göbek merkezinde, yerel +Z kolon ekseninde (şimdi kolon ekseni (0; 0,417; 0,909), kodda); (5) obje adları, hiyerarşi ve atlas boyutu aynı. Asset gelince: placeholder lamba küpleri (`Car.prefab`, `SignalLamp.mat`) silinir, `CarView` lambaları shader'a bağlar.
 - **Trafik araçları için LOD (2026-11-17, kullanıcı):** yol ve sis uzaklığı 300 → 400 m'ye çıktı (sis 100–360 m), trafik
   araçları artık daha uzaktan görünür. Araç (≈2400 üçgen, 12+ parça) uzakta pahalı: trafik sistemi gelince araç başına LOD
   ya da uzak mesafe sadeleştirmesi kurulur. Öneri: `LOD0` tam model (kopan parçalarla), `LOD1` (~35 m'den, ~600 üçgen,
@@ -69,13 +74,22 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   ağırlığı) ve kesit sözleşmesinin genişlemesi (asimetrik kesit, kaldırım ve gövde yan banda uyum; artist akışında yeni
   brif), (2) trafik üreticisi ve çarpışma yan bantta farklı kural (`x` aralığı bazlı), (3) kamera ve curve shader değişmez.
   Trafik ve oyuncu kontrolü (`x` sürükleme) olmadan anlam taşımaz: M3/M4 sonrası, trafik sistemiyle birlikte.
-- **Takip (spline follower) bazı yollarda glitch atıyor (2026-11-17, kullanıcı, M2 elle denemesi):** M1'de yoktu; M2'de
+- **M3 öncesi ayrı context'ler (2026-11-17, kullanıcı planı; her biri kendi planıyla):**
+  1. **Ara katılım (yan) yolları** (aşağıdaki tasarım notu).
+  2. ~~**Araç kontrolü** (`x` sürükleme, arcade, bankta yatma)~~ yapıldı (Faz A) ve **şerit değiştirirken sinyal** (kural ve placeholder lamba yapıldı; atlas ve maske sanatçıda, aşağıdaki "Sanatçı brifi"): `Car_Emission` maskesinde şimdi
+     yalnız far ve fren lambası var; sinyal için atlasta sağ ve sol sinyal bölgeleri gerekir (sanatçıdan atlas ve maske
+     güncellemesi), sinyal saf C# kuralı (şerit değişiminin başlaması → yanıp sönme zamanlaması) + emission view'ı.
+  3. ~~**Araç titremesi (jitter):** kullanıcı gözlemi: araç hafifçe titriyor, "özellikle sol click'lerde" (ifade olduğu gibi
+     kaydedildi, ne demek istediği o context'te netleşecek: sol virajlar mı, Editor'da sol tık mı). Aşağıdaki follower glitch
+     maddesiyle birlikte ele alınır; kamera `PostLateTick`, follower `Tick` sırası, `ChaseCameraRule` üstel yaklaşma ve kare
+     başına örnekleme ve floating origin kayması ilk şüpheliler.~~ Çözüldü (Faz A): kök kamera gecikmesiydi.
+- ~~**Takip (spline follower) bazı yollarda glitch atıyor (2026-11-17, kullanıcı, M2 elle denemesi):** M1'de yoktu; M2'de
   eklenenler: gerçek sanatçı mesh'leri, curve shader (köşe bükme), gece/gündüz ve sis, motifler ve yeni parçalar. "Bazı
   yollarda" yani seed/parçaya bağlı. Henüz araştırılmadı; kullanıcı kararı: gerçek araç gelince ele alınır. İlk bakılacaklar:
   (1) follower `RoadCursor`'ın parça çerçeve tablosundan konum alıyor, sanatçı mesh'i ile tarif aynı merkez hattında mı
   (uçlarda 1 cm ölçüldü, ortada değil), (2) curve shader'ın bükmesi yalnız görüntüyü değiştirir, follower'ın konumunu değil:
   araç yol yüzeyinden ayrık görünebilir, (3) floating origin kayması karesinde follower/kamera/parça yerleşimi, (4) yeni
-  parçalarla yaw/yükseklik bandında geçişler. Tekrarlamak için seed + kare numarası kaydedilmeli.
+  parçalarla yaw/yükseklik bandında geçişler. Tekrarlamak için seed + kare numarası kaydedilmeli.~~ Kök bulundu (Faz A): kamera gecikmesi kare süresine bağlıydı, yol uzayı kamerayla çözüldü; follower, curve shader ve origin kayması temiz çıktı. Kullanıcı gözüyle son teyit bekliyor.
 - **Yol şerit çizgisi (2026-11-16, kullanıcı):** şeritler şimdi düz sürekli çizgi; kesik kesik olmalı. Yaklaşım: çizgi
   texture'ına alfa ile kesik desen (9 m'lik karo: ~3 m çizgi, ~6 m boşluk), `CurvedLit`'e alfa kesme (`_Cutoff`), mesh ve UV
   sözleşmesi değişmez. Sanatçıdan yeni `Road_Line_Base.png` (alfa kanallı) gerekir.

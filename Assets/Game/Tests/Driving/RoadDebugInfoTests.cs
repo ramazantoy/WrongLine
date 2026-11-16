@@ -5,7 +5,7 @@ namespace WrongLine.Driving.Tests
 {
     public class RoadDebugInfoTests
     {
-        private static readonly RoadDebugInfo Info = new RoadDebugInfo(1234.56, 17, "CurveSoft_R", 34.25, 60f, 987654321UL, 30f, 9, 3);
+        private static readonly RoadDebugInfo Info = new RoadDebugInfo(1234.56, 17, "CurveSoft_R", 34.25, 60f, 987654321UL, 30f, 9, 3, -1.25f, 0, "right");
 
         [Test]
         public void ShowsDistancePieceSeedSpeedAndCounts()
@@ -18,6 +18,7 @@ namespace WrongLine.Driving.Tests
             StringAssert.Contains("speed 30.0 m/s", text);
             StringAssert.Contains("active 9", text);
             StringAssert.Contains("origin shifts 3", text);
+            StringAssert.Contains("x -1.25 m   lane 0   signal right", text);
             StringAssert.Contains("60 fps", text);
         }
 

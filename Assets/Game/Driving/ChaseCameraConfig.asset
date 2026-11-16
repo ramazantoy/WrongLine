@@ -15,7 +15,14 @@ MonoBehaviour:
   _settings:
     Distance: 8
     Height: 4.5
-    LookAhead: 14
-    PositionSharpness: 10
-    RotationSharpness: 8
+    LookAhead: 30
+    MaxCarPitchDegrees: 24
+    MaxCarYawDegrees: 18
     UpBlend: 0.5
+    FollowX: 0.7
+    LookFollowX: 0.5
+    LateralSharpness: 8
+    BaseFov: 60
+    MaxFov: 70
+    FovMinSpeed: 12
+    FovMaxSpeed: 30

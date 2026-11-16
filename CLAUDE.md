@@ -6,7 +6,7 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
+**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara iş Faz A bitti (araç kontrolü, yol uzayı kamera, sinyal). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
 kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
 moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
@@ -51,6 +51,7 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | M0 | Kimlik, Android, scope'lar, boş sürüş sahnesi | Bitti 2026-11-14 |
 | M1 | Sonsuz prosedürel yol (tariften pişirilen parçalar, saf C# birleştirici, kalıcı havuz, dummy follower, takip kamerası) | M1a bitti 2026-11-16; gerçek parçalar M2'de geldi |
 | M2 | Yol hissi: curve shader, gökyüzü ve gece/gündüz, sis, dağıtım ince ayarı, gerçek yol parçaları | Bitti 2026-11-17 |
+| A | Ara iş: oyuncu kontrolü (`x` sürükleme), yol uzayında kamera ve FOV, şerit sinyali, titreme kökü | Bitti 2026-11-17; sinyal atlası, 4 şerit ve far `GameOpen.md`'de |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

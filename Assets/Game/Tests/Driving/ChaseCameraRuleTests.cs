@@ -1,150 +1,211 @@
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using WrongLine.Road;
+using WrongLine.Road.Tests;
 
 namespace WrongLine.Driving.Tests
 {
     public class ChaseCameraRuleTests
     {
-        private static ChaseCameraSettings Settings(Action<ChaseCameraSettings> change = null)
+        private static ChaseTarget TargetAt(IRoadPath path, double distance, ChaseCameraSettings settings, float carX = 0f, float speed = 30f)
         {
-            var settings = new ChaseCameraSettings();
-            change?.Invoke(settings);
-            return settings;
+            return ChaseTarget.At(path, default, distance, carX, speed, settings);
         }
 
         [Test]
-        public void TheFirstUpdate_SnapsBehindAndAboveTheTarget_LookingAhead()
+        public void OnAStraight_TheCameraSitsBehindAndAboveTheCar_LookingAhead()
         {
-            ChaseCameraSettings settings = Settings();
+            var settings = new ChaseCameraSettings();
             var rule = new ChaseCameraRule(settings);
+            RoadLayout road = RoadTestPieces.Layout(1);
 
-            rule.Update(new Vector3(10f, 2f, 50f), Quaternion.identity, 0.016f);
+            rule.Update(TargetAt(road, 30.0, settings), 0.016f);
 
-            Vector3 expected = new Vector3(10f, 2f + settings.Height, 50f - settings.Distance);
-            Assert.AreEqual(0f, Vector3.Distance(expected, rule.Position), 1e-4f);
-            Vector3 toLookAt = new Vector3(10f, 2f, 50f + settings.LookAhead) - rule.Position;
+            Assert.AreEqual(0f, Vector3.Distance(new Vector3(0f, settings.Height, 30f - settings.Distance), rule.Position), 1e-4f);
+            Vector3 toLookAt = new Vector3(0f, 0f, 30f + settings.LookAhead) - rule.Position;
             Assert.Less(Vector3.Angle(toLookAt, rule.Rotation * Vector3.forward), 0.01f);
         }
 
         [Test]
-        public void OffsetFollowsTheTargetsHeading()
+        public void TheSameRoadPlace_GivesTheSamePicture_WhateverTheFrameTimesWere()
         {
-            var rule = new ChaseCameraRule(Settings());
-            Quaternion turnedRight = Quaternion.Euler(0f, 90f, 0f);
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(4);
+            road.EnsureCovered(1500.0);
+            float[] pattern = { 1f / 60f, 1f / 30f, 1f / 60f, 0.12f, 1f / 144f, 1f / 20f };
 
-            rule.Update(Vector3.zero, turnedRight, 0.016f);
-
-            Assert.Less(rule.Position.x, -7f, "Behind a target facing +X is at -X.");
-            Assert.AreEqual(0f, rule.Position.z, 1e-3f);
-        }
-
-        [Test]
-        public void ATargetThatStandsStill_IsCaughtUpWith()
-        {
-            ChaseCameraSettings settings = Settings();
-            var rule = new ChaseCameraRule(settings);
-            rule.Update(Vector3.zero, Quaternion.identity, 0.016f);
-
-            Vector3 target = new Vector3(0f, 0f, 100f);
+            var steady = new ChaseCameraRule(settings);
+            var uneven = new ChaseCameraRule(settings);
+            double s = 0.0;
             for (int i = 0; i < 600; i++)
             {
-                rule.Update(target, Quaternion.identity, 1f / 60f);
-            }
+                s += 30.0 * (1f / 60f);
+                steady.Update(TargetAt(road, s, settings), 1f / 60f);
+                uneven.Update(TargetAt(road, s, settings), pattern[i % pattern.Length]);
 
-            Assert.AreEqual(0f, Vector3.Distance(new Vector3(0f, settings.Height, 100f - settings.Distance), rule.Position), 1e-3f);
+                Assert.AreEqual(0f, Vector3.Distance(steady.Position, uneven.Position), 1e-4f, $"position at step {i}");
+                Assert.Less(Quaternion.Angle(steady.Rotation, uneven.Rotation), 0.01f, $"rotation at step {i}");
+            }
         }
 
-        [TestCase(1f / 60f)]
-        [TestCase(1f / 30f)]
-        [TestCase(1f / 10f)]
-        public void CatchingUpWithAJump_TakesTheSameTimeOnAnyFrameRate(float deltaTime)
+        [Test]
+        public void ACarDrivingAStraight_SitsStillInThePicture_EvenWithUnevenFrames()
         {
-            ChaseCameraSettings settings = Settings();
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(1);
             var rule = new ChaseCameraRule(settings);
-            rule.Update(Vector3.zero, Quaternion.identity, deltaTime);
-            var jumped = new Vector3(0f, 0f, 10f);
+            float[] pattern = { 1f / 60f, 1f / 30f, 1f / 60f, 0.12f, 1f / 144f };
 
-            int steps = Mathf.RoundToInt(0.5f / deltaTime);
-            for (int i = 0; i < steps; i++)
+            double s = settings.Distance + 1.0;
+            float minimum = float.MaxValue;
+            float maximum = float.MinValue;
+            for (int i = 0; i < 200 && s + settings.LookAhead + 4.0 < road[0].Piece.Length; i++)
             {
-                rule.Update(jumped, Quaternion.identity, deltaTime);
+                float deltaTime = pattern[i % pattern.Length];
+                s += 30.0 * deltaTime;
+                rule.Update(TargetAt(road, s, settings), deltaTime);
+
+                RoadSample car = RoadSampler.At(road, s);
+                Vector3 inCamera = Quaternion.Inverse(rule.Rotation) * (car.Position.RelativeTo(default) - rule.Position);
+                minimum = Mathf.Min(minimum, inCamera.z);
+                maximum = Mathf.Max(maximum, inCamera.z);
             }
 
-            float gap = (10f - settings.Distance) - rule.Position.z;
-            float expected = 10f * Mathf.Exp(-settings.PositionSharpness * 0.5f);
-            Assert.AreEqual(expected, gap, 1e-3f, "The remaining gap after half a second is the same whatever the frame rate.");
+            Assert.Less(maximum - minimum, 1e-3f, "The car's distance in the picture does not wobble with the frame time.");
         }
 
-        [TestCase(1f / 60f)]
-        [TestCase(1f / 20f)]
-        public void WhileMoving_TrailsBySpeedOverSharpness_LessHalfAFrameOfTravel(float deltaTime)
+        [Test]
+        public void IntoABend_TheCameraLooksAlongTheRoadAheadInsteadOfStraightOn()
         {
-            ChaseCameraSettings settings = Settings();
+            var settings = new ChaseCameraSettings();
+            List<RoadPieceInfo> all = RoadTestPieces.All();
+            RoadPieceInfo bend = all.First(piece => piece.Name == "CurveSoft_R");
+            RoadLayout road = RoadTestPieces.Layout(1, null, new List<RoadPieceInfo> { RoadTestPieces.Start(all), bend });
+            road.EnsureCovered(road[0].Piece.Length + 1.0);
+            double distance = road[1].EntryDistance + 10.0;
             var rule = new ChaseCameraRule(settings);
-            const float Speed = 30f;
-            float z = 0f;
-            rule.Update(new Vector3(0f, 0f, z), Quaternion.identity, deltaTime);
 
-            for (float t = 0f; t < 6f; t += deltaTime)
+            rule.Update(TargetAt(road, distance, settings), 0.016f);
+
+            Vector3 carForward = RoadSampler.At(road, distance).Rotation * Vector3.forward;
+            float lead = Vector3.SignedAngle(carForward, rule.Rotation * Vector3.forward, Vector3.up);
+            Assert.Greater(lead, 2f, "A right bend: the camera already points to the right of where the car points.");
+        }
+
+        [Test]
+        public void TheCameraFollowsTheCarSideways_AtTheSameSpeedWhateverTheFrameRate()
+        {
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(1);
+            float[] results = new float[3];
+            float[] deltaTimes = { 1f / 120f, 1f / 60f, 1f / 15f };
+
+            for (int run = 0; run < deltaTimes.Length; run++)
             {
-                z += Speed * deltaTime;
-                rule.Update(new Vector3(0f, 0f, z), Quaternion.identity, deltaTime);
+                var rule = new ChaseCameraRule(settings);
+                rule.Update(TargetAt(road, 30.0, settings, 0f), 0.016f);
+                int steps = Mathf.RoundToInt(0.2f / deltaTimes[run]);
+                for (int i = 0; i < steps; i++)
+                {
+                    rule.Update(TargetAt(road, 30.0, settings, 2f), deltaTimes[run]);
+                }
+
+                results[run] = rule.Position.x;
             }
 
-            float trail = (z - settings.Distance) - rule.Position.z;
-            float exact = Speed * deltaTime / (Mathf.Exp(settings.PositionSharpness * deltaTime) - 1f);
-            Assert.AreEqual(exact, trail, 0.01f, "The steady lag of one catch-up step per frame.");
-            Assert.AreEqual(Speed / settings.PositionSharpness - Speed * deltaTime / 2f, trail, 0.1f, "About speed over sharpness, minus half a frame of travel.");
+            float expected = 2f * settings.FollowX * (1f - Mathf.Exp(-settings.LateralSharpness * 0.2f));
+            foreach (float result in results)
+            {
+                Assert.AreEqual(expected, result, 0.01f);
+            }
         }
 
         [Test]
-        public void ZeroDeltaTime_ChangesNothing_AfterTheFirstUpdate()
+        public void TheCameraMovesOver_ForACarOnTheRight()
         {
-            var rule = new ChaseCameraRule(Settings());
-            rule.Update(Vector3.zero, Quaternion.identity, 0.016f);
-            Vector3 position = rule.Position;
-            Quaternion rotation = rule.Rotation;
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(1);
+            var rule = new ChaseCameraRule(settings);
 
-            rule.Update(new Vector3(50f, 0f, 500f), Quaternion.Euler(0f, 60f, 0f), 0f);
+            rule.Update(TargetAt(road, 30.0, settings, 3f), 0.016f);
 
-            Assert.AreEqual(position, rule.Position);
-            Assert.AreEqual(rotation, rule.Rotation);
+            Assert.AreEqual(3f * settings.FollowX, rule.Position.x, 1e-4f);
         }
 
         [Test]
-        public void ShiftingTheOrigin_MovesTheCameraByTheSameAmount()
+        public void APause_LeavesTheSidewaysPositionAlone()
         {
-            var rule = new ChaseCameraRule(Settings());
-            rule.Update(new Vector3(100f, 0f, 400f), Quaternion.identity, 0.016f);
-            Vector3 before = rule.Position;
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(1);
+            var rule = new ChaseCameraRule(settings);
+            rule.Update(TargetAt(road, 30.0, settings, 0f), 0.016f);
 
-            rule.Shift(new Vector3(100f, 0f, 400f));
+            for (int i = 0; i < 50; i++)
+            {
+                rule.Update(TargetAt(road, 30.0, settings, 3f), 0f);
+            }
 
-            Assert.AreEqual(0f, Vector3.Distance(before - new Vector3(100f, 0f, 400f), rule.Position), 1e-4f);
+            Assert.AreEqual(0f, rule.Position.x, 1e-6f);
+        }
+
+        [TestCase("SteepDown_S")]
+        [TestCase("SteepUp_S")]
+        [TestCase("SteepUp_L")]
+        public void OnASteepSlope_TheCarStaysInThePicture(string pieceName)
+        {
+            var settings = new ChaseCameraSettings();
+            List<RoadPieceInfo> all = RoadTestPieces.All();
+            RoadPieceInfo steep = all.First(piece => piece.Name == pieceName);
+            RoadLayout road = RoadTestPieces.Layout(1, null, new List<RoadPieceInfo> { RoadTestPieces.Start(all), steep, RoadTestPieces.Named(all, "Straight_XL") });
+            road.EnsureCovered(road[0].Piece.Length + 600.0);
+            PlacedPiece piece = default;
+            bool found = false;
+            for (int index = road.FirstIndex; index < road.EndIndex && !found; index++)
+            {
+                if (road[index].Piece.Name == pieceName)
+                {
+                    piece = road[index];
+                    found = true;
+                }
+            }
+
+            Assert.IsTrue(found, "The generator should have placed the piece within 600 m.");
+            var rule = new ChaseCameraRule(settings);
+
+            float worst = 0f;
+            for (double s = piece.EntryDistance - 15.0; s < piece.ExitDistance + 15.0; s += 1.0)
+            {
+                ChaseTarget target = TargetAt(road, s, settings);
+                rule.Update(target, 0.016f);
+                Vector3 toCar = Quaternion.Inverse(rule.Rotation) * (target.CarPosition - rule.Position);
+                worst = Mathf.Max(worst, Mathf.Abs(Mathf.Atan2(toCar.y, toCar.z) * Mathf.Rad2Deg));
+            }
+
+            Assert.Less(worst, settings.BaseFov * 0.5f * 0.9f, "The car's angle from the middle of the picture, worst over the slope.");
         }
 
         [Test]
-        public void UpBlend_DecidesHowMuchTheCameraLeansWithTheBank()
+        public void TheFieldOfView_WidensWithSpeed_AndStaysWithinItsLimits()
         {
-            Quaternion banked = Quaternion.Euler(0f, 0f, 30f);
+            var settings = new ChaseCameraSettings();
+            RoadLayout road = RoadTestPieces.Layout(1);
+            var rule = new ChaseCameraRule(settings);
 
-            var level = new ChaseCameraRule(Settings(s => s.UpBlend = 0f));
-            level.Update(Vector3.zero, banked, 0.016f);
-            var leaning = new ChaseCameraRule(Settings(s => s.UpBlend = 1f));
-            leaning.Update(Vector3.zero, banked, 0.016f);
+            rule.Update(TargetAt(road, 30.0, settings, 0f, 0f), 0.016f);
+            Assert.AreEqual(settings.BaseFov, rule.Fov, 1e-4f);
 
-            // Roll is how far the camera's right side leaves the horizontal (its pitch from looking down does not count).
-            Assert.Less(Mathf.Abs((level.Rotation * Vector3.right).y), 0.01f, "Kept level: no roll.");
-            Assert.Greater(Mathf.Abs((leaning.Rotation * Vector3.right).y), 0.3f, "Leaning with a 30 degree bank rolls the camera (sin 30 = 0.5).");
-        }
+            float last = rule.Fov;
+            for (float speed = 0f; speed <= 40f; speed += 1f)
+            {
+                rule.Update(TargetAt(road, 30.0, settings, 0f, speed), 0.016f);
+                Assert.GreaterOrEqual(rule.Fov, last - 1e-4f, $"speed {speed}");
+                Assert.That(rule.Fov, Is.InRange(settings.BaseFov - 1e-4f, settings.MaxFov + 1e-4f));
+                last = rule.Fov;
+            }
 
-        [Test]
-        public void NonsenseSettings_AreRejected()
-        {
-            Assert.Throws<ArgumentException>(() => new ChaseCameraRule(Settings(s => s.PositionSharpness = 0f)));
-            Assert.Throws<ArgumentException>(() => new ChaseCameraRule(Settings(s => s.Distance = -1f)));
-            Assert.Throws<ArgumentException>(() => new ChaseCameraRule(Settings(s => s.UpBlend = 2f)));
+            Assert.AreEqual(settings.MaxFov, rule.Fov, 1e-4f);
         }
     }
 }
