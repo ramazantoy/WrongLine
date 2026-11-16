@@ -14,14 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::WrongLine.Road.RoadCatalog
   _start: {fileID: 475178286539220873, guid: 2a89b7d66959cd541a2f8d81b6cf27b5, type: 3}
   _pieces:
+  - {fileID: 8892611331471542287, guid: c5a8bf3245d98d847b4625dee4c28418, type: 3}
+  - {fileID: 4912925568160164897, guid: bd5b2f622fa99e242b3405d4095eeb50, type: 3}
   - {fileID: 4530734385361196416, guid: fea33ab5f788d684cb6a0ead775ddc6f, type: 3}
   - {fileID: 4176757216340903130, guid: c9011b1059bbb4b499bd14a2e85dffba, type: 3}
   - {fileID: 3469104365683231776, guid: 1c8133ce590a19d4da115f753d883c95, type: 3}
   - {fileID: 1514083593634499222, guid: b0a7e319da55e664b871062e6bb2ce24, type: 3}
+  - {fileID: 4824842765540931059, guid: 53bd0faca6d04e347a39e70364fde2b9, type: 3}
+  - {fileID: 6740585220664778062, guid: 2398819c2c83ad14aa3eefbb39322b8c, type: 3}
   - {fileID: 2370645886276202745, guid: 4383f2cb6b89f094d9adebeee9b073af, type: 3}
   - {fileID: 4503959083181681943, guid: a2593383e18fc7145a1c9830a93efb71, type: 3}
   - {fileID: 6316979491099165278, guid: 8794549712dd8ed4c81c81def0ac03cb, type: 3}
   - {fileID: 4239426621512269869, guid: dc415310159a8604caa78674d06b56ac, type: 3}
+  - {fileID: 5246799834495684212, guid: 40d4e921c481e1b43b87cec09636c4f0, type: 3}
+  - {fileID: 1628547240743725272, guid: 2255a600de069844eb3212b7678b057e, type: 3}
   - {fileID: 4185577574791830692, guid: 14790176c1f247f4a801bcdff25488c6, type: 3}
   - {fileID: 4152796361009961621, guid: 7fb81aac6feab214ba2419fa15e3b7d0, type: 3}
   - {fileID: 3692600415357244879, guid: 3ace1f041907efa408207ad7b1173810, type: 3}
@@ -39,3 +45,4 @@ MonoBehaviour:
   - {fileID: 5485209554290225121, guid: 68c387f4e417fed4e8ea388a43776aa8, type: 3}
   - {fileID: 6758016576527424206, guid: 7b96ee1fbbf60ef429522af0629b12a6, type: 3}
   - {fileID: 3605760440539160643, guid: d16b7db061566ca44bc08460d2275e07, type: 3}
+  - {fileID: 5903259672662224661, guid: caba4c2fa24640b4c9cf8eabc7f2ae7d, type: 3}

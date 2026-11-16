@@ -27,5 +27,12 @@ namespace WrongLine.Road
 
         /// <summary>Distance along the piece that one repeat of the road texture covers.</summary>
         public const float TileLength = 9f;
+
+        /// <summary>
+        /// Distance along the road of one dash and one gap of the lane lines. The line material's texture is tiled to this
+        /// (the mesh UV stays at <see cref="TileLength"/>), and every piece is a whole number of periods long, so the dashes
+        /// run on across a joint without a long gap or a double dash.
+        /// </summary>
+        public const float LineDashPeriod = 10f;
     }
 }

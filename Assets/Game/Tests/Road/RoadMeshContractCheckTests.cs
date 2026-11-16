@@ -151,6 +151,46 @@ namespace WrongLine.Road.Tests
         }
 
         [Test]
+        public void CurbAndLineSwapped_IsCaught()
+        {
+            // The artist's first export had asphalt, line, curb, body: the line material would have been drawn on the curb.
+            AssertProblem(Straight, mesh =>
+            {
+                Mesh copy = Modified(mesh);
+                int[] curb = copy.GetIndices(RoadMeshBuilder.SubmeshCurb);
+                int[] line = copy.GetIndices(RoadMeshBuilder.SubmeshLine);
+                copy.SetTriangles(line, RoadMeshBuilder.SubmeshCurb);
+                copy.SetTriangles(curb, RoadMeshBuilder.SubmeshLine);
+                return copy;
+            }, "submesh 2 is not the curb");
+        }
+
+        [Test]
+        public void BodyAndCurbSwapped_IsCaught()
+        {
+            AssertProblem(Straight, mesh =>
+            {
+                Mesh copy = Modified(mesh);
+                int[] curb = copy.GetIndices(RoadMeshBuilder.SubmeshCurb);
+                int[] body = copy.GetIndices(RoadMeshBuilder.SubmeshBody);
+                copy.SetTriangles(body, RoadMeshBuilder.SubmeshCurb);
+                copy.SetTriangles(curb, RoadMeshBuilder.SubmeshBody);
+                return copy;
+            }, "is not the curb");
+        }
+
+        [Test]
+        public void EmptyLine_IsCaught()
+        {
+            AssertProblem(Straight, mesh =>
+            {
+                Mesh copy = Modified(mesh);
+                copy.SetTriangles(new int[0], RoadMeshBuilder.SubmeshLine);
+                return copy;
+            }, "line submesh (number 3) is empty");
+        }
+
+        [Test]
         public void TrianglesWithNoArea_AreCaught()
         {
             AssertProblem(Straight, mesh =>

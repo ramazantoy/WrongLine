@@ -20,15 +20,19 @@ namespace WrongLine.Road.Editor
         private const string PREFABS = ROOT + "/Prefabs";
         private const string MATERIALS = ROOT + "/Materials";
         private const string CATALOG_PATH = ROOT + "/RoadCatalog.asset";
-        private const string LIT_SHADER = "Universal Render Pipeline/Lit";
+        private const string ART = ROOT + "/Art";
+        private const string ROAD_SHADER = "WrongLine/CurvedLit";
         private const int MeshRingStride = 2;
 
-        private static readonly (string Name, Color Color)[] _materialSpecs =
+        // Colour is the fallback while the slot has no texture in Art/.
+        // The lane line's texture holds one dash and one gap with a transparent gap: it is cut by alpha and tiled so one repeat
+        // covers LineDashPeriod (the mesh UV repeats every TileLength, so the material scales v by their ratio).
+        private static readonly (string Name, Color Color, string Texture, bool AlphaClip, float TilingV)[] _materialSpecs =
         {
-            ("RoadAsphalt", new Color(0.18f, 0.18f, 0.2f)),
-            ("RoadCurb", new Color(0.62f, 0.62f, 0.6f)),
-            ("RoadLine", new Color(0.92f, 0.92f, 0.88f)),
-            ("RoadBody", new Color(0.32f, 0.32f, 0.34f)),
+            ("RoadAsphalt", new Color(0.18f, 0.18f, 0.2f), "Road_Asphalt_Base", false, 1f),
+            ("RoadCurb", new Color(0.62f, 0.62f, 0.6f), "Road_Curb_Base", false, 1f),
+            ("RoadLine", new Color(0.92f, 0.92f, 0.88f), "Road_Line_Base", true, RoadSection.TileLength / RoadSection.LineDashPeriod),
+            ("RoadBody", new Color(0.32f, 0.32f, 0.34f), "Road_Body_Base", false, 1f),
         };
 
         [MenuItem("WrongLine/Road/Rebuild Pieces")]
@@ -68,18 +72,27 @@ namespace WrongLine.Road.Editor
         private static RoadPieceView BuildPiece(RoadPieceRecipe recipe, Material[] materials)
         {
             TrackShape shape = recipe.Shape;
-            bool straight = (recipe.Tags & ~RoadTags.Straight) == RoadTags.None;
-            Mesh built = RoadMeshBuilder.Build(shape, straight ? shape.Count - 1 : MeshRingStride);
-            built.name = recipe.name;
-
-            Mesh mesh = WriteMesh($"{MESHES}/{recipe.name}.asset", built);
-            if (mesh != built)
+            Mesh mesh = LoadArtMesh(recipe.name);
+            if (mesh != null)
             {
-                UnityEngine.Object.DestroyImmediate(built); // Copied into the existing asset; a new asset adopted `built` itself.
+                // The real art wins; the validator measures its shape against the recipe (RoadMeshContractCheck).
+                Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, art mesh {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}.");
             }
+            else
+            {
+                bool straight = (recipe.Tags & ~RoadTags.Straight) == RoadTags.None;
+                Mesh built = RoadMeshBuilder.Build(shape, straight ? shape.Count - 1 : MeshRingStride);
+                built.name = recipe.name;
 
-            float gap = RoadMeshBuilder.ExitGap(mesh, shape);
-            Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, {shape.Count} frames, {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}, mesh-to-exit gap {gap:F4} m.");
+                mesh = WriteMesh($"{MESHES}/{recipe.name}.asset", built);
+                if (mesh != built)
+                {
+                    UnityEngine.Object.DestroyImmediate(built); // Copied into the existing asset; a new asset adopted `built` itself.
+                }
+
+                float gap = RoadMeshBuilder.ExitGap(mesh, shape);
+                Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, {shape.Count} frames, {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}, mesh-to-exit gap {gap:F4} m.");
+            }
 
             var root = new GameObject(recipe.name);
             try
@@ -104,6 +117,19 @@ namespace WrongLine.Road.Editor
             {
                 UnityEngine.Object.DestroyImmediate(root);
             }
+        }
+
+        /// <summary>The mesh of <c>Art/&lt;piece&gt;.fbx</c> when the artist has delivered it, else null (the grey box stands in).</summary>
+        private static Mesh LoadArtMesh(string pieceName)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{pieceName}.fbx");
+            if (model == null)
+            {
+                return null;
+            }
+
+            var filter = model.GetComponentInChildren<MeshFilter>();
+            return filter != null ? filter.sharedMesh : null;
         }
 
         private static Mesh WriteMesh(string path, Mesh source)
@@ -176,22 +202,67 @@ namespace WrongLine.Road.Editor
             for (int i = 0; i < materials.Length; i++)
             {
                 string path = $"{MATERIALS}/{_materialSpecs[i].Name}.mat";
+                Shader shader = Shader.Find(ROAD_SHADER);
+                if (shader == null)
+                {
+                    throw new InvalidOperationException($"Shader '{ROAD_SHADER}' not found.");
+                }
+
                 var material = AssetDatabase.LoadAssetAtPath<Material>(path);
                 if (material == null)
                 {
-                    Shader shader = Shader.Find(LIT_SHADER);
-                    if (shader == null)
-                    {
-                        throw new InvalidOperationException($"Shader '{LIT_SHADER}' not found.");
-                    }
-
                     material = new Material(shader);
                     material.SetColor("_BaseColor", _materialSpecs[i].Color);
-                    material.SetFloat("_Smoothness", 0.1f);
                     AssetDatabase.CreateAsset(material, path);
-                    AssetDatabase.SaveAssetIfDirty(material);
                 }
 
+                // An older material (the stand-in lit shader) moves to the curved one; a texture in Art/ is bound once,
+                // and the colour then multiplies it, so it goes white. Anything tuned by hand afterwards stays.
+                bool changed = false;
+                if (material.shader != shader)
+                {
+                    material.shader = shader;
+                    changed = true;
+                }
+
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/{_materialSpecs[i].Texture}.png");
+                if (texture != null && material.GetTexture("_BaseMap") == null)
+                {
+                    material.SetTexture("_BaseMap", texture);
+                    material.SetColor("_BaseColor", Color.white);
+                    changed = true;
+                }
+
+                // How the material cuts and tiles its texture belongs to the road contract, not to taste: kept in step every run.
+                bool clip = _materialSpecs[i].AlphaClip;
+                if (material.IsKeywordEnabled("_ALPHATEST_ON") != clip || material.GetFloat("_AlphaClip") != (clip ? 1f : 0f))
+                {
+                    material.SetFloat("_AlphaClip", clip ? 1f : 0f);
+                    if (clip)
+                    {
+                        material.EnableKeyword("_ALPHATEST_ON");
+                    }
+                    else
+                    {
+                        material.DisableKeyword("_ALPHATEST_ON");
+                    }
+
+                    changed = true;
+                }
+
+                var wanted = new Vector2(1f, _materialSpecs[i].TilingV);
+                if (material.GetTextureScale("_BaseMap") != wanted)
+                {
+                    material.SetTextureScale("_BaseMap", wanted);
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    EditorUtility.SetDirty(material);
+                }
+
+                AssetDatabase.SaveAssetIfDirty(material);
                 materials[i] = material;
             }
 

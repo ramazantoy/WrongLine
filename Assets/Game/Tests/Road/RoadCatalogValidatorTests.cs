@@ -49,6 +49,27 @@ namespace WrongLine.Road.Tests
             AssertNoIssues();
         }
 
+        [TestCase(10f)]
+        [TestCase(20f)]
+        [TestCase(120f)]
+        public void ALengthThatIsWholeDashPeriods_IsFine(float length)
+        {
+            RoadCatalogValidator.CheckDashAlignment(length, LOCATION, _report, null);
+
+            AssertNoIssues();
+        }
+
+        [TestCase(15f)]
+        [TestCase(25f)]
+        [TestCase(9f)]
+        [TestCase(100.5f)]
+        public void ALengthThatCutsADashPeriod_IsAnError(float length)
+        {
+            RoadCatalogValidator.CheckDashAlignment(length, LOCATION, _report, null);
+
+            AssertIssue("dash period");
+        }
+
         [Test]
         public void PieceWithoutARecipe_IsAnError()
         {

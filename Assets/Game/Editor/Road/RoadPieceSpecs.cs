@@ -32,12 +32,19 @@ namespace WrongLine.Road.Editor
                 new Spec("Straight_S", TrackRecipe.Straight(20f), false),
                 new Spec("Straight_M", TrackRecipe.Straight(40f), false),
                 new Spec("Straight_L", TrackRecipe.Straight(80f), false),
+                new Spec("Straight_XL", TrackRecipe.Straight(120f), false),
             };
 
             AddPair(specs, "CurveSoft", 60f, 35f, 0f);
             AddPair(specs, "CurveSharp", 40f, 90f, 0f);
             AddPair(specs, "BankSoft", 60f, 45f, 12f);
             AddPair(specs, "BankSharp", 40f, 90f, 20f);
+
+            // Long gentle bends, added in M2: with them the road can keep turning the same way for several pieces. Every
+            // piece length is a multiple of RoadSection.LineDashPeriod (the validator insists).
+            AddPair(specs, "CurveEasy", 120f, 20f, 0f);
+            AddPair(specs, "CurveWide", 160f, 30f, 0f);
+            AddPair(specs, "BankEasy", 120f, 20f, 6f);
 
             specs.Add(new Spec("SCurve_R", new TrackRecipe(80f, 35f, YawProfile.S, 0f, PitchProfile.Bump, 0f), false));
             specs.Add(new Spec("SCurve_L", new TrackRecipe(80f, -35f, YawProfile.S, 0f, PitchProfile.Bump, 0f), false));

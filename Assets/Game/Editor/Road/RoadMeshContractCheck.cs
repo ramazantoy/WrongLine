@@ -65,7 +65,64 @@ namespace WrongLine.Road.Editor
 
             CheckExtent(projected, shape, problems);
             CheckAsphalt(mesh, projected, normals, uvs, vertices, shape, problems);
+            CheckSubmeshRoles(mesh, projected, problems);
             return problems;
+        }
+
+        // The prefab gives submesh i the material of role i, so a mesh whose curb and line submeshes are swapped would draw
+        // the line material on the curb: each submesh must be where its role is, judged by shape alone.
+        private static void CheckSubmeshRoles(Mesh mesh, Projected[] projected, List<string> problems)
+        {
+            const float roleTolerance = 0.15f;
+            float lineOuter = RoadSection.LineOffset + RoadSection.LineWidth + roleTolerance;
+            float lineInner = RoadSection.LineOffset - RoadSection.LineWidth - roleTolerance;
+
+            for (int submesh = RoadMeshBuilder.SubmeshCurb; submesh <= RoadMeshBuilder.SubmeshBody; submesh++)
+            {
+                int[] indices = mesh.GetIndices(submesh);
+                string role = submesh == RoadMeshBuilder.SubmeshCurb ? "curb" : submesh == RoadMeshBuilder.SubmeshLine ? "line" : "body";
+                if (indices.Length < 3)
+                {
+                    problems.Add($"the {role} submesh (number {submesh + 1}) is empty");
+                    continue;
+                }
+
+                float minAbsX = float.MaxValue;
+                float maxAbsX = 0f;
+                float minY = float.MaxValue;
+                float maxY = float.MinValue;
+                foreach (int i in new HashSet<int>(indices))
+                {
+                    float absX = Mathf.Abs(projected[i].X);
+                    minAbsX = Mathf.Min(minAbsX, absX);
+                    maxAbsX = Mathf.Max(maxAbsX, absX);
+                    minY = Mathf.Min(minY, projected[i].Y);
+                    maxY = Mathf.Max(maxY, projected[i].Y);
+                }
+
+                bool fits;
+                string expected;
+                if (submesh == RoadMeshBuilder.SubmeshCurb)
+                {
+                    fits = maxAbsX >= OuterX - roleTolerance && maxY >= RoadSection.CurbHeight - roleTolerance && minY >= -roleTolerance;
+                    expected = $"reach the outer edge ({OuterX:F1} m from the centre), rise to {RoadSection.CurbHeight:F2} m and not hang below the surface";
+                }
+                else if (submesh == RoadMeshBuilder.SubmeshLine)
+                {
+                    fits = minAbsX >= lineInner && maxAbsX <= lineOuter && maxY <= RoadSection.LineHeight + roleTolerance;
+                    expected = $"lie in two strips {RoadSection.LineOffset:F1} m either side of the centre, near the surface";
+                }
+                else
+                {
+                    fits = minY <= -RoadSection.Thickness + roleTolerance;
+                    expected = $"hang down to {-RoadSection.Thickness:F1} m";
+                }
+
+                if (!fits)
+                {
+                    problems.Add($"submesh {submesh + 1} is not the {role}: it spans {minAbsX:F2} to {maxAbsX:F2} m sideways and {minY:F2} to {maxY:F2} m high, the {role} must {expected} (the submeshes go asphalt, curb, line, body, in that order)");
+                }
+            }
         }
 
         private static void CheckExtent(Projected[] projected, TrackShape shape, List<string> problems)

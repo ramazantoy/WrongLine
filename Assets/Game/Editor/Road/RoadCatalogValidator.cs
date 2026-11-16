@@ -187,8 +187,19 @@ namespace WrongLine.Road.Editor
                 report.Error($"{location}: the mesh was built from an older version of the recipe. {REBUILD_HINT}", view);
             }
 
+            CheckDashAlignment(view.Recipe.Recipe.Length, location, report, view);
             CheckMesh(view, shape, location, report);
             CheckShape(shape, location, report, view);
+        }
+
+        /// <summary>A piece must be a whole number of dash periods long, or the lane dashes break at the joint.</summary>
+        internal static void CheckDashAlignment(float length, string location, ValidationReport report, Object context)
+        {
+            float periods = length / RoadSection.LineDashPeriod;
+            if (Mathf.Abs(periods - Mathf.Round(periods)) > 1e-3f)
+            {
+                report.Error($"{location}: the length {length} m is not a multiple of the lane dash period {RoadSection.LineDashPeriod} m, so the dashes would break at the joint.", context);
+            }
         }
 
         /// <summary>Checks a baked centre line: pivot, flat ends, continuity, tightest bend.</summary>
