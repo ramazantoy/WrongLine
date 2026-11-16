@@ -246,12 +246,13 @@ namespace WrongLine.Road.Tests
         public void EmptySlot_AndDuplicate_AreErrors()
         {
             (RoadPieceView start, List<RoadPieceView> pieces) = MakeDefaultCatalog();
+            int emptySlot = pieces.Count;
             pieces.Add(null);
             pieces.Add(pieces[0]);
 
             RoadCatalogValidator.CheckCatalog(start, pieces, LOCATION, _report);
 
-            AssertIssue("slot 21 is empty");
+            AssertIssue($"slot {emptySlot} is empty");
             AssertIssue("is listed twice");
         }
 

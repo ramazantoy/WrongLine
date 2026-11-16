@@ -50,6 +50,12 @@ namespace WrongLine.Road.Editor
             specs.Add(Pitched("Hill_L", 100f, 14f, PitchProfile.Wave));
             specs.Add(Pitched("Dip_S", 60f, -10f, PitchProfile.Wave));
             specs.Add(Pitched("Dip_L", 100f, -14f, PitchProfile.Wave));
+
+            // The steep ones: a plunge and its mirror, the climb. Still one smooth slope bump, so they join like the rest.
+            specs.Add(Pitched("SteepDown_S", 40f, -60f, PitchProfile.Bump));
+            specs.Add(Pitched("SteepDown_L", 60f, -70f, PitchProfile.Bump));
+            specs.Add(Pitched("SteepUp_S", 40f, 60f, PitchProfile.Bump));
+            specs.Add(Pitched("SteepUp_L", 60f, 70f, PitchProfile.Bump));
             return specs;
         }
 
