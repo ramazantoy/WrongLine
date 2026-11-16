@@ -41,6 +41,27 @@ dosyalarda; bu dosya template'te yok, bu yüzden cherry-pick'lerle çakışmaz. 
 Doğrulananlar: `IntroFlowTests` 3/3; `IntroFlow` boot'u beklemeyecek şekilde bozulunca 2'si kırıldı. Validate All 0/0. Play
 Intro'dan: video süresince Intro, sonra Menu; console temiz.
 
+## Doğrulananlar (M1a, 2026-11-16)
+Bitti ölçüsü ("dummy follower sonsuz yolda sorunsuz ilerler, testler ve validator geçer, havuz sızıntısız") şöyle karşılandı;
+görsel yargı kullanıcıya bırakıldı (kamera elle denendi: "fena değil").
+- **Testler:** `WrongLine.Road.Tests` 189, `WrongLine.Driving.Tests` 14, `WrongLine.Tests` (Intro) 3, hepsi geçti. Her test
+  dosyasında kod bir kez bilerek bozuldu, test kırıldı, geri alındı. **Validate All** 0 hata, 0 uyarı.
+- **Hız:** Gameplay'den doğrudan Play, 210 sn'de s = 6302,4 m → 29,98 m/s (config 30; fark HUD'ın 4 Hz yenilemesi).
+- **Yol:** 100 km'lik saf C# simülasyonunda (3 m adım) her tick'te pencere, spawn/despawn, origin ve eklem değişmezleri tuttu;
+  3101 parçalık örnekte (20 seed) yaw tam ±75,0°'ye varıp aşmıyor, yükseklik −29,7…58,9 m, 25 parçanın hepsi çıkıyor, ortalama
+  yoğunluk erken 0,38 → geç 0,66. Aynı seed aynı yol.
+- **Floating origin:** 1000 km uzakta origin'siz float yerleşimde eklem açıklığı > 1 cm, doubledan origin'le yerleşimde < 1 mm.
+  Play'de 3000 ardışık karede 3 kayma; kamera ofseti kayma karesinde 0,067 m, diğer karelerde en çok 0,101 m değişti.
+- **Havuz:** 76 instance (1 start + 25 × 3), 26 prefab, prewarm 4,6 ms. Menu → Gameplay → Menu üç tur: her dönüşte aktif parça
+  0, toplam sabit, hepsi `[Pools]` altında bekliyor, kalıntı index ve taşınmış transform yok, konsol 0 hata. 6,3 km boyunca
+  toplam sabit.
+- **Play durma:** `RoadPiecePool.Release` sahnesi gitmiş parçayı geri vermiyor (yukarıdaki "Play durma" satırı); düzeltmeden
+  sonra 600 kare + durdurma 0 hata.
+- **Uyarı:** duraklatılmış Editor'da kare adımlamak Unity'nin kendi `JobTempAlloc` uyarılarını (15) basıyor; road koduyla ilgili
+  bir iş yok, baseline ölçülmedi.
+- **Denenmeyen:** Android cihaz (ilk Android build `GameOpen.md`'de), FBX import önerisi, gerçek `Pools`'un EditMode testi
+  (internal; sahte havuzla test edildi, gerçeği Play'de ölçüldü).
+
 ## M1 kararları (2026-11-16, plan yazılmadan önce konuşuldu)
 Plan onayında kesinleşir; plan çelişirse buraya yeni satır eklenir, eskinin üstü çizilir.
 
@@ -60,6 +81,8 @@ Plan onayında kesinleşir; plan çelişirse buraya yeni satır eklenir, eskinin
 | (2026-11-16) Havuz uygulaması | `RoadPiecePool` (root singleton, `IRoadPiecePool`) `IPools`'tan parça başına bir havuz alır; `GameRootScope` `RoadCatalog` ve `RoadConfig`'i `[Required]` alan olarak tutar. `Prewarm` bir kez çalışır (start için 1, diğerleri için `PrewarmPerPiece` = 3), Menu'de `RoadPrewarm` entry point'iyle; Gameplay'den doğrudan Play'de ilk kullanımda yapılır. `Release` havuza geri verir; `RoadPieceView.OnDespawned` index'i ve transform'u sıfırlar, çağıran bir şey hatırlamaz. Parçalar parent'sız spawn edilir, `ReleaseAll` scope bitince. `RoadConfig` SO: seed (0 = rastgele), pencere, origin eşiği, ön ısıtma adedi, `RoadGeneratorSettings` | Ölçüm (Editor, Menu): 64 instance, 22 prefab, 4,3 ms, 0 hata. Havuz EditMode'da sahte `IPools`'la (gerçek sözleşmeyi taklit eder) test edilir; gerçek havuzun Gameplay'den ardışık dönüşü Adım 8'de Play'de ölçülür |
 | (2026-11-16) Sürüş sahnesi | Gameplay'deki `SceneScope` objesinde zaten `DrivingScope` vardı; placeholder "Road" silindi. `RoadRun` (saf C#: yol zinciri + imleç + pencere + origin) tüm kuralı taşır; `RoadStreamer` (entry point) onu `IGameClock.DeltaTime × FollowerConfig.Speed` ile sürer, parçaları havuzdan alıp verir, follower'ı yerleştirir, origin kayınca tüm parçaları doubledan yeniden yerleştirip `RoadOriginShifted` mesajı atar. `ChaseCameraDriver` (PostLateTick) mesajı dinleyip kamera kuralını kaydırır. `ChaseCameraRule` saf: arkadan ve yukarıdan, ileri bakışlı, üstel yaklaşma (duran hedefte kare hızından bağımsız; hareketli hedefte kare başına örnekleme yüzünden gecikme ≈ hız/keskinlik − yarım kare yolu), `UpBlend` ile bank'a yatma. HUD: uGUI + TMP prefab (`RoadDebugHud`), metin `CultureInfo.InvariantCulture` (Editor kültürü Türkçe: virgül) | Sahnede kod yok, kurallar test edilir |
 | (2026-11-16) Play durma | Play durunca root'un DDOL sahnesi, objeler yok edilmeden önce geçersiz olur (`scene.IsValid() == false`); o anda `RoadPiecePool.Release` bir parçayı havuza geri verirse Unity `SetParent` içinde `'t.GetParent() == nullptr'` assertion'ı basar. `Release` yok edilmiş ya da sahnesi gitmiş parçayı geri vermez, sessizce bırakır (kök havuzları onu kendisi yok eder) | Gerçek Play'de ölçüldü: ReleaseAll'lu 100 karelik koşu 1 hata, düzeltmeyle 600 kare + durdurma 0 hata. Çerçevede `IsQuitting` internal, framework burada yamanmadı → `GameOpen.md` "Template'e gidenler" |
+| (2026-11-16) M1b otomatik kabul | `RoadMeshContractCheck`: her köşeyi merkez hattına izdüşürür (boyuna s, yanal x, yükseklik y) ve köşe sırasına, halka aralığına, topolojiye bakmadan şunları ölçer: 4 submesh, mesh parçanın uçlarını aşmıyor (1 cm), asfalt giriş çerçevesinden çıkışa uzanıyor ve 9 m geniş, yüzey y = 0 (2 cm), kesit dışına taşma yok, UV u 0–1 ve v = s / 9 m, normaller ve winding yukarı bakıyor, alan sıfır üçgen yok. `RoadCatalogValidator` artık mesh'i bununla doğrular; önceki kontrol kendi üreticimizin köşe sırasına dayanıyordu ve Blender meshini yanlış reddederdi (rastgele köşe sırasıyla ölçüldü). Elle yapılmış 12 bozuk mesh (kaymış, kısa, geniş, ayna, eksen takası, UV, ...) adıyla yakalanır | Gerçek M1b parçası gelince kabul testi hazır; Blender'ın mesh'i prefab kökünde, kimlik transform'unda olmalı |
+| (2026-11-16) M1b sözleşmesi | `WrongLine/Road/Export Recipes` (`RoadContractExporter`) `Assets/Game/Road/Contract/`'a `section.json` (kesit sabitleri, submesh sırası, eksen/UV/pivot notları) ve parça başına JSON yazar (tarif, etiketler, 0,5 m çerçeveler: konum/ileri/up düz diziler, çıkış konumu ve yaw). İki koşuda dosya farkı yok, sabitler koddan okunur (kopya değil). Blender bunu okuyup mesh'i aynı merkez hattı boyunca kurar; kabul ölçüsü mevcut `RoadCatalogValidator` (mesh uç halkaları çerçeveye 1 cm). FBX import önerisi (ölçek 1, Apply Transform, ileri −Z/up +Y, yalnız mesh) denenmedi, ilk parçada doğrulanır. Brif taslağı yerel `.claude/notes/m1b/brief.md`, My3DArtist'e kullanıcı onayıyla gider | Tek kaynak Unity; Blender eğri üretmez |
 | (2026-11-16) Kanonik bağlantı | Her parça düz, düz zeminde ve bank'sız başlar/biter (eğrilik ve bank hızı sıfır); açılıp kapanma parça içinde. Her parça her parçaya bağlanır | Eklemde kamera sarsıntısı yok, validator kontrolü basit. Bedeli: kesintisiz uzun tırmanış yok, rampalar arasında düzlük |
 | (2026-11-16) Kendini kesme | Birleştirici dünya yönünü ana eksenin ±75°'sinde, yüksekliği bir bantta tutar; sınırlar config'te | Rastgele viraj zinciri yolu kendi üstüne getirebilir |
 | (2026-11-16) Floating origin | "Bölge kaydırma": konum global `s`'ten hesaplanmaz (imleç = parça no + yerel s, toplam mesafe `double`); follower orijinden eşik uzaklaşınca canlı parçalar, follower ve kamera geri kaydırılır, mesaj atılır | Sonsuz yolda float hassasiyeti |

@@ -11,9 +11,22 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   "İlk mobil oyunda doğrulanacaklar" listesi (`decisions/README.md`) bununla birlikte. İlk build'in yeniden yazdığı URP
   asset'leri ayrı commit.
 - **M1b gerçek yol parçaları:** low-poly hand-paint yol parçaları ve araç (ayrı parçalı: gövde, kapı, tampon, tekerlek),
-  M1a sözleşmesi bitince Blender tabanlı asset akışıyla. Yol tarifi Unity'den çıkar, Blender okur. Referans paketler yerelde
-  kalır.
-- **Uç yol parçaları:** dik düşüş, loop; up vektörü ve kamera zorlanırsa M1'de çözülmez, M2'ye ertelenir.
+  Blender tabanlı asset akışıyla. **Sözleşme hazır** (2026-11-16): `Assets/Game/Road/Contract/` (26 parça + `section.json`,
+  `WrongLine/Road/Export Recipes`), brif taslağı yerel `.claude/notes/m1b/brief.md`; My3DArtist'e **gönderilmedi**, kullanıcı
+  onayı bekliyor. Yol tarifi Unity'den çıkar, Blender okur. Referans paketler yerelde kalır. Asset gelince: import, parça
+  prefab'ının mesh'i değişir (tarif/hash aynı), `RoadCatalogValidator` 1 cm uç oturmasını ölçer.
+- ~~**Uç yol parçaları:** dik düşüş, loop; up vektörü ve kamera zorlanırsa M1'de çözülmez, M2'ye ertelenir.~~ Dik düşüş ve
+  dik tırmanış yapıldı (`SteepDown_S/L` −60°/−70°, `SteepUp_S/L` +60°/+70°; yarıçap ≥ 12 m, katalogda 26 parça). **Loop
+  M2'ye ertelendi** (tasarım çözümlenip uygulanmadı); neden:
+  1. *Yön temsili:* pitch 90°'yi geçince `forward.z` negatifleşir; `RoadPieceInfo`'nun yaw bandı `atan2(forward)`'tan
+     ölçülüyor, loop parçası bandı hep ihlal eder. Yaw'ın tarif değerinden (ψ) ölçülmesi gerekir.
+  2. *Kendini kesmeme:* "z hep artar" kanıtı loop içinde geçersiz (arka bacak z'de geri gider). Giriş/çıkışın kesişmemesi
+     için loop'a yanal kayma (vida) gerekir; yol genişliği 10,2 m, yani en az ~12 m yanal kayma ve yeni bir doğrulama.
+  3. *Kamera:* `ChaseCameraRule` up'ı `Slerp(dünya up, hedef up)` ile karıştırır; loop tepesinde iki vektör zıt olur ve
+     Slerp tanımsızdır. Loop için ayrı up kuralı (ör. loop boyunca hedef up'a kilitlenmek) gerekir.
+  4. *Doğrulama:* en dar yarıçap (≈ 8 m için ≥ 100 m'lik loop) ve up dönüş sınırı loop'a özel olmalı; `Intensity` ve
+     yükseklik bandı (loop ≈ 2R yüksek) yeniden düşünülmeli.
+  Çözüm yolu: yeni `PitchProfile.Loop` (tek yönlü tam devir, `θ(u) = 360° (u − sin 2πu / 2π)`) + vida için yaw profili.
 - **M1 elle denemesinden (2026-11-16, kullanıcı):** kamera fena değil, M1 için yol gayet iyi. İleri fazlar için: (1) **curve
   shader** gerekli görünüyor (ufuk bükülmesi); (2) **yol "doğal" hissi bir tık eksik**: oluşan yola bakınca dağıtım
   algoritmasının izi görülüyor (ağırlıklar, `RepeatWindow`, bantlar: `RoadGeneratorSettings`; parça tipleri ve boyları da
