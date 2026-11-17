@@ -70,7 +70,7 @@ namespace WrongLine.World
             _streetLamps.Update(darkness, deltaTime);
             _headlights.Update(darkness, deltaTime);
 
-            Shader.SetGlobalVector(_levelsId, new Vector4(_streetLamps.Level, _headlights.Level, 0f, 0f));
+            Shader.SetGlobalVector(_levelsId, new Vector4(_streetLamps.Level, _headlights.Level, 0f, 1f));
 
             // The pools of light: the nearest few lamps, in the scene's flat space (the shader compares them with the unbent surface).
             _heads.Clear();

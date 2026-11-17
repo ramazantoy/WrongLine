@@ -114,11 +114,21 @@ namespace WrongLine.Traffic
 
             foreach (TrafficCarPlan plan in _run.Active)
             {
-                double distance = plan.DistanceAt(_run.Time);
-                RoadSample sample = RoadSampler.At(path, distance, RoadSection.LaneCenterX(plan.Lane));
+                double time = _run.Time;
+                double distance = plan.DistanceAt(time);
+                RoadSample sample = RoadSampler.At(path, distance, (float)plan.LaneXAt(time));
                 TrafficCarView view = _views[plan.Id];
-                view.transform.SetPositionAndRotation(sample.Position.RelativeTo(origin), plan.Speed < 0.0 ? sample.Rotation * Oncoming : sample.Rotation);
+
+                // Nose into the lane change, as the player's car does: a car coming the other way is turned round, and its right is the road's left.
+                bool oncoming = plan.Speed < 0.0;
+                float yaw = (float)(Math.Atan2(plan.LateralSpeedAt(time), Math.Abs(plan.SpeedAt(time))) * (180.0 / Math.PI));
+                Quaternion turn = Quaternion.Euler(0f, oncoming ? -yaw : yaw, 0f);
+                view.transform.SetPositionAndRotation(sample.Position.RelativeTo(origin), oncoming ? sample.Rotation * Oncoming * turn : sample.Rotation * turn);
+
                 view.ShowLevel(_lod.Evaluate((float)Math.Abs(distance - player), view.Level));
+                TrafficSettings.LaneChangeGroup change = _config.Settings.LaneChange;
+                int side = plan.SignalSideAt(time, change.SignalLeadSeconds, change.SignalTailSeconds);
+                view.ShowSignal(oncoming ? -side : side, side != 0 && plan.SignalLampAt(time, change.SignalLeadSeconds, change.SignalPeriod));
             }
         }
     }

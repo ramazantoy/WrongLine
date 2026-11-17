@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using WrongLine.Road;
 
 namespace WrongLine.Traffic
@@ -45,6 +46,41 @@ namespace WrongLine.Traffic
         }
 
         [Serializable]
+        public sealed class LaneChangeGroup
+        {
+            [Tooltip("The share of cars that change lane once on their way to the player (0 turns it off).")]
+            public float Chance = 0.5f;
+
+            /// <summary>How long a lane change takes, in seconds.</summary>
+            public float Seconds = 1.4f;
+
+            /// <summary>The signal starts this long before the car moves sideways, and goes on this long after it is done.</summary>
+            public float SignalLeadSeconds = 0.9f;
+
+            public float SignalTailSeconds = 0.4f;
+
+            /// <summary>Seconds of one blink, lit for the first half.</summary>
+            public float SignalPeriod = 0.66f;
+
+            /// <summary>A change starts at most this long before the latest moment it may (so it is seen near the player, not far away).</summary>
+            public float WindowSeconds = 4f;
+
+            /// <summary>A change is over at least this long before the player reaches the car's stretch.</summary>
+            public float MarginSeconds = 0.7f;
+
+            /// <summary>Least gap between the bumpers of two cars while one changes lane and after it joined its new lane, in metres.</summary>
+            public float ConflictGapMeters = 6f;
+
+            /// <summary>
+            /// Joining the neighbouring lane moves where the player meets the car by at most this many metres, and a car is settled
+            /// (changed or not) only once the layout is planned this much beyond it.
+            /// </summary>
+            public float MaxShiftMeters = 150f;
+
+            public float SettleMeters = 280f;
+        }
+
+        [Serializable]
         public sealed class StreamGroup
         {
             /// <summary>A car comes out this far ahead of the player along the road (inside the fog's end), in metres.</summary>
@@ -69,6 +105,7 @@ namespace WrongLine.Traffic
         }
 
         public LayoutGroup Layout = new LayoutGroup();
+        public LaneChangeGroup LaneChange = new LaneChangeGroup();
         public StreamGroup Stream = new StreamGroup();
         public LodGroup Lod = new LodGroup();
 
@@ -83,6 +120,10 @@ namespace WrongLine.Traffic
             Require(Layout.PadMeters >= 0f && Layout.PadSeconds >= 0f && Layout.MinGapMeters >= 0f && Layout.GapRangeMeters >= 0f, "Layout: pads and gaps must not be negative.");
             Require(Layout.CorridorStayChance >= 0f && Layout.CorridorStayChance <= 1f, "Layout: CorridorStayChance must be in [0, 1].");
             Require(Layout.LaneSpeedMin > 0f && Layout.LaneSpeedMin <= Layout.LaneSpeedMax && Layout.LaneSpeedMax < 0.85f, "Layout: lane speeds need 0 < min <= max < 0.85 (a car as fast as the player would block the road for ever).");
+            Require(LaneChange.Chance >= 0f && LaneChange.Chance <= 1f, "LaneChange: Chance must be in [0, 1].");
+            Require(LaneChange.Seconds >= 0.3f && LaneChange.SignalPeriod > 0f && LaneChange.SignalLeadSeconds >= 0f && LaneChange.SignalTailSeconds >= 0f, "LaneChange: Seconds at least 0.3, SignalPeriod positive, signal times not negative.");
+            Require(LaneChange.WindowSeconds >= 0.5f && LaneChange.MarginSeconds >= 0f && LaneChange.ConflictGapMeters >= 0f, "LaneChange: WindowSeconds at least 0.5, MarginSeconds and ConflictGapMeters not negative.");
+            Require(LaneChange.MaxShiftMeters > 0f && LaneChange.SettleMeters >= LaneChange.MaxShiftMeters + 100f, "LaneChange: SettleMeters must be at least MaxShiftMeters + 100 (a car's neighbours must be planned before it is settled).");
             Require(Stream.SpawnAheadMeters > 0f && Stream.SpawnAheadMeters <= roadAheadMeters, "Stream: SpawnAheadMeters must be positive and inside the road ahead.");
             Require(Stream.DespawnBehindMeters >= 0f && Stream.DespawnBehindMeters < roadBehindMeters, "Stream: DespawnBehindMeters must be less than the road kept behind, so a car leaves before its piece does.");
             Require(Stream.MaxActive > 0, "Stream: MaxActive must be positive.");

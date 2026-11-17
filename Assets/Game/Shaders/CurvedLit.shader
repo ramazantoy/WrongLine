@@ -30,7 +30,8 @@ Shader "WrongLine/CurvedLit"
 
         // Night lights. Emission: the map (UV as the base map) times the colour, added after the lighting, scaled by one of the
         // global light levels (street lamps, headlights: _WL_LightLevels, set by LightsDriver) that the level mask picks, so
-        // a lamp's glass and a car's lights come on and off with the day without the material ever being written to.
+        // a lamp's glass and a car's lights come on and off with the day without the material ever being written to. The fourth
+        // level (w) is always 1: a mask of (0, 0, 0, 1) lights a part at any hour (the turn signals of the traffic).
         // Lamp pool: the road and the ground take a fake pool of light under the nearest street lamps (_WL_LampPools).
         [Toggle(_EMISSION)] _EmissionOn("Emission", Float) = 0
         _EmissionMap("Emission Map", 2D) = "black" {}

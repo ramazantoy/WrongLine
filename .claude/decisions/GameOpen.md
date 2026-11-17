@@ -75,11 +75,11 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
 - **Trafik (M3) açıkları (2026-11-17):** (1) **Android ölçümü:** ilk build henüz yok (yukarıdaki "İlk Android build"); trafik
   bütçesi (aktif ~12–15 araç, 3–9 bin üçgen) ve draw call mobilde ölçülür; `FrameStatsLog` planlandı, yazılmadı. (2) Sanatçıdan
   istenebilecekler: ayna, van/kamyon yan camı, LOD1'de van/kamyon yan yüzündeki ince üçgen şeritleri (gölgede çizgi), sinyal
-  bölgeleri köşede L biçimli, far/stop kanalları lens gradyanı taşıyor. (3) Gece görünümü (far/stop emission, `Traffic_Emission.png`)
-  ve sinyal (trafikte yanmıyor) kullanıcı gözüyle; shader'a kanal başına emission seviyesi gelirse `Car_LightMask` doğrudan
-  kullanılır. (4) Tekerlek dönmüyor (LOD0 tekerlekleri hazır, kural yok). (5) Yoğunluk/his ayarı (`TrafficConfig`: boşluk, şerit
-  hızları) kullanıcı gözüyle; her şerit tek hızda, araç başına hız farkı ve trafiğin şerit değiştirmesi σ modelini bozar (araç
-  başına aralık parça parça hesaplanmalı), sonraki iş. (6) Kaza milestone'u `ITrafficFrame`'i okur; çarpışma, puan, Cinemachine orada.
+  bölgeleri köşede L biçimli, far/stop kanalları lens gradyanı taşıyor. (3) Gece görünümü (far/stop emission, `Traffic_Emission.png`) ve trafik sinyali (artık var, `Game.md` M3 eki) kullanıcı gözüyle;
+  lamba yerleri sedanın önünde, van ve kamyonda köşe varsayılanı (maskede bulunamadı): sanatçıdan far/stop/sinyal bölgelerinin
+  gövdeye bağlı olması istenebilir. Shader'a kanal başına emission seviyesi gelirse `Car_LightMask` doğrudan kullanılır. (4) Tekerlek dönmüyor (LOD0 tekerlekleri hazır, kural yok). (5) Yoğunluk/his ayarı (`TrafficConfig`: boşluk, şerit
+  hızları) kullanıcı gözüyle; her şerit tek hızda; araç başına hız farkı σ modelini bozar (aralık parça parça hesaplanmalı),
+  sonraki iş. Trafiğin şerit değiştirmesi yapıldı (`Game.md` M3 eki), sıklığı (`LaneChange.Chance`) kullanıcı gözüyle. (6) Kaza milestone'u `ITrafficFrame`'i okur; çarpışma, puan, Cinemachine orada.
   (7) Bozma kontrolü yalnız planlayıcı, doluluk, LOD kuralı ve view'da yapıldı; hız profili, koridor, koşu ve ayar testleri için
   henüz yok. (8) Origin kaymasında araç ve draw call sayısı Play'de ölçülmedi.
 - **M3 öncesi ayrı context'ler (2026-11-17, kullanıcı planı; her biri kendi planıyla):**

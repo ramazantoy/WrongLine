@@ -182,8 +182,29 @@ namespace WrongLine.Traffic.Tests
             view.SetPaint(other);
 
             MeshRenderer[] renderers = view.GetComponentsInChildren<MeshRenderer>(true);
-            Assert.AreEqual(3, renderers.Length);
-            Assert.IsTrue(renderers.All(r => r.sharedMaterial == other));
+            MeshRenderer[] bodies = renderers.Where(r => r.name != "Blob").ToArray();
+            Assert.AreEqual(3, bodies.Length);
+            Assert.IsTrue(bodies.All(r => r.sharedMaterial == other));
+            Assert.AreNotSame(other, renderers.Single(r => r.name == "Blob").sharedMaterial, "The contact shadow keeps its own material.");
+        }
+
+        [Test]
+        public void TheContactShadow_ShowsFromTheMiddleLevelOn_AndGoesWithTheCar()
+        {
+            TrafficCarView view = FakeTrafficPools.MakeView(_kit, "Car");
+            GameObject blob = view.transform.Find("Blob").gameObject;
+
+            view.ShowLevel(0);
+            Assert.IsFalse(blob.activeSelf, "The near level has a real shadow.");
+
+            view.ShowLevel(1);
+            Assert.IsTrue(blob.activeSelf);
+
+            view.ShowLevel(2);
+            Assert.IsTrue(blob.activeSelf);
+
+            ((IPoolable)view).OnDespawned();
+            Assert.IsFalse(blob.activeSelf, "None left behind in the pool.");
         }
 
         [Test]
@@ -231,8 +252,15 @@ namespace WrongLine.Traffic.Tests
                 levels[i] = level;
             }
 
+            var blob = new GameObject("Blob");
+            blob.transform.SetParent(root.transform, false);
+            blob.AddComponent<MeshFilter>();
+            blob.AddComponent<MeshRenderer>();
+            blob.SetActive(false);
+
             var view = root.AddComponent<TrafficCarView>();
             var serialized = new SerializedObject(view);
+            serialized.FindProperty("_blob").objectReferenceValue = blob;
             SerializedProperty list = serialized.FindProperty("_levels");
             list.arraySize = levels.Length;
             for (int i = 0; i < levels.Length; i++)

@@ -57,6 +57,12 @@ namespace WrongLine.Traffic
             return _rampSeconds + (meters - _rampMeters) / _cruise;
         }
 
+        /// <summary>The speed after <paramref name="seconds"/>.</summary>
+        public double SpeedAtTime(double seconds)
+        {
+            return seconds < _rampSeconds ? _start + _acceleration * Math.Max(0.0, seconds) : _cruise;
+        }
+
         /// <summary>The speed after <paramref name="meters"/> of road.</summary>
         public double SpeedAtDistance(double meters)
         {
