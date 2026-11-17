@@ -47,8 +47,23 @@ namespace WrongLine.Car
         private Quaternion _steeringRest;
         private Vector3 _steeringAxisNormalized;
 
+        /// <summary>Where the wheels touch the road, from the wheel nodes: the axles along the car's forward axis and half the track (see <see cref="WrongLine.Road.WheelPoseRule"/>).</summary>
+        public float FrontAxle { get; private set; }
+
+        public float RearAxle { get; private set; }
+
+        public float HalfTrack { get; private set; }
+
         private void Awake()
         {
+            Vector3 frontLeft = transform.InverseTransformPoint(_wheelFrontLeft.position);
+            Vector3 frontRight = transform.InverseTransformPoint(_wheelFrontRight.position);
+            Vector3 rearLeft = transform.InverseTransformPoint(_wheelRearLeft.position);
+            Vector3 rearRight = transform.InverseTransformPoint(_wheelRearRight.position);
+            FrontAxle = (frontLeft.z + frontRight.z) * 0.5f;
+            RearAxle = (rearLeft.z + rearRight.z) * 0.5f;
+            HalfTrack = Mathf.Abs(frontRight.x - frontLeft.x) * 0.5f;
+
             _wheelRestFrontLeft = _wheelFrontLeft.localRotation;
             _wheelRestFrontRight = _wheelFrontRight.localRotation;
             _wheelRestRearLeft = _wheelRearLeft.localRotation;

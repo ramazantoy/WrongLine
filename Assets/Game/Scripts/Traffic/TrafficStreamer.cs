@@ -116,10 +116,10 @@ namespace WrongLine.Traffic
                 double distance = plan.DistanceAt(time);
                 TrafficCarView view = _views[plan.Id];
 
-                // All four wheels on the road (see TrafficPoseRule); a car coming the other way faces back along it.
+                // All four wheels on the road (see WheelPoseRule); a car coming the other way faces back along it.
                 bool oncoming = plan.Speed < 0.0;
                 TrafficModelSpec model = _pool.Models[plan.Model];
-                TrafficPoseRule.At(path, distance, (float)plan.LaneXAt(time), oncoming ? -1 : 1, model.FrontAxle, model.RearAxle, model.HalfTrack, origin, out Vector3 position, out Quaternion rotation);
+                WheelPoseRule.At(path, distance, (float)plan.LaneXAt(time), oncoming ? -1 : 1, model.FrontAxle, model.RearAxle, model.HalfTrack, origin, out Vector3 position, out Quaternion rotation);
 
                 // Nose into the lane change, as the player's car does: the car's right is the road's left when it comes the other way.
                 float yaw = (float)(Math.Atan2(plan.LateralSpeedAt(time), Math.Abs(plan.SpeedAt(time))) * (180.0 / Math.PI));

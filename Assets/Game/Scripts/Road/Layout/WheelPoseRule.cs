@@ -1,15 +1,14 @@
 using UnityEngine;
-using WrongLine.Road;
 
-namespace WrongLine.Traffic
+namespace WrongLine.Road
 {
     /// <summary>
-    /// Where a traffic car stands and how it is turned so all four wheels touch the road. A car placed with the road's frame at
+    /// Where a car stands and how it is turned so all four wheels touch the road. A car placed with the road's frame at
     /// its middle only touches it there: where the road bends up or down (the steep pieces) or its banking changes along the car
     /// (banked pieces), the wheels float on one side or sink on the other (measured: up to 47 cm for the truck on BankSharp). This
     /// reads the road under each wheel and puts the car on those four points. Pure.
     /// </summary>
-    public static class TrafficPoseRule
+    public static class WheelPoseRule
     {
         /// <param name="distance">Where the car's pivot is along the road, in metres.</param>
         /// <param name="lateral">Metres right of the centre line (the road's right) the car's middle is.</param>

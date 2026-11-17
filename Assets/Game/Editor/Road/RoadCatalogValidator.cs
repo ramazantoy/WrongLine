@@ -285,7 +285,8 @@ namespace WrongLine.Road.Editor
             // (made for another cross-section) and kept the generated mesh. Visible until the artist redelivers.
             if (EditorUtility.IsPersistent(view)
                 && AssetDatabase.LoadAssetAtPath<GameObject>(RoadPieceBuilder.ArtModelPath(view.name)) != null
-                && !AssetDatabase.GetAssetPath(mesh).EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase))
+                && !AssetDatabase.GetAssetPath(mesh).EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase)
+                && !AssetDatabase.GetAssetPath(mesh).EndsWith("_Art.asset", System.StringComparison.OrdinalIgnoreCase))
             {
                 report.Warning($"{location}: Art/{view.name}.fbx is not used, the generated mesh stands in (the art does not fit the current road section).", view);
             }

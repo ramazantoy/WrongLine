@@ -16,7 +16,7 @@ namespace WrongLine.Traffic
         [Tooltip("The three levels of detail, nearest first.")]
         [SerializeField, Required] private GameObject[] _levels;
 
-        [Tooltip("A soft dark patch on the road under the car, shown from LOD1 on: real shadows end at the shadow distance, and a car without one looks like it floats. Optional.")]
+        [Tooltip("A soft dark patch on the road under the car: real shadows end at the shadow distance (and are soft or missing under the car), and a car without a contact shadow looks like it floats. Optional.")]
         [SerializeField] private GameObject _blob;
 
         [Tooltip("The parent of the signal lamps (kept out of the paint), and the lamps themselves, on the car's left and right. Optional.")]
@@ -45,7 +45,7 @@ namespace WrongLine.Traffic
             }
 
             Level = level;
-            SetBlob(level >= 1);
+            SetBlob(level >= 0);
         }
 
         /// <summary>Paints every mesh of the car with <paramref name="paint"/> (a shared material: nothing is written into it).</summary>

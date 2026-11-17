@@ -31,6 +31,9 @@ namespace WrongLine.Road.Editor
         // Colour is the fallback while the slot has no texture in Art/.
         // The lane line's texture holds one dash and one gap with a transparent gap: it is cut by alpha and tiled so one repeat
         // covers LineDashPeriod (the mesh UV repeats every TileLength, so the material scales v by their ratio).
+        /// <summary>The longest slice a flat straight keeps, in metres: with rings this far apart the bend's sag between them is ~0.6 cm (Strength 0.0004).</summary>
+        private const float RefineStepMeters = 8f;
+
         private static readonly (string Name, Color Color, string Texture, bool AlphaClip, float TilingV)[] _materialSpecs =
         {
             ("RoadAsphalt", new Color(0.18f, 0.18f, 0.2f), "Road_Asphalt_Base", false, 1f),
@@ -113,7 +116,26 @@ namespace WrongLine.Road.Editor
             if (mesh != null)
             {
                 // The real art wins; the validator measures its shape against the recipe (RoadMeshContractCheck).
-                Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, art mesh {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}.");
+                // A flat straight is cut into slices first: the curve shader bends vertices only, so its road sags between the two
+                // rings under the cars and props that follow the true bend (RoadMeshRefiner).
+                // Only the flat straights: every other piece has a ring every few metres already (measured: no sag), and on a bent
+                // piece the middle of a split edge is off the surface the contract measures.
+                bool flatStraight = (recipe.Tags & ~RoadTags.Straight) == RoadTags.None;
+                Mesh refined = flatStraight ? RoadMeshRefiner.SliceAlongRoad(mesh, RefineStepMeters) : mesh;
+                if (refined != mesh)
+                {
+                    refined.name = recipe.name;
+                    Mesh written = WriteMesh(RefinedArtMeshPath(recipe.name), refined);
+                    if (written != refined)
+                    {
+                        UnityEngine.Object.DestroyImmediate(refined);
+                    }
+
+                    Log.Info($"[Road] {recipe.name}: art mesh {mesh.vertexCount} -> {written.vertexCount} vertices (sliced to {RefineStepMeters} m).");
+                    mesh = written;
+                }
+
+                Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, mesh {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}.");
             }
             else
             {
@@ -167,6 +189,9 @@ namespace WrongLine.Road.Editor
         }
 
         internal static string ArtModelPath(string pieceName) => $"{ART}/{pieceName}.fbx";
+
+        /// <summary>Where the artist's mesh of a piece goes once its long edges are split (see <see cref="RoadMeshRefiner"/>); the validator counts it as the art.</summary>
+        internal static string RefinedArtMeshPath(string pieceName) => $"{MESHES}/{pieceName}_Art.asset";
 
         /// <summary>The mesh of <c>Art/&lt;piece&gt;.fbx</c> when the artist has delivered it, else null (the grey box stands in).</summary>
         private static Mesh LoadArtMesh(string pieceName)

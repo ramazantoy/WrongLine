@@ -189,13 +189,13 @@ namespace WrongLine.Traffic.Tests
         }
 
         [Test]
-        public void TheContactShadow_ShowsFromTheMiddleLevelOn_AndGoesWithTheCar()
+        public void TheContactShadow_ShowsOnEveryLevel_AndGoesWithTheCar()
         {
             TrafficCarView view = FakeTrafficPools.MakeView(_kit, "Car");
             GameObject blob = view.transform.Find("Blob").gameObject;
 
             view.ShowLevel(0);
-            Assert.IsFalse(blob.activeSelf, "The near level has a real shadow.");
+            Assert.IsTrue(blob.activeSelf);
 
             view.ShowLevel(1);
             Assert.IsTrue(blob.activeSelf);

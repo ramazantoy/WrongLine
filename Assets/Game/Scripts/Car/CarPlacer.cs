@@ -31,10 +31,11 @@ namespace WrongLine.Car
 
         public void LateTick()
         {
-            RoadSample sample = RoadSampler.At(_road.Path, _road.Distance, _motion.X);
+            // All four wheels on the road: on banked and steep pieces a car seated by the road's frame at its middle floats (WheelPoseRule).
+            WheelPoseRule.At(_road.Path, _road.Distance, _motion.X, 1, _view.FrontAxle, _view.RearAxle, _view.HalfTrack, _road.Origin, out Vector3 position, out Quaternion rotation);
             _pose.Update(_motion.Velocity, _motion.Speed, _clock.DeltaTime);
 
-            _view.Place(sample.Position.RelativeTo(_road.Origin), sample.Rotation * Quaternion.Euler(0f, _pose.YawDegrees, 0f));
+            _view.Place(position, rotation * Quaternion.Euler(0f, _pose.YawDegrees, 0f));
             _view.Pose(_pose);
             _view.ShowSignal(_motion.Signal, _motion.LampOn, _lights.Settings);
             _view.ShowHeadlight(_levels.Headlights, _lights.Settings);

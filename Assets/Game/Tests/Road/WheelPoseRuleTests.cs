@@ -1,12 +1,9 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using WrongLine.Road;
-using WrongLine.Road.Tests;
-
-namespace WrongLine.Traffic.Tests
+namespace WrongLine.Road.Tests
 {
-    public class TrafficPoseRuleTests
+    public class WheelPoseRuleTests
     {
         // The truck's axles and the van's (pivot not in the middle of its axles).
         private const float TruckFront = 2.6f;
@@ -76,7 +73,7 @@ namespace WrongLine.Traffic.Tests
                     Quaternion rotation;
                     if (wheelPose)
                     {
-                        TrafficPoseRule.At(layout, d, lateral, direction, TruckFront, TruckRear, TruckTrack, Origin, out position, out rotation);
+                        WheelPoseRule.At(layout, d, lateral, direction, TruckFront, TruckRear, TruckTrack, Origin, out position, out rotation);
                     }
                     else
                     {
@@ -116,7 +113,7 @@ namespace WrongLine.Traffic.Tests
 
             IRoadPath layout = With("Straight_M", out PlacedPiece piece);
             double d = piece.EntryDistance + 20.0;
-            TrafficPoseRule.At(layout, d, -4.5f, -1, TruckFront, TruckRear, TruckTrack, Origin, out Vector3 position, out Quaternion rotation);
+            WheelPoseRule.At(layout, d, -4.5f, -1, TruckFront, TruckRear, TruckTrack, Origin, out Vector3 position, out Quaternion rotation);
             RoadSample road = RoadSampler.At(layout, d, -4.5f);
 
             Assert.Less(Vector3.Dot(rotation * Vector3.forward, road.Rotation * Vector3.forward), -0.999f);
@@ -129,7 +126,7 @@ namespace WrongLine.Traffic.Tests
             IRoadPath layout = With("Straight_M", out PlacedPiece piece);
             double d = piece.EntryDistance + 20.0;
 
-            TrafficPoseRule.At(layout, d, 1.5f, 1, TruckFront, TruckRear, TruckTrack, Origin, out Vector3 position, out Quaternion rotation);
+            WheelPoseRule.At(layout, d, 1.5f, 1, TruckFront, TruckRear, TruckTrack, Origin, out Vector3 position, out Quaternion rotation);
             RoadSample road = RoadSampler.At(layout, d, 1.5f);
 
             // The truck's pivot is 0.2 m ahead of the middle of its axles: the pivot must still end up at the lane's middle.
@@ -144,7 +141,7 @@ namespace WrongLine.Traffic.Tests
             double d = piece.EntryDistance + piece.Piece.Length * 0.5;
 
             // A van-like car: axles at +1.65 and −1.5, so its pivot is 0.075 m behind the middle of the axles.
-            TrafficPoseRule.At(layout, d, 0f, 1, 1.65f, -1.5f, 0.84f, Origin, out Vector3 position, out Quaternion rotation);
+            WheelPoseRule.At(layout, d, 0f, 1, 1.65f, -1.5f, 0.84f, Origin, out Vector3 position, out Quaternion rotation);
             Vector3 front = RoadSampler.At(layout, d + 1.65, 0f).Position.RelativeTo(Origin);
             Vector3 rear = RoadSampler.At(layout, d - 1.5, 0f).Position.RelativeTo(Origin);
             Vector3 axleMiddle = (front + rear) * 0.5f;

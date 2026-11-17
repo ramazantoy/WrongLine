@@ -123,6 +123,21 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   4. **Sonraki ortam fikirleri:** biyoma göre gökyüzü/sis tonu, uzak siluet (dağ, kanyon, tepe kartları), biyom başına prop
      yoğunluğu ayarı oynanınca.
 
+- **Sıradaki iş: kaza milestone'u (K1–K3), yeni context'te plan moduyla (2026-11-17, kullanıcı fikri + önerim):**
+  1. **K1 (önce):** çarpışma kuralı saf C# (oyuncunun `(s, x)` kutusu ile `ITrafficFrame`'deki araçlar; `RoadCursor`, `RoadSampler`
+     aynı kalır), **kaza** ve **sürtme** ayrımı (az yan örtüşme = sürtme: yanal itme + kamera sarsıntısı + ceza, **hız kaybı
+     yok**; yoksa trafiğin geçilebilirlik garantisi oyuncunun planlı hız profilinden kayar, ayrı karar), kaza durumu + yavaş çekim
+     (`IGameClock.Scale`), oyuncu aracının parçalarının Rigidbody'ye geçmesi (`Hinge_*` çocukları, kütle merkezli pivotlar hazır;
+     parçaların oturacağı zemin yok: kaza noktasında yol çerçevesine hizalı geçici zemin collider'ı), dummy uGUI "game over"
+     ekranı prefab'ı ve `ISceneLoader.Load(Gameplay)` ile yeniden başlatma (input modu UI için istenir). Kamera sarsıntısı mevcut
+     kamera kuralına eklenir.
+  2. **K2:** Cinemachine (paket onayı ister): kural saf C# kalır (`ChaseCameraRule`, `BendVisibilityTests` değişmez), Brain
+     `ManualUpdate`, bizim `PostLateTick` sürücümüzden çağrılır (yoksa titreme geri gelir); Impulse ve kaza kamerası blend'i.
+  3. **K3:** zamanla hızlanma: `SpeedRule` zamanın deterministik bir fonksiyonu olmalı; trafik düzeni (`PlayerSpeedProfile`,
+     `TrafficPlanner.SliceLength` en yüksek hızla, şerit hızları, testler) buna uyarlanır.
+  Önce Android ölçüm build'i (yukarıdaki "İlk Android build" + "Trafik (M3) açıkları"); trafik üçgeni ~11–16 bin, düz parçalar
+  +100…+730 üçgen oldu.
+
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"
   tercihi varsayılan "Recompile And Continue Playing"; Play sırasında derleme olunca (ya da `wait-editor.sh --refresh`)

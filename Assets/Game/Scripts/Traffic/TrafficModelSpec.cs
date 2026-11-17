@@ -2,7 +2,7 @@ namespace WrongLine.Traffic
 {
     /// <summary>
     /// What the traffic needs to know of a car model: its length and how often it comes up (the layout), and where its wheels
-    /// touch the road (the pose, see <see cref="TrafficPoseRule"/>). Axle positions are along the car's forward axis from its pivot.
+    /// touch the road (the pose, see <see cref="WrongLine.Road.WheelPoseRule"/>). Axle positions are along the car's forward axis from its pivot.
     /// </summary>
     public readonly struct TrafficModelSpec
     {
