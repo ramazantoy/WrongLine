@@ -35,7 +35,7 @@ namespace WrongLine.Traffic
             for (int i = 0; i < entries.Length; i++)
             {
                 _pools[i] = pools.For(entries[i].Prefab);
-                _models[i] = new TrafficModelSpec(entries[i].Length, entries[i].Weight);
+                _models[i] = new TrafficModelSpec(entries[i].Length, entries[i].Weight, entries[i].FrontAxle, entries[i].RearAxle, entries[i].HalfTrack);
             }
         }
 

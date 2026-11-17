@@ -24,8 +24,6 @@ namespace WrongLine.Traffic
         /// <summary>Farthest a car stands from the camera beyond the spawn range: the camera's lag plus some room.</summary>
         private const float BoundsDistanceMargin = 50f;
 
-        private static readonly Quaternion Oncoming = Quaternion.Euler(0f, 180f, 0f);
-
         private readonly ITrafficPool _pool;
         private readonly IRoadFrame _road;
         private readonly IGameClock _clock;
@@ -116,14 +114,16 @@ namespace WrongLine.Traffic
             {
                 double time = _run.Time;
                 double distance = plan.DistanceAt(time);
-                RoadSample sample = RoadSampler.At(path, distance, (float)plan.LaneXAt(time));
                 TrafficCarView view = _views[plan.Id];
 
-                // Nose into the lane change, as the player's car does: a car coming the other way is turned round, and its right is the road's left.
+                // All four wheels on the road (see TrafficPoseRule); a car coming the other way faces back along it.
                 bool oncoming = plan.Speed < 0.0;
+                TrafficModelSpec model = _pool.Models[plan.Model];
+                TrafficPoseRule.At(path, distance, (float)plan.LaneXAt(time), oncoming ? -1 : 1, model.FrontAxle, model.RearAxle, model.HalfTrack, origin, out Vector3 position, out Quaternion rotation);
+
+                // Nose into the lane change, as the player's car does: the car's right is the road's left when it comes the other way.
                 float yaw = (float)(Math.Atan2(plan.LateralSpeedAt(time), Math.Abs(plan.SpeedAt(time))) * (180.0 / Math.PI));
-                Quaternion turn = Quaternion.Euler(0f, oncoming ? -yaw : yaw, 0f);
-                view.transform.SetPositionAndRotation(sample.Position.RelativeTo(origin), oncoming ? sample.Rotation * Oncoming * turn : sample.Rotation * turn);
+                view.transform.SetPositionAndRotation(position, rotation * Quaternion.Euler(0f, oncoming ? -yaw : yaw, 0f));
 
                 view.ShowLevel(_lod.Evaluate((float)Math.Abs(distance - player), view.Level));
                 TrafficSettings.LaneChangeGroup change = _config.Settings.LaneChange;

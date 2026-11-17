@@ -536,6 +536,7 @@ namespace WrongLine.Traffic.Editor
                 entry.FindPropertyRelative("_prefab").objectReferenceValue = prefabs[i];
                 entry.FindPropertyRelative("_length").floatValue = lengths[i];
                 entry.FindPropertyRelative("_weight").floatValue = Models[i].Weight;
+                WriteAxles(entry, Models[i].Name);
             }
 
             SerializedProperty paintList = serialized.FindProperty("_paints");
@@ -549,6 +550,19 @@ namespace WrongLine.Traffic.Editor
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssetIfDirty(catalog);
             return catalog;
+        }
+
+        /// <summary>The axles and the half track from the model's four wheel nodes (their pivots are the axle centres).</summary>
+        private static void WriteAxles(SerializedProperty entry, string name)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{name}.fbx");
+            Transform body = model.transform.Find($"{name}_LOD0");
+            Vector3 frontLeft = body.Find($"{name}_LOD0_Wheel_FL").localPosition;
+            Vector3 frontRight = body.Find($"{name}_LOD0_Wheel_FR").localPosition;
+            Vector3 rearLeft = body.Find($"{name}_LOD0_Wheel_RL").localPosition;
+            entry.FindPropertyRelative("_frontAxle").floatValue = frontLeft.z;
+            entry.FindPropertyRelative("_rearAxle").floatValue = rearLeft.z;
+            entry.FindPropertyRelative("_halfTrack").floatValue = Mathf.Abs(frontRight.x - frontLeft.x) * 0.5f;
         }
 
         private static TrafficConfig EnsureConfig()

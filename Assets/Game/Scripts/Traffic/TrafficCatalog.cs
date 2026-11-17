@@ -22,6 +22,13 @@ namespace WrongLine.Traffic
             [Tooltip("How often this model comes up, against the others.")]
             [SerializeField, Min(0f)] private float _weight = 1f;
 
+            [Tooltip("Where the wheels touch the road: the front and rear axles along the car's forward axis from its pivot, and half the distance between the wheels of an axle, in metres. Written by Rebuild Traffic from the model.")]
+            [SerializeField] private float _frontAxle = 1.3f;
+
+            [SerializeField] private float _rearAxle = -1.3f;
+
+            [SerializeField] private float _halfTrack = 0.75f;
+
             public string Name => _name;
 
             public TrafficCarView Prefab => _prefab;
@@ -29,6 +36,12 @@ namespace WrongLine.Traffic
             public float Length => _length;
 
             public float Weight => _weight;
+
+            public float FrontAxle => _frontAxle;
+
+            public float RearAxle => _rearAxle;
+
+            public float HalfTrack => _halfTrack;
         }
 
         [SerializeField] private Entry[] _models = new Entry[0];
