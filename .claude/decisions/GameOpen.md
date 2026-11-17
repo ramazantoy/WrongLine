@@ -69,7 +69,7 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   parçalar gövdeye birleşik, tek mesh), `LOD2` (~120 m'den, küp/kapsül silüeti ya da ~150 üçgen), sis bitişinden önce
   `LOD2`'ye düşmüş olmalı. Seçim saf C# kural (`mesafe → LOD`, histerezisle titremesiz) + view; `LODGroup` ya da elle
   geçiş kararı trafik milestone'unda; sanatçıdan LOD brifi o zaman. Kaza anında yalnız yakın araç (`LOD0`) parçalarına ayrılır.
-- **Ara katılım (yan) yolları (2026-11-17, kullanıcı fikri, tasarım notu):** ara sıra ana yolun yanından ayrılıp kısa bir
+- **Ara katılım (yan) yolları (2026-11-17, kullanıcı fikri, tasarım notu): DENENDİ VE İPTAL EDİLDİ (Faz B, `Game.md`); amaç ve görsel referans netleşmeden yeniden açılmaz.** ara sıra ana yolun yanından ayrılıp kısa bir
   süre sonra geri katılan yan yollar; araç oraya girerse kısa bir "gir-çık" kestirme yaşar, o yollarda trafik yok (güvenli
   alan / ödül ya da risk, ayrıca karar). Teknik değerlendirme: yol uzayı `(s, x)` olduğundan gerçek dallanma (iki ayrı spline,
   seçim) gerekmez; yan yol, o parçada ana yolun kenarında ek bir yanal bant olarak modellenir (yol genişliği o aralıkta
