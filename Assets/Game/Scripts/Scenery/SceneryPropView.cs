@@ -10,8 +10,13 @@ namespace WrongLine.Scenery
     /// </summary>
     public sealed class SceneryPropView : MonoBehaviour, IPoolable
     {
+        [Tooltip("A street lamp's head, where its pool of light is centred; empty on every other prop.")]
+        [SerializeField] private Transform _lightHead;
+
         private MeshRenderer[] _renderers;
         private MeshFilter[] _filters;
+
+        public Transform LightHead => _lightHead;
 
         /// <summary>Grows the culling bounds of every mesh in the prop by <paramref name="margin"/> (see <see cref="CurvedBounds"/>).</summary>
         public void ExpandBounds(float margin)

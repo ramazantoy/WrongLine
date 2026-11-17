@@ -247,6 +247,37 @@ namespace WrongLine.World.Tests
         }
 
         [Test]
+        public void TheDefaultDarkness_IsFullAtMidnight_AndZeroAtNoonAndSunrise()
+        {
+            var rule = new DayNightRule(new DayNightSettings());
+
+            Assert.AreEqual(1f, rule.Evaluate(0.75f).Darkness, 1e-3f);
+            Assert.AreEqual(0f, rule.Evaluate(0.25f).Darkness, 1e-3f);
+            Assert.AreEqual(0f, rule.Evaluate(0f).Darkness, 1e-3f);
+        }
+
+        [Test]
+        public void TheDefaultDarkness_RisesAfterSunsetAndStaysInsideZeroToOne()
+        {
+            var rule = new DayNightRule(new DayNightSettings());
+
+            Assert.Less(rule.Evaluate(0.5f).Darkness, rule.Evaluate(0.58f).Darkness);
+            for (float phase = 0f; phase <= 1f; phase += 0.01f)
+            {
+                Assert.That(rule.Evaluate(phase).Darkness, Is.InRange(0f, 1f), $"at phase {phase}");
+            }
+        }
+
+        [Test]
+        public void Validate_RejectsADarknessThatLeavesZeroToOne()
+        {
+            var settings = Simple();
+            settings.Darkness = AnimationCurve.Linear(0f, 0f, 1f, 2f);
+
+            Assert.Throws<ArgumentException>(() => new DayNightRule(settings));
+        }
+
+        [Test]
         public void Validate_AcceptsTheDefaults()
         {
             Assert.DoesNotThrow(() => new DayNightRule(new DayNightSettings()));

@@ -66,7 +66,8 @@ namespace WrongLine.World
                 _settings.LightYaw,
                 Scale(zenith, k),
                 Scale(horizon, k),
-                Scale(ground, k));
+                Scale(ground, k),
+                Mathf.Clamp01(_settings.Darkness.Evaluate(t)));
         }
 
         private static Color Scale(Color color, float k)

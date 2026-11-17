@@ -40,6 +40,9 @@ namespace WrongLine.World
         [Tooltip("Light intensity along the phase.")]
         public AnimationCurve LightIntensity = SmoothCurve((0f, 0.7f), (0.25f, 1.1f), (0.5f, 0.7f), (0.6f, 0.25f), (0.75f, 0.2f), (0.9f, 0.25f), (1f, 0.7f));
 
+        [Tooltip("How dark it is along the phase, 0 (day) to 1 (night): what the street lamps and the car's headlights follow (see LightsSettings).")]
+        public AnimationCurve Darkness = FlatCurve((0f, 0f), (0.45f, 0f), (0.62f, 1f), (0.88f, 1f), (1f, 0f));
+
         [Tooltip("How far the light is tilted down at its lowest (degrees). The light always shines down, the moon included.")]
         public float MinLightPitch = 15f;
 
@@ -78,6 +81,20 @@ namespace WrongLine.World
             {
                 throw new ArgumentException("AmbientIntensity must not be negative.");
             }
+
+            if (Darkness == null)
+            {
+                throw new ArgumentException("Darkness needs a curve.");
+            }
+
+            for (int i = 0; i <= 64; i++)
+            {
+                float value = Darkness.Evaluate(i / 64f);
+                if (!(value >= 0f && value <= 1f))
+                {
+                    throw new ArgumentException("Darkness must stay between 0 and 1 along the whole phase.");
+                }
+            }
         }
 
         private static Gradient Make(params (float Time, float R, float G, float B)[] keys)
@@ -91,6 +108,18 @@ namespace WrongLine.World
             var gradient = new Gradient();
             gradient.SetKeys(colorKeys, new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
             return gradient;
+        }
+
+        // Flat at every key (a smoothstep between them): the value never leaves the range the keys span, which Darkness needs.
+        private static AnimationCurve FlatCurve(params (float Time, float Value)[] keys)
+        {
+            var curve = new AnimationCurve();
+            foreach ((float time, float value) in keys)
+            {
+                curve.AddKey(new Keyframe(time, value, 0f, 0f));
+            }
+
+            return curve;
         }
 
         private static AnimationCurve SmoothCurve(params (float Time, float Value)[] keys)

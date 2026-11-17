@@ -103,7 +103,19 @@ namespace WrongLine.Scenery.Editor
                     Configure(root.AddComponent<MeshRenderer>(), materials, shadows);
                 }
 
-                root.AddComponent<SceneryPropView>();
+                var view = root.AddComponent<SceneryPropView>();
+                Vector3 lightHead = entry.FindPropertyRelative("_lightHead").vector3Value;
+                if (lightHead != Vector3.zero)
+                {
+                    // A street lamp: the point its pool of light is centred on.
+                    var head = new GameObject("LightHead");
+                    head.transform.SetParent(root.transform, false);
+                    head.transform.localPosition = lightHead;
+                    var viewData = new SerializedObject(view);
+                    viewData.FindProperty("_lightHead").objectReferenceValue = head.transform;
+                    viewData.ApplyModifiedPropertiesWithoutUndo();
+                }
+
                 GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, $"{SceneryAssets.PREFABS}/{name}.prefab");
                 entry.FindPropertyRelative("_prefab").objectReferenceValue = prefab.GetComponent<SceneryPropView>();
                 return model != null;
@@ -194,8 +206,59 @@ namespace WrongLine.Scenery.Editor
                 EditorUtility.SetDirty(material);
             }
 
+            ConfigureEmission(material, biome);
             AssetDatabase.SaveAssetIfDirty(material);
             return material;
+        }
+
+        /// <summary>
+        /// A biome that has an emission texture (the shared set's lamp glass) lights it with the street lamp level: see CurvedLit.shader.
+        /// The material is kept in step with the files every run.
+        /// </summary>
+        private static void ConfigureEmission(Material material, string biome)
+        {
+            var emission = AssetDatabase.LoadAssetAtPath<Texture2D>(SceneryAssets.ArtEmissionPath(biome));
+            if (emission == null)
+            {
+                return;
+            }
+
+            bool changed = false;
+            if (material.GetTexture("_EmissionMap") != emission)
+            {
+                material.SetTexture("_EmissionMap", emission);
+                changed = true;
+            }
+
+            changed |= SetColor(material, "_EmissionColor", Color.white);
+            changed |= SetColor(material, "_EmissionLevelMask", new Color(1f, 0f, 0f, 0f)); // x: the street lamps' level.
+            if (material.GetFloat("_EmissionOn") != 1f)
+            {
+                material.SetFloat("_EmissionOn", 1f);
+                changed = true;
+            }
+
+            if (!material.IsKeywordEnabled("_EMISSION"))
+            {
+                material.EnableKeyword("_EMISSION");
+                changed = true;
+            }
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(material);
+            }
+        }
+
+        private static bool SetColor(Material material, string name, Color value)
+        {
+            if (material.GetColor(name) == value)
+            {
+                return false;
+            }
+
+            material.SetColor(name, value);
+            return true;
         }
 
         /// <summary>A plain coloured material for the stand-ins, one per colour, shared by every stand-in that uses it.</summary>

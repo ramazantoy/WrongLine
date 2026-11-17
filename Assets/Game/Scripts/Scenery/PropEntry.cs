@@ -59,7 +59,12 @@ namespace WrongLine.Scenery
 
         [SerializeField] private bool _castShadows;
 
+        [Tooltip("A street lamp's head in the prop's own space (where its pool of light is centred); zero for a prop that is no lamp.")]
+        [SerializeField] private Vector3 _lightHead;
+
         public string Name => _name;
+
+        public Vector3 LightHead => _lightHead;
 
         public SceneryPropView Prefab => _prefab;
 

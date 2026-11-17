@@ -27,6 +27,9 @@ namespace WrongLine.Scenery.Editor
         /// <summary>The biome's palette texture, which every model of the biome shares.</summary>
         public static string ArtAtlasPath(string biome) => $"{ArtFolder(biome)}/{biome}_Atlas.png";
 
+        /// <summary>The biome's emission texture (the parts that light up at night, black elsewhere), when it has one.</summary>
+        public static string ArtEmissionPath(string biome) => $"{ArtFolder(biome)}/{biome}_Emission.png";
+
         public static SceneryConfig EnsureConfig()
         {
             EnsureFolder(ROOT);

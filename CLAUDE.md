@@ -6,7 +6,7 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) bitti; araç görseli son faza ertelendi. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
+**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) ve Faz A3 (gece ışıkları) bitti; araç görseli son faza ertelendi. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
 kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
 moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
@@ -54,6 +54,7 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | A | Ara iş: oyuncu kontrolü (`x` sürükleme), yol uzayında kamera ve FOV, şerit sinyali, titreme kökü | Bitti 2026-11-17; sinyal atlası ve far `GameOpen.md`'de |
 | A2 | Ara iş: 4 şeritli yol (4 × 3 m kesit, 3 çizgi, başlangıç şeridi, şerit sayısından bağımsız sinyal), seed'li gün-gece başlangıcı, ufuk altı sis rengi | Bitti 2026-11-17 (33 parça 4 şeritli, sarı orta çizgi); Play denemesi kullanıcıda |
 | B | Ara iş: prosedürel ortam (4 biyom, yol parçasına pişirilen zemin, havuzlu yol kenarı prop'ları, curve shader'da biyom rengi) | Bitti 2026-11-17, 22 sanatçı modeli oyunda |
+| A3 | Ara iş: gece ışıkları (lamba emission'ı + sahte ışık havuzu, araçta gerçek far ve sinyal ışığı, `LightSwitchRule`, HDR kapalı + gece bloom'u) | Bitti 2026-11-17; his ve Android ölçümü kullanıcıda |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

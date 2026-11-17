@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a2dcf16de03d84786860991b4fafcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::WrongLine.Scenery.SceneryPropView
+  _lightHead: {fileID: 0}
 --- !u!1 &7029383161695899142
 GameObject:
   m_ObjectHideFlags: 0

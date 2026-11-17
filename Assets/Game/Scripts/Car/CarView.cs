@@ -1,5 +1,6 @@
 using AF.Core;
 using UnityEngine;
+using WrongLine.World;
 
 namespace WrongLine.Car
 {
@@ -22,6 +23,22 @@ namespace WrongLine.Car
 
         [SerializeField, Required] private GameObject[] _leftLamps;
         [SerializeField, Required] private GameObject[] _rightLamps;
+
+        [Tooltip("The two white headlights: spot lights shining ahead, lit at night.")]
+        [SerializeField, Required] private Light _headlight;
+
+        [SerializeField, Required] private Light _headlightRight;
+
+        [Tooltip("A soft point light at the nose, beside the beams.")]
+        [SerializeField, Required] private Light _headlightGlow;
+
+        [Tooltip("One red point light at the rear, lit with the headlights.")]
+        [SerializeField, Required] private Light _tailLight;
+
+        [Tooltip("The amber lights of the left and right turn signal (point lights), blinking with the signal lamps.")]
+        [SerializeField, Required] private Light _signalLightLeft;
+
+        [SerializeField, Required] private Light _signalLightRight;
 
         private Quaternion _wheelRestFrontLeft;
         private Quaternion _wheelRestFrontRight;
@@ -58,10 +75,46 @@ namespace WrongLine.Car
             _wheelRearRight.localRotation = _wheelRestRearRight * spin;
         }
 
-        public void ShowSignal(SignalDirection direction, bool lampOn)
+        public void ShowSignal(SignalDirection direction, bool lampOn, LightsSettings lights)
         {
-            SetActive(_leftLamps, direction == SignalDirection.Left && lampOn);
-            SetActive(_rightLamps, direction == SignalDirection.Right && lampOn);
+            bool left = direction == SignalDirection.Left && lampOn;
+            bool right = direction == SignalDirection.Right && lampOn;
+            SetActive(_leftLamps, left);
+            SetActive(_rightLamps, right);
+            ShowSignalLight(_signalLightLeft, left, lights);
+            ShowSignalLight(_signalLightRight, right, lights);
+        }
+
+        /// <summary>Lights the headlight to <paramref name="level"/> (0 off, 1 full); off lights are disabled, so they cost the renderer nothing.</summary>
+        public void ShowHeadlight(float level, LightsSettings lights)
+        {
+            ShowLamp(_headlight, level, lights.HeadlightColor, lights.HeadlightIntensity, lights.HeadlightRange, lights.HeadlightSpotAngle);
+            ShowLamp(_headlightRight, level, lights.HeadlightColor, lights.HeadlightIntensity, lights.HeadlightRange, lights.HeadlightSpotAngle);
+            ShowLamp(_headlightGlow, level, lights.HeadlightGlowColor, lights.HeadlightGlowIntensity, lights.HeadlightGlowRange, 0f);
+            ShowLamp(_tailLight, level, lights.TailColor, lights.TailIntensity, lights.TailRange, 0f);
+        }
+
+        private static void ShowLamp(Light light, float level, Color color, float intensity, float range, float spotAngle)
+        {
+            light.enabled = level > 0.001f;
+            light.color = color;
+            light.intensity = intensity * level;
+            light.range = range;
+            if (spotAngle > 0f)
+            {
+                light.spotAngle = spotAngle;
+            }
+        }
+
+        private static void ShowSignalLight(Light light, bool on, LightsSettings lights)
+        {
+            light.enabled = on;
+            if (on)
+            {
+                light.color = lights.SignalColor;
+                light.intensity = lights.SignalIntensity;
+                light.range = lights.SignalRange;
+            }
         }
 
         private static void SetActive(GameObject[] lamps, bool active)

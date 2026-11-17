@@ -284,6 +284,8 @@ MonoBehaviour:
   _cameraConfig: {fileID: 11400000, guid: f28fd94d49e74db449f77d2a1b670da3, type: 2}
   _curveConfig: {fileID: 11400000, guid: 90bdaa97352277b4193652b495362974, type: 2}
   _dayNightConfig: {fileID: 11400000, guid: 3394b0b855aa9d04bb6623529f313433, type: 2}
+  _lightsConfig: {fileID: 11400000, guid: 93acbd3c967dde543bfeca788195ae05, type: 2}
+  _nightBloom: {fileID: 1924685315}
   _sun: {fileID: 486339194}
   _car: {fileID: 1530212673}
   _camera: {fileID: 1942079115}
@@ -487,6 +489,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f351a2f427cf998459b0f2bf03da36de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game::WrongLine.Driving.RoadDebugHud
+--- !u!1 &1924685314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924685316}
+  - component: {fileID: 1924685315}
+  m_Layer: 0
+  m_Name: NightBloom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1924685315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924685314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 1
+  blendDistance: 0
+  weight: 0
+  sharedProfile: {fileID: 11400000, guid: 9e8a83946aa206247b9fd57a668859cc, type: 2}
+--- !u!4 &1924685316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924685314}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1942079110
 GameObject:
   m_ObjectHideFlags: 0
@@ -529,7 +580,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -637,3 +688,4 @@ SceneRoots:
   - {fileID: 486339195}
   - {fileID: 1622617098}
   - {fileID: 1530212672}
+  - {fileID: 1924685316}

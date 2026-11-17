@@ -11,7 +11,7 @@ namespace WrongLine.World
     /// material is never written to), the fog and ambient colours into the scene's render settings, and the sun light.
     /// A run starts at the config's start phase; the clock only counts game time, so a pause holds the sky still.
     /// </summary>
-    internal sealed class DayNightDriver : IStartable, IPostLateTickable
+    internal sealed class DayNightDriver : IStartable, IPostLateTickable, IDayNight
     {
         private static readonly int _zenithId = Shader.PropertyToID("_WL_SkyZenith");
         private static readonly int _horizonId = Shader.PropertyToID("_WL_SkyHorizon");
@@ -35,6 +35,8 @@ namespace WrongLine.World
             _seed = seed;
         }
 
+        public float Darkness { get; private set; }
+
         public void Start()
         {
             // The config is built into the rule once; its settings object is read live, so Inspector tuning still shows.
@@ -54,6 +56,7 @@ namespace WrongLine.World
         private void Apply()
         {
             SkyState sky = _rule.Evaluate(_rule.PhaseAt(_elapsed, _startPhase));
+            Darkness = sky.Darkness;
 
             Shader.SetGlobalColor(_zenithId, sky.Zenith);
             Shader.SetGlobalColor(_horizonId, sky.Horizon);

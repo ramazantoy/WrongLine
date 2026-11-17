@@ -27,6 +27,16 @@ Shader "WrongLine/CurvedLit"
         // same picture, so the overlap cannot be seen), and tinted with the biome colour, which fades across a plane at a biome
         // change. The colours, the plane and the origin's texture offset are globals set by BiomeBlendDriver.
         [Toggle(_GROUNDBLEND_ON)] _GroundBlend("Ground Biome Blend", Float) = 0
+
+        // Night lights. Emission: the map (UV as the base map) times the colour, added after the lighting, scaled by one of the
+        // global light levels (street lamps, headlights: _WL_LightLevels, set by LightsDriver) that the level mask picks, so
+        // a lamp's glass and a car's lights come on and off with the day without the material ever being written to.
+        // Lamp pool: the road and the ground take a fake pool of light under the nearest street lamps (_WL_LampPools).
+        [Toggle(_EMISSION)] _EmissionOn("Emission", Float) = 0
+        _EmissionMap("Emission Map", 2D) = "black" {}
+        _EmissionColor("Emission Color", Color) = (1, 1, 1, 1)
+        _EmissionLevelMask("Emission Level Mask (x street lamps, y headlights)", Vector) = (1, 0, 0, 0)
+        [Toggle(_LAMPPOOL_ON)] _LampPool("Lamp Pools Of Light", Float) = 0
         [HideInInspector] _OffsetFactor("Offset Factor", Float) = 0
         [HideInInspector] _OffsetUnits("Offset Units", Float) = 0
 
@@ -50,12 +60,15 @@ Shader "WrongLine/CurvedLit"
         SAMPLER(sampler_BaseMap);
         TEXTURE2D(_PaintMask);
         SAMPLER(sampler_PaintMask);
+        TEXTURE2D(_EmissionMap);
 
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half _Cutoff;
             half4 _PaintColor;
+            half4 _EmissionColor;
+            half4 _EmissionLevelMask;
             float _LineWidth;
             float _LineSpacing;
             float _LineMinPixels;
@@ -68,6 +81,14 @@ Shader "WrongLine/CurvedLit"
         float4 _WL_BiomePlane;
         float4 _WL_BiomeDir;
         float4 _WL_GroundUV;
+
+        // Globals (LightsDriver): how lit the street lamps (x) and the headlights (y) are, 0..1; the heads of the nearest street
+        // lamps in scene space (w 1 = in use); the pool's radius, vertical reach, strength (the lamp level already in it) and
+        // the number of lamps; its colour. WL_LampPool is the same formula as WrongLine.World.LampPoolFalloff: change one, change the other.
+        float4 _WL_LightLevels;
+        float4 _WL_LampPools[8];
+        float4 _WL_LampPoolParams;
+        half4 _WL_LampPoolColor;
         ENDHLSL
 
         Pass
@@ -89,9 +110,13 @@ Shader "WrongLine/CurvedLit"
             #pragma shader_feature_local _GROUNDBLEND_ON
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _CLUSTER_LIGHT_LOOP
             #pragma multi_compile_fog
             #pragma shader_feature_local_fragment _ALPHATEST_ON
             #pragma shader_feature_local_fragment _PAINTMASK_ON
+            #pragma shader_feature_local_fragment _EMISSION
+            #pragma shader_feature_local_fragment _LAMPPOOL_ON
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -112,7 +137,25 @@ Shader "WrongLine/CurvedLit"
                 #if defined(_GROUNDBLEND_ON)
                     half3 tint : TEXCOORD4;
                 #endif
+                float3 flatWS : TEXCOORD5; // Before the bend: the lights stand in the flat scene.
             };
+
+            // A street lamp's pool of light on a surface: LampPoolFalloff.Weight, summed over the lamps in use.
+            half3 WL_LampPool(float3 flatWS)
+            {
+                half pool = 0;
+                int count = (int)_WL_LampPoolParams.w;
+                [loop] for (int i = 0; i < count; i++)
+                {
+                    float4 head = _WL_LampPools[i];
+                    float across = saturate(1.0 - length(flatWS.xz - head.xz) / _WL_LampPoolParams.x);
+                    float drop = head.y - flatWS.y;
+                    float window = saturate(drop) * saturate(_WL_LampPoolParams.y - drop);
+                    pool += across * across * window * head.w;
+                }
+
+                return pool * _WL_LampPoolParams.z * _WL_LampPoolColor.rgb;
+            }
 
             Varyings Vert(Attributes input)
             {
@@ -129,6 +172,7 @@ Shader "WrongLine/CurvedLit"
                 float3 flatWS = TransformObjectToWorld(positionOS);
                 float3 positionWS = WL_BendWorldPosition(flatWS);
                 output.positionWS = positionWS;
+                output.flatWS = flatWS;
                 output.positionCS = TransformWorldToHClip(positionWS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 #if defined(_GROUNDBLEND_ON)
@@ -170,7 +214,30 @@ Shader "WrongLine/CurvedLit"
                     * mainLight.distanceAttenuation * mainLight.shadowAttenuation;
                 half3 ambient = SampleSH(normalWS);
 
-                half3 color = albedo.rgb * (diffuse + ambient);
+                half3 light = diffuse + ambient;
+
+                #if defined(_ADDITIONAL_LIGHTS)
+                    // The car's lights: real lights, no shadows. They sit low and shine nearly along the road, where plain Lambert
+                    // would give almost nothing (cos ~ 0.07), so the cosine is wrapped (half Lambert): the beam reads on the asphalt.
+                    // The cluster loop reads the screen position.
+                    InputData inputData = (InputData)0;
+                    inputData.positionWS = input.flatWS;
+                    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                    uint pixelLightCount = GetAdditionalLightsCount();
+                    LIGHT_LOOP_BEGIN(pixelLightCount)
+                        Light extra = GetAdditionalLight(lightIndex, input.flatWS);
+                        light += extra.color * (saturate(dot(normalWS, extra.direction) * 0.5 + 0.5) * extra.distanceAttenuation);
+                    LIGHT_LOOP_END
+                #endif
+
+                #if defined(_LAMPPOOL_ON)
+                    light += WL_LampPool(input.flatWS);
+                #endif
+
+                half3 color = albedo.rgb * light;
+                #if defined(_EMISSION)
+                    color += SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.uv).rgb * _EmissionColor.rgb * saturate(dot(_WL_LightLevels, _EmissionLevelMask));
+                #endif
                 color = MixFog(color, input.fogFactor);
                 return half4(color, albedo.a);
             }

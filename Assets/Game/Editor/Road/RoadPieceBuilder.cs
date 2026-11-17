@@ -305,6 +305,9 @@ namespace WrongLine.Road.Editor
                     changed = true;
                 }
 
+                // The road takes a pool of light under the street lamps at night.
+                changed |= EnableLampPool(material);
+
                 var wanted = new Vector2(1f, _materialSpecs[i].TilingV);
                 if (material.GetTextureScale("_BaseMap") != wanted)
                 {
@@ -357,6 +360,8 @@ namespace WrongLine.Road.Editor
                 changed = true;
             }
 
+            changed |= EnableLampPool(material);
+
             // The shader maps the texture by world metres: the scale is one repeat per tile.
             var wanted = new Vector2(1f / SceneryAssets.GroundTileMeters, 1f / SceneryAssets.GroundTileMeters);
             if (material.GetTextureScale("_BaseMap") != wanted)
@@ -387,6 +392,19 @@ namespace WrongLine.Road.Editor
             if (!material.IsKeywordEnabled("_LINEWIDEN_ON"))
             {
                 material.EnableKeyword("_LINEWIDEN_ON");
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        /// <returns>Whether anything changed.</returns>
+        private static bool EnableLampPool(Material material)
+        {
+            bool changed = SetFloat(material, "_LampPool", 1f);
+            if (!material.IsKeywordEnabled("_LAMPPOOL_ON"))
+            {
+                material.EnableKeyword("_LAMPPOOL_ON");
                 changed = true;
             }
 

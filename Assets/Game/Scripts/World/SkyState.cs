@@ -5,8 +5,9 @@ namespace WrongLine.World
     /// <summary>What the sky, the fog, the ambient light and the sun look like at one moment of the day.</summary>
     public readonly struct SkyState
     {
-        public SkyState(Color zenith, Color horizon, Color ground, Color lightColor, float lightIntensity, float lightPitch, float lightYaw, Color ambientSky, Color ambientEquator, Color ambientGround)
+        public SkyState(Color zenith, Color horizon, Color ground, Color lightColor, float lightIntensity, float lightPitch, float lightYaw, Color ambientSky, Color ambientEquator, Color ambientGround, float darkness = 0f)
         {
+            Darkness = darkness;
             Zenith = zenith;
             Horizon = horizon;
             Ground = ground;
@@ -39,6 +40,9 @@ namespace WrongLine.World
         public Color AmbientEquator { get; }
 
         public Color AmbientGround { get; }
+
+        /// <summary>0 in full day, 1 in full night.</summary>
+        public float Darkness { get; }
 
         /// <summary>The fog is always the horizon colour: the far road dissolves into the sky with no seam.</summary>
         public Color Fog => Horizon;

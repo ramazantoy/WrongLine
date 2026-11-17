@@ -13,7 +13,7 @@ namespace WrongLine.Scenery
     /// takes them back when it leaves. A piece gets its props once the piece after it is placed, so the planner sees the road
     /// on both sides of it. Positions are kept in double precision and placed again when the scene origin moves.
     /// </summary>
-    internal sealed class SceneryStreamer : IStartable, ITickable, IDisposable
+    internal sealed class SceneryStreamer : IStartable, ITickable, IDisposable, IRoadsideLamps
     {
         /// <summary>Mixed into the run seed, so the props do not repeat the road generator's numbers.</summary>
         private const ulong SeedSalt = 0x5CE7E3A1D0F2B4C9UL;
@@ -34,8 +34,11 @@ namespace WrongLine.Scenery
         private readonly List<SceneryItem> _items = new List<SceneryItem>();
         private readonly Dictionary<int, List<Placed>> _props = new Dictionary<int, List<Placed>>();
         private readonly Stack<List<Placed>> _spareLists = new Stack<List<Placed>>();
+        private readonly List<Transform> _lampHeads = new List<Transform>();
         private SceneryPlanner _planner;
         private WorldPoint _origin;
+
+        public IReadOnlyList<Transform> Heads => _lampHeads;
 
         public SceneryStreamer(ISceneryPool pool, IRoadFrame road, BiomeSchedule schedule, SceneryConfig config, CurveWorldConfig curve, RoadConfig roadConfig, IRunSeed seed)
         {
@@ -66,6 +69,7 @@ namespace WrongLine.Scenery
         {
             _pool.ReleaseAll();
             _props.Clear();
+            _lampHeads.Clear();
         }
 
         private void Apply()
@@ -81,6 +85,11 @@ namespace WrongLine.Scenery
                 List<Placed> props = _props[index];
                 foreach (Placed placed in props)
                 {
+                    if (placed.View.LightHead != null)
+                    {
+                        _lampHeads.Remove(placed.View.LightHead);
+                    }
+
                     _pool.Release(placed.View);
                 }
 
@@ -102,6 +111,11 @@ namespace WrongLine.Scenery
                 {
                     SceneryPropView view = _pool.Spawn(item.PropId, item.Position.RelativeTo(_origin), Quaternion.Euler(0f, item.YawDegrees, 0f), item.Scale);
                     view.ExpandBounds(margin);
+                    if (view.LightHead != null)
+                    {
+                        _lampHeads.Add(view.LightHead);
+                    }
+
                     props.Add(new Placed(view, item.Position));
                 }
 

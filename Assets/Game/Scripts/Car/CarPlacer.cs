@@ -3,6 +3,7 @@ using UnityEngine;
 using VContainer.Unity;
 using WrongLine.Driving;
 using WrongLine.Road;
+using WrongLine.World;
 
 namespace WrongLine.Car
 {
@@ -13,14 +14,18 @@ namespace WrongLine.Car
         private readonly IRoadFrame _road;
         private readonly ICarMotion _motion;
         private readonly IGameClock _clock;
+        private readonly ILightLevels _levels;
+        private readonly LightsConfig _lights;
         private readonly CarPoseRule _pose;
 
-        public CarPlacer(CarView view, CarConfig config, IRoadFrame road, ICarMotion motion, IGameClock clock)
+        public CarPlacer(CarView view, CarConfig config, IRoadFrame road, ICarMotion motion, IGameClock clock, ILightLevels levels, LightsConfig lights)
         {
             _view = view;
             _road = road;
             _motion = motion;
             _clock = clock;
+            _levels = levels;
+            _lights = lights;
             _pose = new CarPoseRule(config.Settings);
         }
 
@@ -31,7 +36,8 @@ namespace WrongLine.Car
 
             _view.Place(sample.Position.RelativeTo(_road.Origin), sample.Rotation * Quaternion.Euler(0f, _pose.YawDegrees, 0f));
             _view.Pose(_pose);
-            _view.ShowSignal(_motion.Signal, _motion.LampOn);
+            _view.ShowSignal(_motion.Signal, _motion.LampOn, _lights.Settings);
+            _view.ShowHeadlight(_levels.Headlights, _lights.Settings);
         }
     }
 }

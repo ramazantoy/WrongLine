@@ -1,6 +1,7 @@
 using AF.Core;
 using MessagePipe;
 using UnityEngine;
+using UnityEngine.Rendering;
 using VContainer;
 using VContainer.Unity;
 using WrongLine.Car;
@@ -19,6 +20,8 @@ namespace WrongLine.Driving
         [SerializeField, Required] private ChaseCameraConfig _cameraConfig;
         [SerializeField, Required] private CurveWorldConfig _curveConfig;
         [SerializeField, Required] private DayNightConfig _dayNightConfig;
+        [SerializeField, Required] private LightsConfig _lightsConfig;
+        [SerializeField, Required] private Volume _nightBloom;
         [SerializeField, Required] private Light _sun;
         [SerializeField, Required] private CarView _car;
         [SerializeField, Required] private ChaseCameraView _camera;
@@ -35,6 +38,8 @@ namespace WrongLine.Driving
             builder.RegisterInstance(_cameraConfig);
             builder.RegisterInstance(_curveConfig);
             builder.RegisterInstance(_dayNightConfig);
+            builder.RegisterInstance(_lightsConfig);
+            builder.RegisterComponent(_nightBloom);
             builder.RegisterComponent(_sun);
             builder.RegisterComponent(_car);
             builder.RegisterComponent(_camera);
@@ -48,13 +53,14 @@ namespace WrongLine.Driving
                 resolver.Resolve<IRunSeed>().Value ^ BiomeSeedSalt,
                 resolver.Resolve<ISceneryPool>().Set.Biomes.Count,
                 resolver.Resolve<SceneryConfig>().Biomes), Lifetime.Singleton);
-            builder.RegisterEntryPoint<SceneryStreamer>(); // After the road streamer: it reads the pieces the road put out.
+            builder.RegisterEntryPoint<SceneryStreamer>().As<IRoadsideLamps>(); // After the road streamer: it reads the pieces the road put out.
             builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
             builder.RegisterEntryPoint<ChaseCameraDriver>();
             builder.RegisterEntryPoint<CurveWorldDriver>(); // After the camera driver: it reads where the camera ended up.
             builder.RegisterEntryPoint<GroundBackdropDriver>(); // After the camera driver too: it follows the camera.
-            builder.RegisterEntryPoint<DayNightDriver>();
+            builder.RegisterEntryPoint<DayNightDriver>().As<IDayNight>();
+            builder.RegisterEntryPoint<LightsDriver>().As<ILightLevels>(); // After the day and night driver: it reads the darkness.
         }
     }
 }
