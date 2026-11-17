@@ -70,6 +70,18 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   parçalar gövdeye birleşik, tek mesh), `LOD2` (~120 m'den, küp/kapsül silüeti ya da ~150 üçgen), sis bitişinden önce
   `LOD2`'ye düşmüş olmalı. Seçim saf C# kural (`mesafe → LOD`, histerezisle titremesiz) + view; `LODGroup` ya da elle
   geçiş kararı trafik milestone'unda; sanatçıdan LOD brifi o zaman. Kaza anında yalnız yakın araç (`LOD0`) parçalarına ayrılır.
+  **Trafik brifi gönderildi (2026-11-17, oturum `my3dartist-ac`), teslim edildi ve Unity'de (`Game.md` M3):** 4 model
+  (hatchback, sedan, van, kamyon) × 3 LOD, tek ortak atlas, `Traffic_LightMask` kanal düzeni.
+- **Trafik (M3) açıkları (2026-11-17):** (1) **Android ölçümü:** ilk build henüz yok (yukarıdaki "İlk Android build"); trafik
+  bütçesi (aktif ~12–15 araç, 3–9 bin üçgen) ve draw call mobilde ölçülür; `FrameStatsLog` planlandı, yazılmadı. (2) Sanatçıdan
+  istenebilecekler: ayna, van/kamyon yan camı, LOD1'de van/kamyon yan yüzündeki ince üçgen şeritleri (gölgede çizgi), sinyal
+  bölgeleri köşede L biçimli, far/stop kanalları lens gradyanı taşıyor. (3) Gece görünümü (far/stop emission, `Traffic_Emission.png`)
+  ve sinyal (trafikte yanmıyor) kullanıcı gözüyle; shader'a kanal başına emission seviyesi gelirse `Car_LightMask` doğrudan
+  kullanılır. (4) Tekerlek dönmüyor (LOD0 tekerlekleri hazır, kural yok). (5) Yoğunluk/his ayarı (`TrafficConfig`: boşluk, şerit
+  hızları) kullanıcı gözüyle; her şerit tek hızda, araç başına hız farkı ve trafiğin şerit değiştirmesi σ modelini bozar (araç
+  başına aralık parça parça hesaplanmalı), sonraki iş. (6) Kaza milestone'u `ITrafficFrame`'i okur; çarpışma, puan, Cinemachine orada.
+  (7) Bozma kontrolü yalnız planlayıcı, doluluk, LOD kuralı ve view'da yapıldı; hız profili, koridor, koşu ve ayar testleri için
+  henüz yok. (8) Origin kaymasında araç ve draw call sayısı Play'de ölçülmedi.
 - **M3 öncesi ayrı context'ler (2026-11-17, kullanıcı planı; her biri kendi planıyla):**
   1. ~~**Araç kontrolü** (`x` sürükleme, arcade, bankta yatma)~~ yapıldı (Faz A) ve **şerit değiştirirken sinyal** (kural ve placeholder lamba yapıldı; atlas ve maske sanatçıda, aşağıdaki "Sanatçı brifi"): `Car_Emission` maskesinde şimdi
      yalnız far ve fren lambası var; sinyal için atlasta sağ ve sol sinyal bölgeleri gerekir (sanatçıdan atlas ve maske

@@ -6,6 +6,7 @@ using VContainer;
 using VContainer.Unity;
 using WrongLine.Car;
 using WrongLine.Scenery;
+using WrongLine.Traffic;
 using WrongLine.World;
 
 namespace WrongLine.Driving
@@ -54,6 +55,7 @@ namespace WrongLine.Driving
                 resolver.Resolve<ISceneryPool>().Set.Biomes.Count,
                 resolver.Resolve<SceneryConfig>().Biomes), Lifetime.Singleton);
             builder.RegisterEntryPoint<SceneryStreamer>().As<IRoadsideLamps>(); // After the road streamer: it reads the pieces the road put out.
+            builder.RegisterEntryPoint<TrafficStreamer>().As<ITrafficFrame>(); // After the road streamer: it reads where the player is and the road's origin.
             builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
             builder.RegisterEntryPoint<ChaseCameraDriver>();

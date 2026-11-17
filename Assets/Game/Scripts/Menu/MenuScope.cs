@@ -17,6 +17,7 @@ namespace WrongLine.Menu
             builder.RegisterComponent(_screen);
             builder.RegisterEntryPoint<RoadPrewarm>();
             builder.RegisterEntryPoint<SceneryPrewarm>();
+            builder.RegisterEntryPoint<TrafficPrewarm>();
         }
     }
 }

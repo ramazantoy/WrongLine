@@ -13,6 +13,7 @@ using UnityEngine.Serialization;
 using VContainer;
 using WrongLine.Road;
 using WrongLine.Scenery;
+using WrongLine.Traffic;
 #if STORE_STEAM
 using AF.Platform.Steam;
 #elif STORE_EPIC
@@ -44,6 +45,12 @@ namespace WrongLine
 
         [SerializeField, Required, Tooltip("The roadside's tunable numbers: biome lengths, the ground strip, prewarm.")]
         private SceneryConfig _sceneryConfig;
+
+        [SerializeField, Required, Tooltip("The traffic car models and paints. Prefabs rebuilt by WrongLine/Traffic/Rebuild Traffic.")]
+        private TrafficCatalog _trafficCatalog;
+
+        [SerializeField, Required, Tooltip("The traffic's tunable numbers: layout, spawn range, levels of detail.")]
+        private TrafficConfig _trafficConfig;
 
         protected override void ConfigureGame(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
@@ -78,6 +85,11 @@ namespace WrongLine
             builder.RegisterInstance(_sceneryCatalog);
             builder.RegisterInstance(_sceneryConfig);
             builder.Register<SceneryPool>(Lifetime.Singleton).As<ISceneryPool>();
+
+            // And the traffic cars, one pool per model.
+            builder.RegisterInstance(_trafficCatalog);
+            builder.RegisterInstance(_trafficConfig);
+            builder.Register<TrafficPool>(Lifetime.Singleton).As<ITrafficPool>();
         }
     }
 }

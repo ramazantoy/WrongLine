@@ -55,6 +55,8 @@ MonoBehaviour:
   _roadConfig: {fileID: 11400000, guid: 2bc23ab6ad89cae418f5d3dc8f7b06c5, type: 2}
   _sceneryCatalog: {fileID: 11400000, guid: 55ef072e8dc34104a91f982c882ef56f, type: 2}
   _sceneryConfig: {fileID: 11400000, guid: eca67c6130c4ebb458ab7bc91ca13bad, type: 2}
+  _trafficCatalog: {fileID: 11400000, guid: 8d9d627309e7bdf4eb509f22e3163793, type: 2}
+  _trafficConfig: {fileID: 11400000, guid: c8ec9c2fc1cb6e341a98a2f31466cc2c, type: 2}
 --- !u!1 &7598658697932928154
 GameObject:
   m_ObjectHideFlags: 0
