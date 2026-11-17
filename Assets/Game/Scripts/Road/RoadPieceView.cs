@@ -1,5 +1,6 @@
 using AF.Core;
 using UnityEngine;
+using WrongLine.World;
 
 namespace WrongLine.Road
 {
@@ -20,8 +21,8 @@ namespace WrongLine.Road
         [SerializeField] private RoadPieceRecipe _recipe;
         [SerializeField] private int _bakedHash;
 
-        private MeshRenderer _renderer;
-        private MeshFilter _filter;
+        private MeshRenderer[] _renderers;
+        private MeshFilter[] _filters;
 
         public RoadPieceRecipe Recipe => _recipe;
 
@@ -37,21 +38,25 @@ namespace WrongLine.Road
         }
 
         /// <summary>
-        /// Makes the renderer's culling bounds this much bigger on every side, measured from the mesh's own bounds (so calling
-        /// it again does not grow them). A bent world pulls vertices away from where the mesh says they are; without the
-        /// margin a piece could be culled while part of it is still on screen. Only this renderer changes, never the shared mesh.
+        /// Makes the culling bounds of the piece's renderers (the road and its ground) this much bigger on every side, measured
+        /// from each mesh's own bounds, so calling it again does not grow them (see <see cref="CurvedBounds"/>).
         /// </summary>
         public void ExpandBounds(float margin)
         {
-            if (_renderer == null)
+            if (_renderers == null)
             {
-                _renderer = GetComponent<MeshRenderer>();
-                _filter = GetComponent<MeshFilter>();
+                _renderers = GetComponentsInChildren<MeshRenderer>(true);
+                _filters = new MeshFilter[_renderers.Length];
+                for (int i = 0; i < _renderers.Length; i++)
+                {
+                    _filters[i] = _renderers[i].GetComponent<MeshFilter>();
+                }
             }
 
-            Bounds bounds = _filter.sharedMesh.bounds;
-            bounds.Expand(2f * Mathf.Max(0f, margin));
-            _renderer.localBounds = bounds;
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                CurvedBounds.Expand(_renderers[i], _filters[i], margin);
+            }
         }
 
         void IPoolable.OnSpawned(PoolLife life)

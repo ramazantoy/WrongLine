@@ -53,6 +53,8 @@ MonoBehaviour:
   _audioMixer: {fileID: 24100000, guid: 36ef3796a4d428e45acb0db9a9774cfe, type: 2}
   _roadCatalog: {fileID: 11400000, guid: dc0d8c2057795e248aa3bcf9319136ec, type: 2}
   _roadConfig: {fileID: 11400000, guid: 2bc23ab6ad89cae418f5d3dc8f7b06c5, type: 2}
+  _sceneryCatalog: {fileID: 11400000, guid: 55ef072e8dc34104a91f982c882ef56f, type: 2}
+  _sceneryConfig: {fileID: 11400000, guid: eca67c6130c4ebb458ab7bc91ca13bad, type: 2}
 --- !u!1 &7598658697932928154
 GameObject:
   m_ObjectHideFlags: 0

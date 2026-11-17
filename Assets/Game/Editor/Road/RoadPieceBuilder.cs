@@ -4,6 +4,8 @@ using AF.Core;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using WrongLine.Scenery;
+using WrongLine.Scenery.Editor;
 
 namespace WrongLine.Road.Editor
 {
@@ -22,6 +24,8 @@ namespace WrongLine.Road.Editor
         private const string CATALOG_PATH = ROOT + "/RoadCatalog.asset";
         private const string ART = ROOT + "/Art";
         private const string ROAD_SHADER = "WrongLine/CurvedLit";
+        private const string GROUND_CHILD = "Ground";
+        private const string GROUND_MATERIAL_PATH = MATERIALS + "/Ground.mat";
         private const int MeshRingStride = 2;
 
         // Colour is the fallback while the slot has no texture in Art/.
@@ -40,6 +44,19 @@ namespace WrongLine.Road.Editor
         {
             EnsureFolders();
             Material[] materials = EnsureMaterials();
+            Material ground = EnsureGroundMaterial();
+            SceneryConfig sceneryConfig = SceneryAssets.EnsureConfig();
+            if (sceneryConfig.BackdropMaterial != ground)
+            {
+                // The backdrop disc under the camera draws with the ground's material.
+                var serializedConfig = new SerializedObject(sceneryConfig);
+                serializedConfig.FindProperty("_backdropMaterial").objectReferenceValue = ground;
+                serializedConfig.ApplyModifiedPropertiesWithoutUndo();
+                AssetDatabase.SaveAssetIfDirty(sceneryConfig);
+            }
+
+            GroundSettings groundSettings = sceneryConfig.Ground;
+            groundSettings.Validate();
             EnsureRecipes();
 
             var recipes = new List<RoadPieceRecipe>();
@@ -54,7 +71,7 @@ namespace WrongLine.Road.Editor
             RoadPieceView start = null;
             foreach (RoadPieceRecipe recipe in recipes)
             {
-                RoadPieceView view = BuildPiece(recipe, materials);
+                RoadPieceView view = BuildPiece(recipe, materials, ground, groundSettings);
                 if (recipe.IsStart)
                 {
                     start = view;
@@ -69,8 +86,16 @@ namespace WrongLine.Road.Editor
             Log.Info($"[Road] Rebuilt {recipes.Count} pieces ({views.Count} selectable, start: {(start != null ? start.name : "none")}).");
         }
 
-        private static RoadPieceView BuildPiece(RoadPieceRecipe recipe, Material[] materials)
+        private static RoadPieceView BuildPiece(RoadPieceRecipe recipe, Material[] materials, Material groundMaterial, GroundSettings groundSettings)
         {
+            Mesh builtGround = GroundMeshBuilder.Build(recipe.Shape, groundSettings);
+            builtGround.name = $"{recipe.name}_Ground";
+            Mesh groundMesh = WriteMesh($"{MESHES}/{recipe.name}_Ground.asset", builtGround);
+            if (groundMesh != builtGround)
+            {
+                UnityEngine.Object.DestroyImmediate(builtGround);
+            }
+
             TrackShape shape = recipe.Shape;
             Mesh mesh = LoadArtMesh(recipe.name);
             if (mesh != null)
@@ -115,6 +140,16 @@ namespace WrongLine.Road.Editor
                 renderer.shadowCastingMode = ShadowCastingMode.Off;
                 renderer.lightProbeUsage = LightProbeUsage.Off;
                 renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+
+                // The land beside the road comes and goes with the piece (see GroundProfile).
+                var ground = new GameObject(GROUND_CHILD);
+                ground.transform.SetParent(root.transform, false);
+                ground.AddComponent<MeshFilter>().sharedMesh = groundMesh;
+                var groundRenderer = ground.AddComponent<MeshRenderer>();
+                groundRenderer.sharedMaterial = groundMaterial;
+                groundRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                groundRenderer.lightProbeUsage = LightProbeUsage.Off;
+                groundRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
 
                 var view = root.AddComponent<RoadPieceView>();
                 var serialized = new SerializedObject(view);
@@ -287,6 +322,56 @@ namespace WrongLine.Road.Editor
             }
 
             return materials;
+        }
+
+        /// <summary>The ground's material: the curved shader with the biome blend on, the detail texture mapped from above.</summary>
+        private static Material EnsureGroundMaterial()
+        {
+            Shader shader = Shader.Find(ROAD_SHADER) ?? throw new InvalidOperationException($"Shader '{ROAD_SHADER}' not found.");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(GROUND_MATERIAL_PATH);
+            if (material == null)
+            {
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, GROUND_MATERIAL_PATH);
+            }
+
+            bool changed = false;
+            if (material.shader != shader)
+            {
+                material.shader = shader;
+                changed = true;
+            }
+
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(SceneryAssets.GROUND_TEXTURE_PATH);
+            if (texture != null && material.GetTexture("_BaseMap") == null)
+            {
+                material.SetTexture("_BaseMap", texture);
+                changed = true;
+            }
+
+            changed |= SetFloat(material, "_GroundBlend", 1f);
+            changed |= SetFloat(material, "_Cull", 0f); // Both sides: the ground folds inside tight bends (GroundMeshBuilder).
+            if (!material.IsKeywordEnabled("_GROUNDBLEND_ON"))
+            {
+                material.EnableKeyword("_GROUNDBLEND_ON");
+                changed = true;
+            }
+
+            // The shader maps the texture by world metres: the scale is one repeat per tile.
+            var wanted = new Vector2(1f / SceneryAssets.GroundTileMeters, 1f / SceneryAssets.GroundTileMeters);
+            if (material.GetTextureScale("_BaseMap") != wanted)
+            {
+                material.SetTextureScale("_BaseMap", wanted);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(material);
+            }
+
+            AssetDatabase.SaveAssetIfDirty(material);
+            return material;
         }
 
         /// <returns>Whether anything changed.</returns>

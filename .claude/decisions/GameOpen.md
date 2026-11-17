@@ -99,6 +99,16 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
 - ~~**Kalıcı havuz:** parça havuzu önce oyunun kendi root singleton'ı olur; `IPools`'a root-lifetime modu gerekiyorsa
   "Template'e gidenler"e taşınır.~~ Template'e gidecek bir şey yok: root singleton `IPools`'tan root'un havuzunu alır
   (2026-11-16, `Game.md` M1 kararları "Havuz").
+- **Ortam (Faz B, 2026-11-17) açıkları:**
+  1. **Zeminin ucu görünüyor:** zemin 80 m'de bitiyor, iç virajda da kesiliyor; arkasında gökyüzünün ufuk altı rengi var ve
+     zeminle uyuşmuyor (Play'de açık şerit olarak görüldü). Öneri: `SkyGradient`'in ufuk altı rengini biyomun zemin rengine
+     (ışık ve sisle aynı tonda) bağlamak; olmazsa zemini 150 m'ye uzatmak (üçgen +~%30). Karar kullanıcının gözünden sonra.
+  2. ~~**Sanatçı teslimi:**~~ tam set geldi ve oyunda (2026-11-17, `Game.md` Faz B eki). Eski not: brif (`.claude/notes/env/brief.md`, `my3dartist-33`): önce `Meadow_TreeRound_01` +
+     `Shared_StreetLamp` denemesi, sonra 4 biyom ve `Ground_Detail.png`. Gelince: `Rebuild Props` + `Rebuild Pieces`
+     (zemin dokusu), eksen/pivot/ölçek kontrolü.
+  3. **Mobil yük:** aktif ~100 prop + zemin ~6000 üçgen; ağaç gölgeleri açık. Android'de ölçülür (ilk build ile).
+  4. **Sonraki ortam fikirleri:** biyoma göre gökyüzü/sis tonu, uzak siluet (dağ, kanyon, tepe kartları), biyom başına prop
+     yoğunluğu ayarı oynanınca.
 
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"

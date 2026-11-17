@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using VContainer;
 using WrongLine.Road;
+using WrongLine.Scenery;
 #if STORE_STEAM
 using AF.Platform.Steam;
 #elif STORE_EPIC
@@ -37,6 +38,12 @@ namespace WrongLine
 
         [SerializeField, Required, Tooltip("The road's tunable numbers: seed, window, floating origin, generator rules.")]
         private RoadConfig _roadConfig;
+
+        [SerializeField, Required, Tooltip("The roadside props per biome. Prefabs rebuilt by WrongLine/Scenery/Rebuild Props.")]
+        private SceneryCatalog _sceneryCatalog;
+
+        [SerializeField, Required, Tooltip("The roadside's tunable numbers: biome lengths, the ground strip, prewarm.")]
+        private SceneryConfig _sceneryConfig;
 
         protected override void ConfigureGame(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
@@ -66,6 +73,11 @@ namespace WrongLine
             builder.RegisterInstance(_roadCatalog);
             builder.RegisterInstance(_roadConfig);
             builder.Register<RoadPiecePool>(Lifetime.Singleton).As<IRoadPiecePool>();
+
+            // The roadside props too: one pool per prop, filled while the menu is up.
+            builder.RegisterInstance(_sceneryCatalog);
+            builder.RegisterInstance(_sceneryConfig);
+            builder.Register<SceneryPool>(Lifetime.Singleton).As<ISceneryPool>();
         }
     }
 }

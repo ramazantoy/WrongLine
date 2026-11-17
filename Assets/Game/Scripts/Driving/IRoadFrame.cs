@@ -12,5 +12,10 @@ namespace WrongLine.Driving
 
         /// <summary>Scene positions are world positions minus this.</summary>
         WorldPoint Origin { get; }
+
+        /// <summary>The first and last road piece now out in the scene.</summary>
+        int FirstActive { get; }
+
+        int LastActive { get; }
     }
 }

@@ -1,0 +1,336 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b07dd1a1838becc4fbf6a97e6b7c4b71, type: 3}
+  m_Name: SceneryCatalog
+  m_EditorClassIdentifier: Game::WrongLine.Scenery.SceneryCatalog
+  _shared:
+  - _name: Shared_StreetLamp
+    _prefab: {fileID: 3089906125593657442, guid: 30bdacb431a36024e89e680178eb07ec, type: 3}
+    _placeholder: 6
+    _mainColor: {r: 1, g: 0.9529412, b: 0.76862746, a: 1}
+    _frameColor: {r: 0.6039216, g: 0.627451, b: 0.6784314, a: 1}
+    _mode: 1
+    _density: 0
+    _spacing: 40
+    _side: 0
+    _lateralMin: 9
+    _lateralMax: 9
+    _footprint: 0.4
+    _scaleRange: {x: 1, y: 1}
+    _castShadows: 1
+  - _name: Shared_RoadSign
+    _prefab: {fileID: 8458858829579301695, guid: 57d2a0b55a67def41a3385ad0506bc2a, type: 3}
+    _placeholder: 7
+    _mainColor: {r: 0.22745098, g: 0.49803922, b: 0.78431374, a: 1}
+    _frameColor: {r: 0.6039216, g: 0.627451, b: 0.6784314, a: 1}
+    _mode: 0
+    _density: 0.4
+    _spacing: 0
+    _side: 0
+    _lateralMin: 9.5
+    _lateralMax: 11
+    _footprint: 0.6
+    _scaleRange: {x: 1, y: 1}
+    _castShadows: 0
+  - _name: Shared_UtilityPole
+    _prefab: {fileID: 7208181279755658272, guid: edeaebd7e778f984291381e5d84bb6db, type: 3}
+    _placeholder: 8
+    _mainColor: {r: 0.41960785, g: 0.32941177, b: 0.2509804, a: 1}
+    _frameColor: {r: 0.41960785, g: 0.32941177, b: 0.2509804, a: 1}
+    _mode: 1
+    _density: 0
+    _spacing: 60
+    _side: 1
+    _lateralMin: 15
+    _lateralMax: 15
+    _footprint: 0.4
+    _scaleRange: {x: 1, y: 1}
+    _castShadows: 0
+  _biomes:
+  - _name: Meadow
+    _groundColor: {r: 0.5803922, g: 0.8039216, b: 0.40784314, a: 1}
+    _props:
+    - _name: Meadow_TreeRound_01
+      _prefab: {fileID: 1491027932230770785, guid: e5e4a936f1405ea45b83de7bbacf607e, type: 3}
+      _placeholder: 1
+      _mainColor: {r: 0.36862746, g: 0.56078434, b: 0.30588236, a: 1}
+      _frameColor: {r: 0.47843137, g: 0.3529412, b: 0.23529412, a: 1}
+      _mode: 0
+      _density: 4
+      _spacing: 0
+      _side: 0
+      _lateralMin: 11
+      _lateralMax: 45
+      _footprint: 2
+      _scaleRange: {x: 0.8, y: 1.3}
+      _castShadows: 1
+    - _name: Meadow_TreeRound_02
+      _prefab: {fileID: 7129999853529251436, guid: 95ee82dac53007b48b7d4876b767b6f8, type: 3}
+      _placeholder: 1
+      _mainColor: {r: 0.43529412, g: 0.6392157, b: 0.3529412, a: 1}
+      _frameColor: {r: 0.47843137, g: 0.3529412, b: 0.23529412, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 14
+      _lateralMax: 60
+      _footprint: 2
+      _scaleRange: {x: 0.9, y: 1.4}
+      _castShadows: 1
+    - _name: Meadow_Pine_01
+      _prefab: {fileID: 7659764326518920780, guid: 2d449df00bb4e904fb0b0e1251038285, type: 3}
+      _placeholder: 0
+      _mainColor: {r: 0.30980393, g: 0.49803922, b: 0.27058825, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 4
+      _spacing: 0
+      _side: 0
+      _lateralMin: 12
+      _lateralMax: 70
+      _footprint: 1.8
+      _scaleRange: {x: 0.8, y: 1.5}
+      _castShadows: 1
+    - _name: Meadow_Bush_01
+      _prefab: {fileID: 4580055255972336785, guid: f75515542f8d8b743ae35ce24df74875, type: 3}
+      _placeholder: 3
+      _mainColor: {r: 0.35686275, g: 0.5411765, b: 0.2784314, a: 1}
+      _frameColor: {r: 0.35686275, g: 0.5411765, b: 0.2784314, a: 1}
+      _mode: 0
+      _density: 6
+      _spacing: 0
+      _side: 0
+      _lateralMin: 9.5
+      _lateralMax: 30
+      _footprint: 1
+      _scaleRange: {x: 0.7, y: 1.3}
+      _castShadows: 0
+    - _name: Meadow_Rock_01
+      _prefab: {fileID: 266570012369958386, guid: 97fca88cd962f9943a13fa70a7156484, type: 3}
+      _placeholder: 4
+      _mainColor: {r: 0.5529412, g: 0.5411765, b: 0.5176471, a: 1}
+      _frameColor: {r: 0.5529412, g: 0.5411765, b: 0.5176471, a: 1}
+      _mode: 0
+      _density: 2
+      _spacing: 0
+      _side: 0
+      _lateralMin: 10
+      _lateralMax: 50
+      _footprint: 1.2
+      _scaleRange: {x: 0.7, y: 1.6}
+      _castShadows: 0
+  - _name: Autumn
+    _groundColor: {r: 0.85882354, g: 0.6392157, b: 0.36078432, a: 1}
+    _props:
+    - _name: Autumn_Tree_01
+      _prefab: {fileID: 6637837799270831608, guid: 70c4510ca549f8443983d6cb377613dd, type: 3}
+      _placeholder: 1
+      _mainColor: {r: 0.78431374, g: 0.39215687, b: 0.18039216, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 4
+      _spacing: 0
+      _side: 0
+      _lateralMin: 11
+      _lateralMax: 45
+      _footprint: 2
+      _scaleRange: {x: 0.8, y: 1.3}
+      _castShadows: 1
+    - _name: Autumn_Tree_02
+      _prefab: {fileID: 363289563949378564, guid: 7f80be03606389b42b96d53787f1f168, type: 3}
+      _placeholder: 1
+      _mainColor: {r: 0.8509804, g: 0.63529414, b: 0.22745098, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 14
+      _lateralMax: 60
+      _footprint: 2
+      _scaleRange: {x: 0.9, y: 1.4}
+      _castShadows: 1
+    - _name: Autumn_TreeBare_01
+      _prefab: {fileID: 4640575749930504331, guid: 527d1fe65a15f3b4e814df6a44fce477, type: 3}
+      _placeholder: 2
+      _mainColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 11
+      _lateralMax: 50
+      _footprint: 1.5
+      _scaleRange: {x: 0.8, y: 1.3}
+      _castShadows: 1
+    - _name: Autumn_HayBale_01
+      _prefab: {fileID: 4690179149497498150, guid: ba437713e9caa0845aab780cf4ef112d, type: 3}
+      _placeholder: 9
+      _mainColor: {r: 0.84705883, g: 0.72156864, b: 0.3764706, a: 1}
+      _frameColor: {r: 0.78431374, g: 0.65882355, b: 0.3137255, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 10
+      _lateralMax: 40
+      _footprint: 1
+      _scaleRange: {x: 0.9, y: 1.1}
+      _castShadows: 0
+    - _name: Autumn_Fence_01
+      _prefab: {fileID: 2358699516336271520, guid: 4e2d55a25b6d5974eb899eca6d349cfb, type: 3}
+      _placeholder: 10
+      _mainColor: {r: 0.5411765, g: 0.41568628, b: 0.2901961, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 1.5
+      _spacing: 0
+      _side: 0
+      _lateralMin: 11
+      _lateralMax: 20
+      _footprint: 2
+      _scaleRange: {x: 1, y: 1}
+      _castShadows: 0
+  - _name: Desert
+    _groundColor: {r: 1, g: 0.94509804, b: 0.6862745, a: 1}
+    _props:
+    - _name: Desert_Cactus_01
+      _prefab: {fileID: 7328846753603420860, guid: 574167abd4528dc49958c9dbf8008b9b, type: 3}
+      _placeholder: 5
+      _mainColor: {r: 0.30588236, g: 0.5411765, b: 0.2901961, a: 1}
+      _frameColor: {r: 0.30588236, g: 0.5411765, b: 0.2901961, a: 1}
+      _mode: 0
+      _density: 4
+      _spacing: 0
+      _side: 0
+      _lateralMin: 9.5
+      _lateralMax: 45
+      _footprint: 0.8
+      _scaleRange: {x: 0.8, y: 1.3}
+      _castShadows: 1
+    - _name: Desert_Cactus_02
+      _prefab: {fileID: 8909075082885112055, guid: 1f8a833b590151b459e0c7b952bc22c8, type: 3}
+      _placeholder: 5
+      _mainColor: {r: 0.37254903, g: 0.6039216, b: 0.32156864, a: 1}
+      _frameColor: {r: 0.37254903, g: 0.6039216, b: 0.32156864, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 9.5
+      _lateralMax: 50
+      _footprint: 0.8
+      _scaleRange: {x: 0.6, y: 1}
+      _castShadows: 1
+    - _name: Desert_Rocks_01
+      _prefab: {fileID: 8848638179653541021, guid: 8bfca33ed97c75f4e82cae580eebd444, type: 3}
+      _placeholder: 4
+      _mainColor: {r: 0.70980394, g: 0.4392157, b: 0.2901961, a: 1}
+      _frameColor: {r: 0.70980394, g: 0.4392157, b: 0.2901961, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 11
+      _lateralMax: 40
+      _footprint: 2
+      _scaleRange: {x: 0.8, y: 1.3}
+      _castShadows: 0
+    - _name: Desert_Rocks_02
+      _prefab: {fileID: 2063586047753726026, guid: 67110b559a6cd13449b6762ae31ba1a6, type: 3}
+      _placeholder: 4
+      _mainColor: {r: 0.7882353, g: 0.5647059, b: 0.3764706, a: 1}
+      _frameColor: {r: 0.7882353, g: 0.5647059, b: 0.3764706, a: 1}
+      _mode: 0
+      _density: 1.5
+      _spacing: 0
+      _side: 0
+      _lateralMin: 25
+      _lateralMax: 70
+      _footprint: 5
+      _scaleRange: {x: 0.8, y: 1.2}
+      _castShadows: 0
+    - _name: Desert_DryBush_01
+      _prefab: {fileID: 4416526543188555598, guid: f29275d2b3299f34e98fb55367c1c374, type: 3}
+      _placeholder: 3
+      _mainColor: {r: 0.6117647, g: 0.5411765, b: 0.33333334, a: 1}
+      _frameColor: {r: 0.6117647, g: 0.5411765, b: 0.33333334, a: 1}
+      _mode: 0
+      _density: 5
+      _spacing: 0
+      _side: 0
+      _lateralMin: 9.5
+      _lateralMax: 35
+      _footprint: 1
+      _scaleRange: {x: 0.6, y: 1}
+      _castShadows: 0
+  - _name: Snow
+    _groundColor: {r: 1, g: 1, b: 1, a: 1}
+    _props:
+    - _name: Snow_Pine_01
+      _prefab: {fileID: 7592133022266594188, guid: 80853e6795dabbe4a8fa3efb04b6d535, type: 3}
+      _placeholder: 0
+      _mainColor: {r: 0.36078432, g: 0.49803922, b: 0.41568628, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 6
+      _spacing: 0
+      _side: 0
+      _lateralMin: 12
+      _lateralMax: 60
+      _footprint: 1.8
+      _scaleRange: {x: 0.8, y: 1.5}
+      _castShadows: 1
+    - _name: Snow_Pine_02
+      _prefab: {fileID: 8618292366806497777, guid: 113355ed62824064fab68b53f70f63b6, type: 3}
+      _placeholder: 0
+      _mainColor: {r: 0.2901961, g: 0.43137255, b: 0.34509805, a: 1}
+      _frameColor: {r: 0.41960785, g: 0.30980393, b: 0.22745098, a: 1}
+      _mode: 0
+      _density: 4
+      _spacing: 0
+      _side: 0
+      _lateralMin: 14
+      _lateralMax: 70
+      _footprint: 1.8
+      _scaleRange: {x: 1, y: 1.7}
+      _castShadows: 1
+    - _name: Snow_Rock_01
+      _prefab: {fileID: 5516529175441352312, guid: 47174ef7abb903440b76f2a1cb40d43c, type: 3}
+      _placeholder: 4
+      _mainColor: {r: 0.6039216, g: 0.6392157, b: 0.6784314, a: 1}
+      _frameColor: {r: 0.6039216, g: 0.6392157, b: 0.6784314, a: 1}
+      _mode: 0
+      _density: 3
+      _spacing: 0
+      _side: 0
+      _lateralMin: 10
+      _lateralMax: 50
+      _footprint: 1.2
+      _scaleRange: {x: 0.8, y: 1.8}
+      _castShadows: 0
+    - _name: Snow_Stake_01
+      _prefab: {fileID: 8027824966973635340, guid: d61fd69cbf8f9724599fa8b015eac582, type: 3}
+      _placeholder: 11
+      _mainColor: {r: 0.8784314, g: 0.3529412, b: 0.22745098, a: 1}
+      _frameColor: {r: 0.9490196, g: 0.9490196, b: 0.9490196, a: 1}
+      _mode: 1
+      _density: 0
+      _spacing: 25
+      _side: 0
+      _lateralMin: 8.5
+      _lateralMax: 8.5
+      _footprint: 0.2
+      _scaleRange: {x: 1, y: 1}
+      _castShadows: 0

@@ -4,6 +4,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using WrongLine.Car;
+using WrongLine.Scenery;
 using WrongLine.World;
 
 namespace WrongLine.Driving
@@ -23,6 +24,9 @@ namespace WrongLine.Driving
         [SerializeField, Required] private ChaseCameraView _camera;
         [SerializeField, Required] private RoadDebugHud _hud;
 
+        /// <summary>Mixed into the run seed for the biomes, so they do not repeat the road generator's numbers.</summary>
+        private const ulong BiomeSeedSalt = 0xB10E5EEDC0FFEE11UL;
+
         protected override void ConfigureScene(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
             builder.RegisterMessageBroker<RoadOriginShifted>(messagePipe);
@@ -40,9 +44,16 @@ namespace WrongLine.Driving
             builder.Register<SteerInput>(Lifetime.Singleton).As<ISteerInput>();
             builder.RegisterEntryPoint<CarController>().As<ICarMotion>(); // Before the streamer: it reads the speed.
             builder.RegisterEntryPoint<RoadStreamer>().As<IRoadFrame>();
+            builder.Register(resolver => new BiomeSchedule(
+                resolver.Resolve<IRunSeed>().Value ^ BiomeSeedSalt,
+                resolver.Resolve<ISceneryPool>().Set.Biomes.Count,
+                resolver.Resolve<SceneryConfig>().Biomes), Lifetime.Singleton);
+            builder.RegisterEntryPoint<SceneryStreamer>(); // After the road streamer: it reads the pieces the road put out.
+            builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
             builder.RegisterEntryPoint<ChaseCameraDriver>();
             builder.RegisterEntryPoint<CurveWorldDriver>(); // After the camera driver: it reads where the camera ended up.
+            builder.RegisterEntryPoint<GroundBackdropDriver>(); // After the camera driver too: it follows the camera.
             builder.RegisterEntryPoint<DayNightDriver>();
         }
     }

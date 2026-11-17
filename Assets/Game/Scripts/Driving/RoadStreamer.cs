@@ -47,6 +47,10 @@ namespace WrongLine.Driving
 
         public WorldPoint Origin => _run.Origin;
 
+        public int FirstActive => _run.FirstActive;
+
+        public int LastActive => _run.LastActive;
+
         public void Start()
         {
             // Normally done in the menu; a run started straight from this scene does it here.
