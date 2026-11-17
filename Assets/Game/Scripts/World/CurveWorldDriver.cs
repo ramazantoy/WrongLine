@@ -15,13 +15,17 @@ namespace WrongLine.World
         private static readonly int _originId = Shader.PropertyToID("_WL_CurveOrigin");
         private static readonly int _paramsId = Shader.PropertyToID("_WL_CurveParams");
 
+        private static readonly int _holdId = Shader.PropertyToID("_WL_SkyHorizonHold");
+
         private readonly ChaseCameraView _camera;
+        private readonly ChaseCameraConfig _cameraConfig;
         private readonly CurveWorldConfig _config;
         private readonly RoadConfig _road;
 
-        public CurveWorldDriver(ChaseCameraView camera, CurveWorldConfig config, RoadConfig road)
+        public CurveWorldDriver(ChaseCameraView camera, CurveWorldConfig config, RoadConfig road, ChaseCameraConfig cameraConfig)
         {
             config.Settings.Validate();
+            _cameraConfig = cameraConfig;
             _camera = camera;
             _config = config;
             _road = road;
@@ -40,6 +44,7 @@ namespace WrongLine.World
             Vector3 position = _camera.Position;
             Shader.SetGlobalVector(_originId, new Vector4(position.x, position.y, position.z, 0f));
             Shader.SetGlobalVector(_paramsId, new Vector4(settings.StartMeters, settings.Strength, 0f, 0f));
+            Shader.SetGlobalFloat(_holdId, CurveBend.HorizonHold(settings, _cameraConfig.Settings.Height, _road.AheadMeters));
             ApplyFog();
         }
 

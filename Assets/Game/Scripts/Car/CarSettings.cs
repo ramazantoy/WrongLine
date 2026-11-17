@@ -35,6 +35,9 @@ namespace WrongLine.Car
             public float SmoothTime = 0.12f;
 
             public float MaxLateralSpeed = 14f;
+
+            /// <summary>The lane the car starts in (0 is the leftmost); 2 is the first lane right of the middle line on a four-lane road.</summary>
+            public int StartLane = 2;
         }
 
         [Serializable]
@@ -88,10 +91,11 @@ namespace WrongLine.Car
             Require(Lateral.CarHalfWidth >= 0f && Lateral.CarHalfWidth < RoadSection.HalfWidth, "Lateral: CarHalfWidth must fit on the road.");
             Require(Lateral.DragMetersPerScreen > 0f && Lateral.AxisSpeed > 0f, "Lateral: DragMetersPerScreen and AxisSpeed must be positive.");
             Require(Lateral.SmoothTime > 0f && Lateral.MaxLateralSpeed > 0f, "Lateral: SmoothTime and MaxLateralSpeed must be positive.");
+            Require(Lateral.StartLane >= 0 && Lateral.StartLane < RoadSection.LaneCount, "Lateral: StartLane must be one of the road's lanes.");
             Require(Pose.HeadingGain >= 0f && Pose.MaxYawDegrees >= 0f && Pose.RollPerAcceleration >= 0f && Pose.MaxRollDegrees >= 0f, "Pose: gains and limits must not be negative.");
             Require(Pose.RollSharpness > 0f && Pose.WheelRadius > 0f, "Pose: RollSharpness and WheelRadius must be positive.");
             Require(Pose.MaxWheelDegrees >= 0f && Pose.MaxSteerDegrees >= 0f, "Pose: wheel and steer angles must not be negative.");
-            Require(Signal.Period > 0f && Signal.MinBlinks >= 1 && Signal.Hysteresis >= 0f && Signal.Hysteresis < RoadSection.LineOffset, "Signal: Period positive, MinBlinks at least 1, Hysteresis in [0, lane line offset).");
+            Require(Signal.Period > 0f && Signal.MinBlinks >= 1 && Signal.Hysteresis >= 0f && Signal.Hysteresis < RoadSection.LaneWidth * 0.5f, "Signal: Period positive, MinBlinks at least 1, Hysteresis in [0, half a lane).");
         }
 
         private static void Require(bool condition, string message)

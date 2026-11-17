@@ -59,8 +59,9 @@ namespace WrongLine.Road.Editor
                     "Unity space: left-handed, +Y up, +Z forward, +X right. Metres. To Blender (right-handed, +Z up): blender = (x, z, y), so Unity forward (+Z) is Blender +Y and right (+X) is +X; swapping two axes flips handedness, so flip the triangle winding too.",
                     "A piece's pivot is its entry frame: the first position (0,0,0), facing +Z, up +Y. The next piece's pivot sits on this piece's exit.",
                     "Every piece starts and ends level, upright and straight, so any piece joins any other.",
-                    "The road surface is at y = 0 on the centre line (before banking). The asphalt spans -halfWidth..halfWidth across.",
+                    "The road surface is at y = 0 on the centre line (before banking). The asphalt spans -halfWidth..halfWidth across: laneCount lanes of laneWidth, with a lane line (lineWidth wide) at each of lineOffsets.",
                     "UV: u runs 0-1 across the asphalt (curbs continue past 0 and 1); v is the distance along the piece divided by tileLength.",
+                    "The road is two lanes each way. The line between the directions (lineOffsets[centerLineIndex]) is drawn solid yellow, the other lines dashed white; the colour comes from the line texture read by the line's UV u, so every vertex of the line submesh needs the same u (across the asphalt) and v (along the piece) as the asphalt around it.",
                     "Frames are every frameStep metres along the piece; positions, forwards and ups are x y z triples per frame.",
                     "A piece's mesh has four submeshes in submeshOrder, one material slot each.",
                 },
@@ -69,11 +70,26 @@ namespace WrongLine.Road.Editor
                 curbHeight = RoadSection.CurbHeight,
                 thickness = RoadSection.Thickness,
                 lineWidth = RoadSection.LineWidth,
-                lineOffset = RoadSection.LineOffset,
+                laneCount = RoadSection.LaneCount,
+                laneWidth = RoadSection.LaneWidth,
+                oncomingLanes = RoadSection.OncomingLaneCount,
+                centerLineIndex = RoadSection.CenterLineIndex,
+                lineOffsets = LineOffsets(),
                 lineHeight = RoadSection.LineHeight,
                 tileLength = RoadSection.TileLength,
                 submeshOrder = new[] { "asphalt", "curb", "line", "body" },
             };
+        }
+
+        private static float[] LineOffsets()
+        {
+            var offsets = new float[RoadSection.LineCount];
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                offsets[i] = RoadSection.LineX(i);
+            }
+
+            return offsets;
         }
 
         public static string ToJson(RoadPieceContract contract) => JsonUtility.ToJson(contract, true) + "\n";

@@ -280,6 +280,15 @@ namespace WrongLine.Road.Editor
             {
                 report.Error($"{location}: the mesh breaks the road piece contract: {problem}.", view);
             }
+
+            // The artist's model is in the project but the piece does not use it: Rebuild Pieces found it breaking the contract
+            // (made for another cross-section) and kept the generated mesh. Visible until the artist redelivers.
+            if (EditorUtility.IsPersistent(view)
+                && AssetDatabase.LoadAssetAtPath<GameObject>(RoadPieceBuilder.ArtModelPath(view.name)) != null
+                && !AssetDatabase.GetAssetPath(mesh).EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase))
+            {
+                report.Warning($"{location}: Art/{view.name}.fbx is not used, the generated mesh stands in (the art does not fit the current road section).", view);
+            }
         }
 
         private static void CheckEnd(string name, TrackFrame frame, TrackFrame neighbour, string location, ValidationReport report, Object context)

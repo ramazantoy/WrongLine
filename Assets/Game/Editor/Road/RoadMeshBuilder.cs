@@ -31,11 +31,7 @@ namespace WrongLine.Road.Editor
                 new Segment(-OuterX, RoadSection.CurbHeight, -RoadSection.HalfWidth, RoadSection.CurbHeight),
                 new Segment(-RoadSection.HalfWidth, RoadSection.CurbHeight, -RoadSection.HalfWidth, 0f),
             },
-            new[]
-            {
-                new Segment(-RoadSection.LineOffset - RoadSection.LineWidth * 0.5f, RoadSection.LineHeight, -RoadSection.LineOffset + RoadSection.LineWidth * 0.5f, RoadSection.LineHeight),
-                new Segment(RoadSection.LineOffset - RoadSection.LineWidth * 0.5f, RoadSection.LineHeight, RoadSection.LineOffset + RoadSection.LineWidth * 0.5f, RoadSection.LineHeight),
-            },
+            LineSegments(),
             new[]
             {
                 new Segment(OuterX, RoadSection.CurbHeight, OuterX, -RoadSection.Thickness),
@@ -43,6 +39,18 @@ namespace WrongLine.Road.Editor
                 new Segment(-OuterX, -RoadSection.Thickness, -OuterX, RoadSection.CurbHeight),
             },
         };
+
+        private static Segment[] LineSegments()
+        {
+            var segments = new Segment[RoadSection.LineCount];
+            for (int i = 0; i < segments.Length; i++)
+            {
+                float x = RoadSection.LineX(i);
+                segments[i] = new Segment(x - RoadSection.LineWidth * 0.5f, RoadSection.LineHeight, x + RoadSection.LineWidth * 0.5f, RoadSection.LineHeight);
+            }
+
+            return segments;
+        }
 
         /// <param name="shape">The baked centre line.</param>
         /// <param name="ringStride">Frames between two cross-sections of the mesh; 1 uses every frame.</param>

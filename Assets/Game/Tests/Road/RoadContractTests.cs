@@ -84,7 +84,16 @@ namespace WrongLine.Road.Tests
             Assert.AreEqual(RoadSection.CurbHeight, section.curbHeight);
             Assert.AreEqual(RoadSection.Thickness, section.thickness);
             Assert.AreEqual(RoadSection.LineWidth, section.lineWidth);
-            Assert.AreEqual(RoadSection.LineOffset, section.lineOffset);
+            Assert.AreEqual(RoadSection.LaneCount, section.laneCount);
+            Assert.AreEqual(RoadSection.LaneWidth, section.laneWidth);
+            Assert.AreEqual(RoadSection.LineCount, section.lineOffsets.Length);
+            Assert.AreEqual(RoadSection.OncomingLaneCount, section.oncomingLanes);
+            Assert.AreEqual(RoadSection.CenterLineIndex, section.centerLineIndex);
+            Assert.AreEqual(0f, section.lineOffsets[section.centerLineIndex], 1e-6f, "The line between the directions is the one on the centre line.");
+            for (int i = 0; i < section.lineOffsets.Length; i++)
+            {
+                Assert.AreEqual(RoadSection.LineX(i), section.lineOffsets[i], 1e-6f, $"line {i}");
+            }
             Assert.AreEqual(RoadSection.LineHeight, section.lineHeight);
             Assert.AreEqual(RoadSection.TileLength, section.tileLength);
             CollectionAssert.AreEqual(new[] { "asphalt", "curb", "line", "body" }, section.submeshOrder);

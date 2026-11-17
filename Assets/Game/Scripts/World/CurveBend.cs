@@ -32,5 +32,16 @@ namespace WrongLine.World
             float below = cameraHeight + Drop(settings, groundDistance);
             return (float)(Math.Atan2(below, groundDistance) * (180.0 / Math.PI));
         }
+
+        /// <summary>
+        /// How far below the horizon (as the sine of the angle, the sky shader's <c>direction.y</c> negated) the sky keeps the
+        /// horizon colour: the angle at which the road end appears plus the configured margin. Below it the sky blends to the
+        /// ground colour; above it a road fogged to the horizon colour has the same colour behind it.
+        /// </summary>
+        public static float HorizonHold(CurveWorldSettings settings, float cameraHeight, float roadEndGroundDistance)
+        {
+            double degrees = AngleBelowHorizon(settings, cameraHeight, roadEndGroundDistance) + settings.HorizonHoldMarginDegrees;
+            return (float)Math.Sin(Math.Min(degrees, 89.0) * (Math.PI / 180.0));
+        }
     }
 }

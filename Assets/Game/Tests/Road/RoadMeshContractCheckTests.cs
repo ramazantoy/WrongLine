@@ -191,6 +191,57 @@ namespace WrongLine.Road.Tests
         }
 
         [Test]
+        public void ALaneLineMissing_IsCaught_OnAFourLaneRoad()
+        {
+            // The middle line is the one a three-lane mesh has no counterpart for: with it gone, two lines remain, both fine.
+            AssertProblem(Straight, mesh =>
+            {
+                Mesh copy = Modified(mesh);
+                Vector3[] vertices = copy.vertices;
+                int[] line = copy.GetIndices(RoadMeshBuilder.SubmeshLine);
+                var kept = new List<int>();
+                for (int i = 0; i < line.Length; i += 3)
+                {
+                    if (Mathf.Abs(vertices[line[i]].x) > 1.5f)
+                    {
+                        kept.AddRange(new[] { line[i], line[i + 1], line[i + 2] });
+                    }
+                }
+
+                copy.SetTriangles(kept, RoadMeshBuilder.SubmeshLine);
+                return copy;
+            }, "not the line");
+        }
+
+        [Test]
+        public void LinesOnTheOldThreeLanePositions_AreCaught()
+        {
+            // A mesh from before the fourth lane: lines at +-1.5 m instead of -3, 0 and +3 m.
+            AssertProblem(Straight, mesh => Modified(mesh, v => Mathf.Abs(v.y - RoadSection.LineHeight) < 0.005f
+                ? new Vector3(v.x < -1.5f ? -1.5f : v.x > 1.5f ? 1.5f : v.x + 1.5f, v.y, v.z)
+                : v), "not the line");
+        }
+
+        [Test]
+        public void LaneLineUvsThatDoNotFollowTheRoad_AreCaught()
+        {
+            // A line unwrapped on its own (u from 0 to 1 across the strip) would read the wrong part of the line texture:
+            // the colour of each line comes from its u across the road.
+            AssertProblem(Straight, mesh =>
+            {
+                Mesh copy = Modified(mesh);
+                Vector2[] uvs = copy.uv;
+                foreach (int i in new HashSet<int>(copy.GetIndices(RoadMeshBuilder.SubmeshLine)))
+                {
+                    uvs[i] = new Vector2(0.1f, uvs[i].y);
+                }
+
+                copy.uv = uvs;
+                return copy;
+            }, "lane line UVs do not follow the road");
+        }
+
+        [Test]
         public void TrianglesWithNoArea_AreCaught()
         {
             AssertProblem(Straight, mesh =>

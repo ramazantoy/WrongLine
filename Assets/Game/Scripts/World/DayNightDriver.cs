@@ -2,6 +2,7 @@ using AF.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 using VContainer.Unity;
+using WrongLine.Driving;
 
 namespace WrongLine.World
 {
@@ -21,20 +22,25 @@ namespace WrongLine.World
         private readonly DayNightConfig _config;
         private readonly Light _sun;
         private readonly IGameClock _clock;
+        private readonly IRunSeed _seed;
         private DayNightRule _rule;
+        private float _startPhase;
         private float _elapsed;
 
-        public DayNightDriver(DayNightConfig config, Light sun, IGameClock clock)
+        public DayNightDriver(DayNightConfig config, Light sun, IGameClock clock, IRunSeed seed)
         {
             _config = config;
             _sun = sun;
             _clock = clock;
+            _seed = seed;
         }
 
         public void Start()
         {
             // The config is built into the rule once; its settings object is read live, so Inspector tuning still shows.
             _rule = new DayNightRule(_config.Settings);
+            _startPhase = _rule.StartPhaseFor(_seed.Value);
+            Log.Info($"[World] Day starts at phase {_startPhase:F3}.");
             RenderSettings.ambientMode = AmbientMode.Trilight;
             Apply();
         }
@@ -47,7 +53,7 @@ namespace WrongLine.World
 
         private void Apply()
         {
-            SkyState sky = _rule.Evaluate(_rule.PhaseAt(_elapsed));
+            SkyState sky = _rule.Evaluate(_rule.PhaseAt(_elapsed, _startPhase));
 
             Shader.SetGlobalColor(_zenithId, sky.Zenith);
             Shader.SetGlobalColor(_horizonId, sky.Horizon);

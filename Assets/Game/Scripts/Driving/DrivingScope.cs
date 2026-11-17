@@ -36,6 +36,7 @@ namespace WrongLine.Driving
             builder.RegisterComponent(_camera);
             builder.RegisterComponent(_hud).As<IRoadDebugHud>();
 
+            builder.Register<RunSeed>(Lifetime.Singleton).As<IRunSeed>();
             builder.Register<SteerInput>(Lifetime.Singleton).As<ISteerInput>();
             builder.RegisterEntryPoint<CarController>().As<ICarMotion>(); // Before the streamer: it reads the speed.
             builder.RegisterEntryPoint<RoadStreamer>().As<IRoadFrame>();

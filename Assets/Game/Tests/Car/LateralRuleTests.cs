@@ -1,10 +1,27 @@
 using NUnit.Framework;
 using UnityEngine;
+using WrongLine.Road;
 
 namespace WrongLine.Car.Tests
 {
     public class LateralRuleTests
     {
+        // The car starts in the middle of its start lane, not on the centre line.
+        private static float StartX(CarSettings settings) => RoadSection.LaneCenterX(settings.Lateral.StartLane);
+
+        [Test]
+        public void TheCar_StartsInTheMiddleOfItsStartLane()
+        {
+            var settings = new CarSettings();
+            settings.Lateral.StartLane = 1;
+
+            var rule = new LateralRule(settings);
+
+            Assert.AreEqual(-1.5f, rule.X, 1e-5f);
+            Assert.AreEqual(-1.5f, rule.TargetX, 1e-5f);
+            Assert.AreEqual(0f, rule.Velocity);
+        }
+
         private static void Run(LateralRule rule, float seconds, float deltaTime)
         {
             int steps = Mathf.RoundToInt(seconds / deltaTime);
@@ -22,8 +39,8 @@ namespace WrongLine.Car.Tests
 
             rule.Update(0.2f, 0f, 0f);
 
-            Assert.AreEqual(0.2f * settings.Lateral.DragMetersPerScreen, rule.TargetX, 1e-5f);
-            Assert.AreEqual(0f, rule.X, "The car has not moved yet: no time passed.");
+            Assert.AreEqual(StartX(settings) + 0.2f * settings.Lateral.DragMetersPerScreen, rule.TargetX, 1e-5f);
+            Assert.AreEqual(StartX(settings), rule.X, "The car has not moved yet: no time passed.");
         }
 
         [Test]
@@ -34,7 +51,7 @@ namespace WrongLine.Car.Tests
 
             rule.Update(0f, -1f, 0.25f);
 
-            Assert.AreEqual(-settings.Lateral.AxisSpeed * 0.25f, rule.TargetX, 1e-5f);
+            Assert.AreEqual(StartX(settings) - settings.Lateral.AxisSpeed * 0.25f, rule.TargetX, 1e-5f);
         }
 
         [Test]
@@ -69,14 +86,14 @@ namespace WrongLine.Car.Tests
         {
             var settings = new CarSettings();
             var rule = new LateralRule(settings);
-            rule.Update(2f / settings.Lateral.DragMetersPerScreen, 0f, 0f); // Target 2 m, set in one go.
+            rule.Update(2f / settings.Lateral.DragMetersPerScreen, 0f, 0f); // Target 2 m from the start, set in one go.
 
             Run(rule, 0.2f, deltaTime);
 
             // A critically damped spring from rest: x(t) = T (1 - (1 + wt) e^-wt).
             float omega = 2f / settings.Lateral.SmoothTime;
             float expected = 2f * (1f - (1f + omega * 0.2f) * Mathf.Exp(-omega * 0.2f));
-            Assert.AreEqual(expected, rule.X, 0.02f);
+            Assert.AreEqual(expected, rule.X - StartX(settings), 0.02f);
         }
 
         [Test]

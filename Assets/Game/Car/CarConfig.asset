@@ -23,6 +23,7 @@ MonoBehaviour:
       AxisSpeed: 8
       SmoothTime: 0.12
       MaxLateralSpeed: 14
+      StartLane: 2
     Pose:
       HeadingGain: 0.8
       MaxYawDegrees: 18

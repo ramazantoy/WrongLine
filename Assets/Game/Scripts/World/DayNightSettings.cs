@@ -13,7 +13,16 @@ namespace WrongLine.World
         [Tooltip("Seconds for one full day and night.")]
         public float CycleSeconds = 240f;
 
-        [Tooltip("Where in the day a run begins (0 sunrise, 0.25 noon, 0.5 sunset, 0.75 midnight).")]
+        [Tooltip("Begin each run at a time of day drawn from the run's seed (between the two phases below) instead of always at StartPhase.")]
+        public bool RandomStart = true;
+
+        [Tooltip("The earliest phase a random start may draw.")]
+        [Range(0f, 1f)] public float StartPhaseMin = 0f;
+
+        [Tooltip("The latest phase a random start may draw.")]
+        [Range(0f, 1f)] public float StartPhaseMax = 1f;
+
+        [Tooltip("Where in the day a run begins when RandomStart is off (0 sunrise, 0.25 noon, 0.5 sunset, 0.75 midnight).")]
         [Range(0f, 1f)] public float StartPhase = 0.15f;
 
         [Tooltip("Colour straight above the camera.")]
@@ -53,6 +62,11 @@ namespace WrongLine.World
             if (!(StartPhase >= 0f && StartPhase <= 1f))
             {
                 throw new ArgumentException("StartPhase must be between 0 and 1.");
+            }
+
+            if (!(StartPhaseMin >= 0f && StartPhaseMax <= 1f && StartPhaseMin <= StartPhaseMax))
+            {
+                throw new ArgumentException("Start phases must satisfy 0 <= StartPhaseMin <= StartPhaseMax <= 1.");
             }
 
             if (!(MinLightPitch >= 0f && MaxLightPitch <= 90f && MinLightPitch <= MaxLightPitch))

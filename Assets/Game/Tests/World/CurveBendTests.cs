@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using UnityEngine;
 using WrongLine.Driving;
 
 namespace WrongLine.World.Tests
@@ -87,6 +88,48 @@ namespace WrongLine.World.Tests
         public void Validate_AcceptsTheDefaults()
         {
             Assert.DoesNotThrow(() => new CurveWorldSettings().Validate());
+        }
+
+        [TestCase(-0.5f)]
+        [TestCase(30f)]
+        [TestCase(float.NaN)]
+        public void Validate_RejectsAHorizonHoldMarginOutOfRange(float margin)
+        {
+            var settings = new CurveWorldSettings { HorizonHoldMarginDegrees = margin };
+
+            Assert.Throws<ArgumentException>(() => settings.Validate());
+        }
+
+        [Test]
+        public void TheHorizonHold_IsTheSineOfTheRoadEndAnglePlusTheMargin()
+        {
+            var settings = new CurveWorldSettings { HorizonHoldMarginDegrees = 1f };
+            float angle = CurveBend.AngleBelowHorizon(settings, 4.5f, 400f);
+
+            float hold = CurveBend.HorizonHold(settings, 4.5f, 400f);
+
+            Assert.AreEqual(Mathf.Sin((angle + 1f) * Mathf.Deg2Rad), hold, 1e-5f);
+            Assert.Greater(hold, Mathf.Sin(angle * Mathf.Deg2Rad), "The margin puts the hold below the road end.");
+        }
+
+        [Test]
+        public void TheHorizonHold_ReachesLowerWhenTheBendIsStronger_AndCoversTheRoadEnd()
+        {
+            var weak = new CurveWorldSettings { Strength = 0.0001f };
+            var strong = new CurveWorldSettings { Strength = 0.0004f };
+
+            Assert.Greater(CurveBend.HorizonHold(strong, 4.5f, 400f), CurveBend.HorizonHold(weak, 4.5f, 400f));
+
+            float roadEnd = Mathf.Sin(CurveBend.AngleBelowHorizon(strong, 4.5f, 400f) * Mathf.Deg2Rad);
+            Assert.GreaterOrEqual(CurveBend.HorizonHold(strong, 4.5f, 400f), roadEnd);
+        }
+
+        [Test]
+        public void TheHorizonHold_StaysBelowTheNadir_EvenForAnAbsurdBend()
+        {
+            var settings = new CurveWorldSettings { Strength = 10f, HorizonHoldMarginDegrees = 20f };
+
+            Assert.LessOrEqual(CurveBend.HorizonHold(settings, 4.5f, 400f), 1f);
         }
     }
 }

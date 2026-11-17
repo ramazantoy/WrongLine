@@ -1,4 +1,5 @@
 using UnityEngine;
+using WrongLine.Road;
 
 namespace WrongLine.World
 {
@@ -13,10 +14,34 @@ namespace WrongLine.World
             _settings = settings;
         }
 
-        /// <summary>The phase (0..1, wrapping) after this many seconds of the run.</summary>
+        // Keeps the sky's draw apart from the road's: the same seed feeds both generators, which must not walk in step.
+        private const ulong SeedSalt = 0xD1B54A32D192ED03UL;
+
+        /// <summary>
+        /// Where in the day a run with this seed begins: drawn from the seed between the configured phases, or the configured
+        /// start phase when the random start is off. The same seed always gives the same phase.
+        /// </summary>
+        public float StartPhaseFor(ulong seed)
+        {
+            if (!_settings.RandomStart)
+            {
+                return _settings.StartPhase;
+            }
+
+            double draw = new RoadRandom(seed ^ SeedSalt).NextDouble();
+            return Mathf.Clamp((float)(_settings.StartPhaseMin + draw * (_settings.StartPhaseMax - _settings.StartPhaseMin)), _settings.StartPhaseMin, _settings.StartPhaseMax);
+        }
+
+        /// <summary>The phase (0..1, wrapping) after this many seconds of a run that began at the configured start phase.</summary>
         public float PhaseAt(float elapsedSeconds)
         {
-            return Mathf.Repeat(_settings.StartPhase + elapsedSeconds / _settings.CycleSeconds, 1f);
+            return PhaseAt(elapsedSeconds, _settings.StartPhase);
+        }
+
+        /// <summary>The phase (0..1, wrapping) after this many seconds of a run that began at <paramref name="startPhase"/>.</summary>
+        public float PhaseAt(float elapsedSeconds, float startPhase)
+        {
+            return Mathf.Repeat(startPhase + elapsedSeconds / _settings.CycleSeconds, 1f);
         }
 
         public SkyState Evaluate(float phase)

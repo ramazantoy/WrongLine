@@ -51,7 +51,17 @@ namespace WrongLine.Road.Editor
         public float curbHeight;
         public float thickness;
         public float lineWidth;
-        public float lineOffset;
+        public int laneCount;
+        public float laneWidth;
+
+        /// <summary>The left half of the road (lanes 0 .. oncomingLanes - 1) is the oncoming side.</summary>
+        public int oncomingLanes;
+
+        /// <summary>Index into lineOffsets of the line between the two directions: solid yellow; the others are dashed white.</summary>
+        public int centerLineIndex;
+
+        /// <summary>Sideways position of each lane line from the centre line, left to right (laneCount - 1 of them).</summary>
+        public float[] lineOffsets;
         public float lineHeight;
         public float tileLength;
 

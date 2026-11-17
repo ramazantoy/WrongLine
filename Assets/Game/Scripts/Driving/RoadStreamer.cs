@@ -17,6 +17,7 @@ namespace WrongLine.Driving
     internal sealed class RoadStreamer : IStartable, ITickable, IDisposable, IRoadFrame
     {
         private readonly IRoadPiecePool _pool;
+        private readonly IRunSeed _seed;
         private readonly RoadConfig _road;
         private readonly CurveWorldConfig _curve;
         private readonly ICarMotion _motion;
@@ -28,8 +29,9 @@ namespace WrongLine.Driving
         private readonly Dictionary<int, RoadPieceView> _views = new Dictionary<int, RoadPieceView>();
         private RoadRun _run;
 
-        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, ICarMotion motion, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud)
+        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, ICarMotion motion, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud, IRunSeed seed)
         {
+            _seed = seed;
             _curve = curve;
             _pool = pool;
             _road = road;
@@ -50,9 +52,7 @@ namespace WrongLine.Driving
             // Normally done in the menu; a run started straight from this scene does it here.
             _pool.Prewarm();
 
-            ulong seed = RoadSeed.Resolve(_road.Seed, unchecked((ulong)DateTime.UtcNow.Ticks));
-            Log.Info($"[Road] Run seed {seed}.");
-            _run = new RoadRun(_pool.Set.Infos, _road.Generator, seed, _road.AheadMeters, _road.BehindMeters, _road.OriginShiftMeters);
+            _run = new RoadRun(_pool.Set.Infos, _road.Generator, _seed.Value,_road.AheadMeters, _road.BehindMeters, _road.OriginShiftMeters);
             _run.Advance(0.0);
             Apply();
         }

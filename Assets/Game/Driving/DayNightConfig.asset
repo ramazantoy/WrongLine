@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game::WrongLine.World.DayNightConfig
   _settings:
     CycleSeconds: 240
+    RandomStart: 1
+    StartPhaseMin: 0
+    StartPhaseMax: 1
     StartPhase: 0.15
     Zenith:
       serializedVersion: 2

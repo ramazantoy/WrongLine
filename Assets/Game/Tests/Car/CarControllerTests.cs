@@ -1,6 +1,7 @@
 using AF.Core;
 using NUnit.Framework;
 using UnityEngine;
+using WrongLine.Road;
 
 namespace WrongLine.Car.Tests
 {
@@ -65,16 +66,17 @@ namespace WrongLine.Car.Tests
         [Test]
         public void ADragToTheRight_MovesTheCarRight_AndSignalsUntilItHasSettledInTheNextLane()
         {
-            _input.DragFraction = 0.25f; // 3 m with the default settings: the right lane.
+            _input.DragFraction = 0.25f; // 3 m with the default settings: from the lane right of the middle line to the outer one.
             _car.Tick();
             _input.DragFraction = 0f;
 
+            Assert.AreEqual(2, _car.Lane);
             Assert.AreEqual(SignalDirection.Right, _car.Signal);
             Assert.IsTrue(_car.LampOn);
-            Assert.Greater(_car.TargetX, 2.5f);
+            Assert.Greater(_car.TargetX, 4f);
 
             Run(0.6f);
-            Assert.AreEqual(1, _car.Lane);
+            Assert.AreEqual(3, _car.Lane);
             Assert.AreEqual(_car.TargetX, _car.X, 0.05f);
             Assert.AreEqual(SignalDirection.Right, _car.Signal, "Still blinking: a signal always blinks its minimum.");
 
@@ -88,10 +90,10 @@ namespace WrongLine.Car.Tests
         {
             _input.Axis = -1f;
 
-            Run(1f);
+            Run(1.5f);
 
-            Assert.Less(_car.X, -2f);
-            Assert.AreEqual(-1, _car.Lane);
+            Assert.Less(_car.X, -3.5f);
+            Assert.AreEqual(0, _car.Lane);
             Assert.AreEqual(-_config.Settings.LateralLimit, _car.TargetX, 1e-4f);
         }
 
@@ -106,7 +108,7 @@ namespace WrongLine.Car.Tests
                 _car.Tick();
             }
 
-            Assert.AreEqual(0f, _car.X);
+            Assert.AreEqual(RoadSection.LaneCenterX(_config.Settings.Lateral.StartLane), _car.X);
             Assert.AreEqual(_config.Settings.Speed.StartSpeed, _car.Speed);
         }
     }

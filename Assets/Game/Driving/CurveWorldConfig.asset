@@ -15,3 +15,6 @@ MonoBehaviour:
   _settings:
     StartMeters: 30
     Strength: 0.0004
+    FogStartFraction: 0.25
+    FogEndMargin: 40
+    HorizonHoldMarginDegrees: 1

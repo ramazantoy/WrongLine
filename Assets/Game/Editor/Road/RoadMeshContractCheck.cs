@@ -66,7 +66,33 @@ namespace WrongLine.Road.Editor
             CheckExtent(projected, shape, problems);
             CheckAsphalt(mesh, projected, normals, uvs, vertices, shape, problems);
             CheckSubmeshRoles(mesh, projected, problems);
+            CheckLineUvs(mesh, projected, uvs, problems);
             return problems;
+        }
+
+        // The line texture is painted across u: solid yellow in the middle, dashed white on the other lines. A line's colour
+        // therefore comes from its u, which must follow the asphalt's (u across the road, v along it), like every other part.
+        private static void CheckLineUvs(Mesh mesh, Projected[] projected, List<Vector2> uvs, List<string> problems)
+        {
+            int[] indices = mesh.GetIndices(RoadMeshBuilder.SubmeshLine);
+            if (indices.Length < 3 || uvs.Count != projected.Length)
+            {
+                return; // An empty line is reported by the role check, missing UVs by the asphalt check.
+            }
+
+            float worstU = 0f;
+            float worstV = 0f;
+            foreach (int i in new HashSet<int>(indices))
+            {
+                float expectedU = (projected[i].X + RoadSection.HalfWidth) / (2f * RoadSection.HalfWidth);
+                worstU = Mathf.Max(worstU, Mathf.Abs(uvs[i].x - expectedU));
+                worstV = Mathf.Max(worstV, Mathf.Abs(uvs[i].y - projected[i].S / RoadSection.TileLength));
+            }
+
+            if (worstU > UvTolerance || worstV > UvTolerance)
+            {
+                problems.Add($"the lane line UVs do not follow the road: u must be (sideways + {RoadSection.HalfWidth:F1}) / {2f * RoadSection.HalfWidth:F1} and v the distance along the piece over {RoadSection.TileLength:F0} m, but u is off by up to {worstU:F3} and v by up to {worstV:F3} (the line colour is read from u)");
+            }
         }
 
         // The prefab gives submesh i the material of role i, so a mesh whose curb and line submeshes are swapped would draw
@@ -74,8 +100,7 @@ namespace WrongLine.Road.Editor
         private static void CheckSubmeshRoles(Mesh mesh, Projected[] projected, List<string> problems)
         {
             const float roleTolerance = 0.15f;
-            float lineOuter = RoadSection.LineOffset + RoadSection.LineWidth + roleTolerance;
-            float lineInner = RoadSection.LineOffset - RoadSection.LineWidth - roleTolerance;
+            float lineReach = RoadSection.LineWidth + roleTolerance;
 
             for (int submesh = RoadMeshBuilder.SubmeshCurb; submesh <= RoadMeshBuilder.SubmeshBody; submesh++)
             {
@@ -91,8 +116,23 @@ namespace WrongLine.Road.Editor
                 float maxAbsX = 0f;
                 float minY = float.MaxValue;
                 float maxY = float.MinValue;
+                var lineHit = new bool[RoadSection.LineCount];
+                bool strayLineVertex = false;
                 foreach (int i in new HashSet<int>(indices))
                 {
+                    if (submesh == RoadMeshBuilder.SubmeshLine)
+                    {
+                        int nearest = NearestLine(projected[i].X);
+                        if (Mathf.Abs(projected[i].X - RoadSection.LineX(nearest)) <= lineReach)
+                        {
+                            lineHit[nearest] = true;
+                        }
+                        else
+                        {
+                            strayLineVertex = true;
+                        }
+                    }
+
                     float absX = Mathf.Abs(projected[i].X);
                     minAbsX = Mathf.Min(minAbsX, absX);
                     maxAbsX = Mathf.Max(maxAbsX, absX);
@@ -109,8 +149,8 @@ namespace WrongLine.Road.Editor
                 }
                 else if (submesh == RoadMeshBuilder.SubmeshLine)
                 {
-                    fits = minAbsX >= lineInner && maxAbsX <= lineOuter && maxY <= RoadSection.LineHeight + roleTolerance;
-                    expected = $"lie in two strips {RoadSection.LineOffset:F1} m either side of the centre, near the surface";
+                    fits = !strayLineVertex && System.Array.TrueForAll(lineHit, hit => hit) && maxY <= RoadSection.LineHeight + roleTolerance;
+                    expected = $"lie in {RoadSection.LineCount} strips, one on each lane line ({LineList()} m from the centre), near the surface";
                 }
                 else
                 {
@@ -123,6 +163,31 @@ namespace WrongLine.Road.Editor
                     problems.Add($"submesh {submesh + 1} is not the {role}: it spans {minAbsX:F2} to {maxAbsX:F2} m sideways and {minY:F2} to {maxY:F2} m high, the {role} must {expected} (the submeshes go asphalt, curb, line, body, in that order)");
                 }
             }
+        }
+
+        private static int NearestLine(float x)
+        {
+            int nearest = 0;
+            for (int i = 1; i < RoadSection.LineCount; i++)
+            {
+                if (Mathf.Abs(x - RoadSection.LineX(i)) < Mathf.Abs(x - RoadSection.LineX(nearest)))
+                {
+                    nearest = i;
+                }
+            }
+
+            return nearest;
+        }
+
+        private static string LineList()
+        {
+            var positions = new string[RoadSection.LineCount];
+            for (int i = 0; i < positions.Length; i++)
+            {
+                positions[i] = RoadSection.LineX(i).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            return string.Join(", ", positions);
         }
 
         private static void CheckExtent(Projected[] projected, TrackShape shape, List<string> problems)

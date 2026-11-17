@@ -15,6 +15,17 @@ Shader "WrongLine/CurvedLit"
         _PaintMask("Paint Mask Texture", 2D) = "black" {}
         _PaintColor("Paint Color", Color) = (1, 1, 1, 1)
 
+        // Lane lines: a strip 0.15 m wide is under a pixel far down the road, and a sub-pixel strip is drawn in broken bits.
+        // With the toggle on, the vertices of a line move apart sideways, away from the line's centre (a multiple of the
+        // spacing), until the strip is at least the minimum number of pixels wide at its distance. The depth offset keeps a
+        // line, which sits 2 cm above the asphalt, in front of it where the depth buffer cannot tell 2 cm apart.
+        [Toggle(_LINEWIDEN_ON)] _LineWiden("Widen Thin Lines", Float) = 0
+        _LineWidth("Line Width", Float) = 0.15
+        _LineSpacing("Line Spacing", Float) = 3
+        _LineMinPixels("Line Minimum Pixels", Float) = 1.5
+        [HideInInspector] _OffsetFactor("Offset Factor", Float) = 0
+        [HideInInspector] _OffsetUnits("Offset Units", Float) = 0
+
         // Glass: alpha blend (the base colour's alpha is the opacity). Opaque is One / Zero with depth writing on.
         [HideInInspector] _SrcBlend("Src Blend", Float) = 1
         [HideInInspector] _DstBlend("Dst Blend", Float) = 0
@@ -41,6 +52,9 @@ Shader "WrongLine/CurvedLit"
             half4 _BaseColor;
             half _Cutoff;
             half4 _PaintColor;
+            float _LineWidth;
+            float _LineSpacing;
+            float _LineMinPixels;
         CBUFFER_END
         ENDHLSL
 
@@ -52,12 +66,14 @@ Shader "WrongLine/CurvedLit"
             Blend [_SrcBlend] [_DstBlend]
             Cull [_Cull]
             ZWrite [_ZWrite]
+            Offset [_OffsetFactor], [_OffsetUnits]
 
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex Vert
             #pragma fragment Frag
 
+            #pragma shader_feature_local _LINEWIDEN_ON
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fog
@@ -85,7 +101,16 @@ Shader "WrongLine/CurvedLit"
             Varyings Vert(Attributes input)
             {
                 Varyings output;
-                float3 positionWS = WL_BendWorldPosition(TransformObjectToWorld(input.positionOS.xyz));
+                float3 positionOS = input.positionOS.xyz;
+                #if defined(_LINEWIDEN_ON)
+                    // One pixel across at this distance, in metres; the strip must cover _LineMinPixels of them.
+                    float cameraDistance = length(TransformObjectToWorld(positionOS) - _WorldSpaceCameraPos);
+                    float pixel = cameraDistance * 2.0 / (unity_CameraProjection._m11 * _ScreenParams.y);
+                    float extra = min(max(0.0, _LineMinPixels * pixel - _LineWidth) * 0.5, 1.0);
+                    float lineCentre = round(positionOS.x / _LineSpacing) * _LineSpacing;
+                    positionOS.x += positionOS.x >= lineCentre ? extra : -extra;
+                #endif
+                float3 positionWS = WL_BendWorldPosition(TransformObjectToWorld(positionOS));
                 output.positionWS = positionWS;
                 output.positionCS = TransformWorldToHClip(positionWS);
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using WrongLine.Road;
 
 namespace WrongLine.Car
 {
@@ -17,6 +18,7 @@ namespace WrongLine.Car
         {
             settings.Validate();
             _settings = settings;
+            X = TargetX = RoadSection.LaneCenterX(settings.Lateral.StartLane);
         }
 
         public float X { get; private set; }

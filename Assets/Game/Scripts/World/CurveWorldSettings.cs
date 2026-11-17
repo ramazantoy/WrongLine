@@ -23,6 +23,12 @@ namespace WrongLine.World
         /// </summary>
         public float FogEndMargin = 40f;
 
+        /// <summary>
+        /// The sky keeps the horizon (fog) colour this many degrees further down than where the end of the road built ahead
+        /// appears, so the fogged road end never stands out against a sky already shading towards the ground colour.
+        /// </summary>
+        public float HorizonHoldMarginDegrees = 1f;
+
         public void Validate()
         {
             if (!(FogStartFraction >= 0f && FogStartFraction < 1f))
@@ -33,6 +39,11 @@ namespace WrongLine.World
             if (!(FogEndMargin >= 0f))
             {
                 throw new ArgumentException("FogEndMargin must not be negative.");
+            }
+
+            if (!(HorizonHoldMarginDegrees >= 0f && HorizonHoldMarginDegrees < 30f))
+            {
+                throw new ArgumentException("HorizonHoldMarginDegrees must be in [0, 30).");
             }
 
             if (!(StartMeters >= 0f))

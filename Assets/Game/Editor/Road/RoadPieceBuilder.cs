@@ -75,6 +75,18 @@ namespace WrongLine.Road.Editor
             Mesh mesh = LoadArtMesh(recipe.name);
             if (mesh != null)
             {
+                // Art made for another cross-section (an older road width) would put the road out of line with the car and the
+                // rules: until the artist redelivers, the generated mesh stands in (the validator warns about it).
+                List<string> problems = RoadMeshContractCheck.Check(mesh, shape);
+                if (problems.Count > 0)
+                {
+                    Log.Warning($"[Road] {recipe.name}: the art mesh breaks the road piece contract, the generated mesh is used instead. {problems[0]}");
+                    mesh = null;
+                }
+            }
+
+            if (mesh != null)
+            {
                 // The real art wins; the validator measures its shape against the recipe (RoadMeshContractCheck).
                 Log.Info($"[Road] {recipe.name}: {recipe.Recipe.Length} m, art mesh {mesh.vertexCount} vertices, tags {recipe.Tags}, exit {shape.Exit.Position}.");
             }
@@ -119,10 +131,12 @@ namespace WrongLine.Road.Editor
             }
         }
 
+        internal static string ArtModelPath(string pieceName) => $"{ART}/{pieceName}.fbx";
+
         /// <summary>The mesh of <c>Art/&lt;piece&gt;.fbx</c> when the artist has delivered it, else null (the grey box stands in).</summary>
         private static Mesh LoadArtMesh(string pieceName)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{pieceName}.fbx");
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(ArtModelPath(pieceName));
             if (model == null)
             {
                 return null;
@@ -250,6 +264,12 @@ namespace WrongLine.Road.Editor
                     changed = true;
                 }
 
+                // The lane line material (the alpha clipped one) keeps its thin strips whole at a distance: see CurvedLit.shader.
+                if (clip && ConfigureLineMaterial(material))
+                {
+                    changed = true;
+                }
+
                 var wanted = new Vector2(1f, _materialSpecs[i].TilingV);
                 if (material.GetTextureScale("_BaseMap") != wanted)
                 {
@@ -267,6 +287,36 @@ namespace WrongLine.Road.Editor
             }
 
             return materials;
+        }
+
+        /// <returns>Whether anything changed.</returns>
+        private static bool ConfigureLineMaterial(Material material)
+        {
+            bool changed = false;
+            changed |= SetFloat(material, "_LineWiden", 1f);
+            changed |= SetFloat(material, "_LineWidth", RoadSection.LineWidth);
+            changed |= SetFloat(material, "_LineSpacing", RoadSection.LaneWidth);
+            changed |= SetFloat(material, "_LineMinPixels", 1.5f);
+            changed |= SetFloat(material, "_OffsetFactor", -1f);
+            changed |= SetFloat(material, "_OffsetUnits", -2f); // In depth-buffer steps, so it wins at any distance.
+            if (!material.IsKeywordEnabled("_LINEWIDEN_ON"))
+            {
+                material.EnableKeyword("_LINEWIDEN_ON");
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private static bool SetFloat(Material material, string name, float value)
+        {
+            if (Mathf.Approximately(material.GetFloat(name), value))
+            {
+                return false;
+            }
+
+            material.SetFloat(name, value);
+            return true;
         }
 
         private static void EnsureFolders()

@@ -32,6 +32,10 @@ Shader "WrongLine/SkyGradient"
             float4 _WL_SunDirection;
             float4 _WL_SunColor;
 
+            // How far below the horizon (sine of the angle) the sky keeps the horizon colour, written by CurveWorldDriver: the
+            // end of the bent road appears there, fogged to the horizon colour, and must not stand out against the ground blend.
+            float _WL_SkyHorizonHold;
+
             CBUFFER_START(UnityPerMaterial)
                 float _HorizonBand;
                 float _SunSize;
@@ -63,10 +67,10 @@ Shader "WrongLine/SkyGradient"
                 float height = direction.y;
 
                 // Above the horizon the colour moves from the horizon colour to the zenith colour, quickly at first
-                // (the band), then slowly. Below it the horizon blends into the ground colour.
+                // (the band), then slowly. Below it the horizon colour holds down to the road end, then blends into the ground colour.
                 float up = saturate(height / _HorizonBand);
                 float3 sky = lerp(_WL_SkyHorizon.rgb, _WL_SkyZenith.rgb, smoothstep(0.0, 1.0, up));
-                float down = saturate(-height / _HorizonBand);
+                float down = saturate((-height - _WL_SkyHorizonHold) / _HorizonBand);
                 float3 ground = lerp(_WL_SkyHorizon.rgb, _WL_SkyGround.rgb, smoothstep(0.0, 1.0, down));
                 float3 color = height >= 0.0 ? sky : ground;
 

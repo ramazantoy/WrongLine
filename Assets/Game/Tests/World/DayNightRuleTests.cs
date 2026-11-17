@@ -37,6 +37,79 @@ namespace WrongLine.World.Tests
         }
 
         [Test]
+        public void StartPhaseFor_GivesTheSameSkyForTheSameSeed()
+        {
+            var rule = new DayNightRule(Simple());
+
+            Assert.AreEqual(rule.StartPhaseFor(12345UL), rule.StartPhaseFor(12345UL));
+            Assert.AreNotEqual(rule.StartPhaseFor(12345UL), rule.StartPhaseFor(12346UL));
+        }
+
+        [Test]
+        public void StartPhaseFor_ReachesEveryPartOfTheDay_AcrossSeeds()
+        {
+            var rule = new DayNightRule(Simple());
+            var quarters = new int[4];
+
+            for (ulong seed = 0; seed < 200; seed++)
+            {
+                float phase = rule.StartPhaseFor(seed);
+                Assert.That(phase, Is.InRange(0f, 1f));
+                quarters[Mathf.Min(3, (int)(phase * 4f))]++;
+            }
+
+            foreach (int count in quarters)
+            {
+                Assert.Greater(count, 20, $"quarters: {string.Join(", ", quarters)}");
+            }
+        }
+
+        [Test]
+        public void StartPhaseFor_StaysBetweenTheConfiguredPhases()
+        {
+            var settings = Simple();
+            settings.StartPhaseMin = 0.6f;
+            settings.StartPhaseMax = 0.8f;
+            var rule = new DayNightRule(settings);
+
+            for (ulong seed = 0; seed < 200; seed++)
+            {
+                Assert.That(rule.StartPhaseFor(seed), Is.InRange(0.6f, 0.8f));
+            }
+        }
+
+        [Test]
+        public void StartPhaseFor_WithTheRandomStartOff_IsTheConfiguredStartPhase()
+        {
+            var settings = Simple();
+            settings.RandomStart = false;
+            settings.StartPhase = 0.37f;
+            var rule = new DayNightRule(settings);
+
+            Assert.AreEqual(0.37f, rule.StartPhaseFor(1UL));
+            Assert.AreEqual(0.37f, rule.StartPhaseFor(999UL));
+        }
+
+        [Test]
+        public void Validate_RejectsStartPhasesThatCannotBeDrawnFrom()
+        {
+            var settings = Simple();
+            settings.StartPhaseMin = 0.7f;
+            settings.StartPhaseMax = 0.3f;
+
+            Assert.Throws<ArgumentException>(() => new DayNightRule(settings));
+        }
+
+        [Test]
+        public void PhaseAt_WithAStartPhase_RunsFromThatPhase()
+        {
+            var rule = new DayNightRule(Simple());
+
+            Assert.AreEqual(0.8f, rule.PhaseAt(0f, 0.8f), 1e-5f);
+            Assert.AreEqual(0.1f, rule.PhaseAt(30f, 0.8f), 1e-5f, "100 s per cycle: 30 s on from 0.8 wraps to 0.1.");
+        }
+
+        [Test]
         public void PhaseAt_StartsAtTheStartPhaseAndRunsOneCycleInCycleSeconds()
         {
             var settings = Simple();
