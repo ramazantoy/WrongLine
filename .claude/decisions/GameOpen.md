@@ -34,7 +34,7 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   çeşitliliği, ardışık parça "motifleri") denenir.
 - **Sonraki milestone adayları (M2 sonrası, 2026-11-17):** araç Unity'de (placeholder küpün yerine, sonra oyuncu kontrolü:
   `x` sürükleme, arcade, bankta görsel yatma), kamera cilası (keskin virajda ileriyi görme, hıza bağlı FOV, Cinemachine
-  kararı), takip glitch'i, trafik, yol kenarı dekoru ve engeller, ara katılım yolları, kazada parça fırlatma. Sırası M2
+  kararı), takip glitch'i, trafik, yol kenarı dekoru ve engeller, kazada parça fırlatma. Sırası M2
   oynanınca yazılır.
 - ~~**Kamera: Cinemachine mi? (2026-11-16, kullanıcı önerisi, karar M3'te):** takip kamerası şimdi saf C# `ChaseCameraRule` +
   `ChaseCameraDriver`; kullanıcı yönetimin basitleşmesi ve hızla FOV'un (hızlanmada açılma) bedavaya gelmesi için Cinemachine
@@ -55,7 +55,7 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   far/fren lambası emission maskesi bağlı değil; (5) kapının arka yüzü tek katman (kopunca culling'le görünmez: çift taraflı
   materyal ya da ince kalınlık); (6) araç başına boya rengi (`_PaintColor`, `MaterialPropertyBlock`); (7) kazada kopan
   parçaların ayrılması (hiyerarşi hazır: Hinge_* child'ları, kütle merkezli pivotlar).
-- **Yollar 4 şeritli olmalı (2026-11-17, kullanıcı):** **Kod yapıldı** (Faz A2, `Game.md`): `RoadSection` 4 × 3 m, `section.json`, ölçüm, `TurnSignalRule`, `LateralLimit`, başlangıç şeridi, testler. **Sanatçı 33 parçayı 4 şeritli teslim etti (2026-11-17)**: Rebuild + Export koşuldu, hepsi sözleşme ölçümünden (çizgi UV'leri dahil) geçti, Validate 0 hata 0 uyarı. Mobil üçgen yükü ve oyunda görünüm henüz ölçülmedi/denenmedi. Ara katılım yolları (Faz B) bu kesitin üstüne planlanır.
+- **Yollar 4 şeritli olmalı (2026-11-17, kullanıcı):** **Kod yapıldı** (Faz A2, `Game.md`): `RoadSection` 4 × 3 m, `section.json`, ölçüm, `TurnSignalRule`, `LateralLimit`, başlangıç şeridi, testler. **Sanatçı 33 parçayı 4 şeritli teslim etti (2026-11-17)**: Rebuild + Export koşuldu, hepsi sözleşme ölçümünden (çizgi UV'leri dahil) geçti, Validate 0 hata 0 uyarı. Mobil üçgen yükü ve oyunda görünüm henüz ölçülmedi/denenmedi.
 - ~~**Gün-gece her oyunda aynı saatte başlıyor (2026-11-17, kullanıcı):**~~ Yapıldı (Faz A2): başlangıç fazı koşu seed'inden, config'te kapatılabilir (`Game.md`).
 - **Yolun doğuşu hâlâ görülüyor (2026-11-17, kullanıcı: "ileri bakınca fog tam o etkiyi vermemiş"):** cookie/ışık maskesi sise etki etmez. İki neden ölçüldü (`Game.md` Faz A2): (1) ufuk altı sis rengi uyumsuzluğu: **düzeltildi** (`HorizonHold`), his kullanıcıda; (2) viraj yüzünden bazı parçalar sis tamamlanmadan doğuyor (kadrajdakilerin %6'sında sis < 0,8, en az 0,61). Pencereyi "kameraya düz uzaklık ≥ sis sonu + pay" olacak şekilde uzatmak bunu bitirir (en kötü ~580 m yol, üçgen +~%45, ortalamada çok daha az); **karar kullanıcıda**: (1) sonrası yeterli mi, değilse dinamik pencere (üst sınır config'te, üçgen bütçesi ölçülür) ya da sisi yakınlaştırmak (sis sonu 360 → ~300).
 - **Gece far yanmıyor (2026-11-17, kullanıcı; sıradaki faz "A3: ışıklar"):** hava kararınca araç farları ve (ileride) stop lambası yanmalı. Emission maskesi bağlı değil (Araç cilası 4 ile aynı iş); `CurvedLit`'e `_LIGHTMASK_ON` + `HeadlightRule` (saf C#: `DayNightRule` karanlığı eşiği histerezisle aşınca aç/kapat, yumuşak geçiş, testli) + `Car_LightMask.png` (sanatçı brifi aşağıda).
@@ -69,20 +69,11 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   parçalar gövdeye birleşik, tek mesh), `LOD2` (~120 m'den, küp/kapsül silüeti ya da ~150 üçgen), sis bitişinden önce
   `LOD2`'ye düşmüş olmalı. Seçim saf C# kural (`mesafe → LOD`, histerezisle titremesiz) + view; `LODGroup` ya da elle
   geçiş kararı trafik milestone'unda; sanatçıdan LOD brifi o zaman. Kaza anında yalnız yakın araç (`LOD0`) parçalarına ayrılır.
-- **Ara katılım (yan) yolları (2026-11-17, kullanıcı fikri, tasarım notu): DENENDİ VE İPTAL EDİLDİ (Faz B, `Game.md`); amaç ve görsel referans netleşmeden yeniden açılmaz.** ara sıra ana yolun yanından ayrılıp kısa bir
-  süre sonra geri katılan yan yollar; araç oraya girerse kısa bir "gir-çık" kestirme yaşar, o yollarda trafik yok (güvenli
-  alan / ödül ya da risk, ayrıca karar). Teknik değerlendirme: yol uzayı `(s, x)` olduğundan gerçek dallanma (iki ayrı spline,
-  seçim) gerekmez; yan yol, o parçada ana yolun kenarında ek bir yanal bant olarak modellenir (yol genişliği o aralıkta
-  artar, bant ana yoldan ayrılıp dönerek geri birleşir). Gerekenler: (1) yeni parça türü `Bypass` (etiket, katalog, jeneratör
-  ağırlığı) ve kesit sözleşmesinin genişlemesi (asimetrik kesit, kaldırım ve gövde yan banda uyum; artist akışında yeni
-  brif), (2) trafik üreticisi ve çarpışma yan bantta farklı kural (`x` aralığı bazlı), (3) kamera ve curve shader değişmez.
-  Trafik ve oyuncu kontrolü (`x` sürükleme) olmadan anlam taşımaz: M3/M4 sonrası, trafik sistemiyle birlikte.
 - **M3 öncesi ayrı context'ler (2026-11-17, kullanıcı planı; her biri kendi planıyla):**
-  1. **Ara katılım (yan) yolları** (aşağıdaki tasarım notu).
-  2. ~~**Araç kontrolü** (`x` sürükleme, arcade, bankta yatma)~~ yapıldı (Faz A) ve **şerit değiştirirken sinyal** (kural ve placeholder lamba yapıldı; atlas ve maske sanatçıda, aşağıdaki "Sanatçı brifi"): `Car_Emission` maskesinde şimdi
+  1. ~~**Araç kontrolü** (`x` sürükleme, arcade, bankta yatma)~~ yapıldı (Faz A) ve **şerit değiştirirken sinyal** (kural ve placeholder lamba yapıldı; atlas ve maske sanatçıda, aşağıdaki "Sanatçı brifi"): `Car_Emission` maskesinde şimdi
      yalnız far ve fren lambası var; sinyal için atlasta sağ ve sol sinyal bölgeleri gerekir (sanatçıdan atlas ve maske
      güncellemesi), sinyal saf C# kuralı (şerit değişiminin başlaması → yanıp sönme zamanlaması) + emission view'ı.
-  3. ~~**Araç titremesi (jitter):** kullanıcı gözlemi: araç hafifçe titriyor, "özellikle sol click'lerde" (ifade olduğu gibi
+  2. ~~**Araç titremesi (jitter):** kullanıcı gözlemi: araç hafifçe titriyor, "özellikle sol click'lerde" (ifade olduğu gibi
      kaydedildi, ne demek istediği o context'te netleşecek: sol virajlar mı, Editor'da sol tık mı). Aşağıdaki follower glitch
      maddesiyle birlikte ele alınır; kamera `PostLateTick`, follower `Tick` sırası, `ChaseCameraRule` üstel yaklaşma ve kare
      başına örnekleme ve floating origin kayması ilk şüpheliler.~~ Çözüldü (Faz A): kök kamera gecikmesiydi.
