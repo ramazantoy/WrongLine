@@ -75,7 +75,7 @@ namespace WrongLine.Car
 
         private void OnCrashed(CarCrashed crash)
         {
-            var wreck = new WreckRule(_crash.Settings.Wreck, unchecked((int)_seed.Value ^ crash.CarId * 7919), crash.ClosingSpeed, crash.Ahead, crash.Side);
+            var wreck = new WreckRule(_crash.Settings.Wreck, unchecked((int)_seed.Value ^ crash.CarId * 7919), crash.Speed, crash.Ahead, crash.Side);
             _view.Break(wreck, _crash.Settings.Wreck);
         }
     }

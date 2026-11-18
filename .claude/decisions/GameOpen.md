@@ -138,11 +138,12 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
     tutma" için mesafe kısaltma (dolly) K2 kamera işine madde (bugünkü kenetler aracı zaten kadrajda tutuyor).
   - **K1b kalanları:** 0,07 m/sn² kazanç (30 → 42 m/sn ~3 dk) hissi ve üst hıza Play'de ulaşma; `ChaseCameraConfig` FOV'u (76°) ve
     sonrasında hızlanma hissi post-process'i (Işıklar açıkları 6).
-  - **K2:** Cinemachine (paket onayı ister): kural saf C# kalır (`ChaseCameraRule`, `BendVisibilityTests` değişmez); Impulse
-    (`CarSideswiped`/`CarCrashed` mesajlarını dinler), kaza kamerası blend'i. **ManualUpdate gerekmez:** VContainer `LateTick`
-    MonoBehaviour `LateUpdate`'ten önce koşuyor; sürücü sanal kamerayı `LateTick`'te (`CarPlacer`'dan sonra) yazarsa Brain'in
-    varsayılan `LateUpdate`'i aynı kareyi görür (kullanıcı önerisi, `Game.md` K1 "Cinemachine notu"). `PostLateTick`'te yazılırsa bir kare
-    gecikir (Faz A'daki titreme). Kaza kamerası (`CrashCameraRule`, `RoadProjection`) kuralı Cinemachine'e taşınır, kural kalır.
+  - ~~**K2** Cinemachine, yolda kayan dolly, Impulse, kaza vcam'i~~ kodu bitti (2026-11-18, `Game.md` K2 kararları, commit ve kullanıcı
+    gözü bekliyor). **Kalanlar (K2):** (1) sarsıntı gücü (0,4 / 2,5), blend süresi (0,5 sn) ve kaza FOV'u (66°) his işi, FOV değişince
+    enkazın görüntüdeki yeri Play'de yeniden ölçülmeli; (2) kalkışta kameradan ~3 m açılma (dolly filtresi `VelocityTime` 0,4) hoş
+    mu; (3) aralık yumuşak sınır (≤ ~0,8 m aşar): sert sınır istenirse ayrı karar; (4) `RotationComposer` kullanılmadı (kenet ve
+    `UpBlend` kuralda): ileride composer'ın dead zone'u istenirse bakış hedefi ayrı vcam'e; (5) Cinemachine'in `Noise` (hızda titreşim)
+    kullanılmadı; (6) Android'de Brain ve Impulse maliyeti ölçülmedi.
 
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"

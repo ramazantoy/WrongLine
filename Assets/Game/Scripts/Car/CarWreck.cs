@@ -36,9 +36,6 @@ namespace WrongLine.Car
         /// <summary>Greatest swing of a door, hood or trunk on its hinge, in degrees.</summary>
         private const float HingeSwing = 80f;
 
-        /// <summary>The body keeps most of its place: it is the car, the parts are what flies.</summary>
-        private const float BodyLaunchShare = 0.3f;
-
         /// <returns>The body (the wreck's middle), or null when the model has none.</returns>
         public static Transform Break(Transform root, WreckRule wreck, CrashSettings.WreckGroup settings)
         {
@@ -57,10 +54,10 @@ namespace WrongLine.Car
             }
 
             // Everything that becomes a rigid body leaves the hierarchy (a rigid body under a car that is not one would not move freely).
-            Rigidbody bodyRigid = Solidify(body, settings.BodyMass);
+            Rigidbody bodyRigid = Solidify(body, settings.BodyMass, settings.Damping);
             Collider bodyBox = body.GetComponent<Collider>();
             PartLaunch bodyLaunch = wreck.Launch(0);
-            Launch(bodyRigid, facing, bodyLaunch.Linear * BodyLaunchShare, bodyLaunch.Angular * BodyLaunchShare);
+            Launch(bodyRigid, facing, bodyLaunch.Linear * settings.BodyShare, bodyLaunch.Angular * settings.BodyShare);
             foreach (Transform rider in riders)
             {
                 if (rider != null)
@@ -80,10 +77,13 @@ namespace WrongLine.Car
 
                 Transform pivot = Find(node, hinge);
                 Vector3 anchor = pivot != null ? pivot.localPosition : Vector3.zero;
-                Rigidbody rigid = Solidify(node, settings.PartMass);
+                Rigidbody rigid = Solidify(node, settings.PartMass, settings.Damping);
                 IgnoreBody(node, bodyBox);
-                PartLaunch launch = wreck.Launch(index++);
-                Launch(rigid, facing, launch.Linear, launch.Angular);
+                index++;
+
+                // A hinged part starts with the body's own motion: a different speed or spin would tear the hinge off in the first
+                // frame (the force is the speed difference over the frame time). Hits against the ground and the traffic break it later.
+                Launch(rigid, facing, bodyLaunch.Linear * settings.BodyShare, Vector3.zero);
 
                 var joint = node.gameObject.AddComponent<HingeJoint>();
                 joint.connectedBody = bodyRigid;
@@ -103,7 +103,7 @@ namespace WrongLine.Car
                     continue;
                 }
 
-                Rigidbody rigid = Solidify(node, settings.PartMass);
+                Rigidbody rigid = Solidify(node, settings.PartMass, settings.Damping);
                 IgnoreBody(node, bodyBox);
                 PartLaunch launch = wreck.Launch(index++);
                 Launch(rigid, facing, launch.Linear, launch.Angular);
@@ -122,12 +122,13 @@ namespace WrongLine.Car
             }
         }
 
-        private static Rigidbody Solidify(Transform node, float mass)
+        private static Rigidbody Solidify(Transform node, float mass, float damping)
         {
             node.SetParent(null, true);
 
             var filter = node.GetComponent<MeshFilter>();
             var box = node.gameObject.AddComponent<BoxCollider>();
+            box.sharedMaterial = WreckPhysics.Material;
             if (filter != null && filter.sharedMesh != null)
             {
                 box.center = filter.sharedMesh.bounds.center;
@@ -136,6 +137,8 @@ namespace WrongLine.Car
 
             var rigid = node.gameObject.AddComponent<Rigidbody>();
             rigid.mass = mass;
+            rigid.linearDamping = damping;
+            rigid.angularDamping = damping * 2f;
             rigid.interpolation = RigidbodyInterpolation.Interpolate;
             rigid.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             return rigid;

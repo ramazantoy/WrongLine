@@ -110,7 +110,7 @@ namespace WrongLine.Traffic
             TrafficSettings.LayoutGroup layout = _settings.Layout;
 
             // Draw in a fixed order: the numbers a lane uses must not depend on what got rejected.
-            double gap = layout.MinGapMeters + layout.GapRangeMeters * state.Random.NextDouble();
+            double gap = (layout.MinGapMeters + layout.GapRangeMeters * state.Random.NextDouble()) * (lane < RoadSection.OncomingLaneCount ? layout.OncomingGapScale : layout.SameDirectionGapScale);
             double pick = state.Random.NextDouble() * _totalWeight;
             int paint = (int)(state.Random.NextDouble() * _paintCount);
 

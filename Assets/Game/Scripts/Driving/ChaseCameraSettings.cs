@@ -46,8 +46,42 @@ namespace WrongLine.Driving
 
         public float FovMaxSpeed = 30f;
 
+        /// <summary>
+        /// How far behind its subject (the car, after a crash the wreck) the camera may be, along the road, in metres. The camera
+        /// keeps pace with the subject exactly and only slides when the subject leaves this range (<see cref="CameraDollyRule"/>).
+        /// </summary>
+        public float RangeMin = 6f;
+
+        public float RangeMax = 11f;
+
+        /// <summary>How quickly the camera slides back into range (per second).</summary>
+        public float RangeSharpness = 5f;
+
+        /// <summary>
+        /// The camera takes up the subject's speed through a filter with this time constant, in seconds: at a steady speed it keeps
+        /// pace exactly, and the subject's jolts show as the subject moving within the range, not as the camera jerking with it.
+        /// </summary>
+        public float VelocityTime = 0.4f;
+
+        /// <summary>A weak pull (per second) back to <see cref="Distance"/> behind the subject, for when the speed has changed and left it elsewhere in the range.</summary>
+        public float RestoreSharpness = 0.6f;
+
+        /// <summary>
+        /// In a bend the camera backs off this many metres (the whole of it at <see cref="BendPullbackDegrees"/> of turn between the camera
+        /// and the look point, in proportion below that), so the car stays in the picture. It comes forward again on the straight.
+        /// </summary>
+        public float BendPullback = 3f;
+
+        public float BendPullbackDegrees = 40f;
+
+        /// <summary>A jump of the subject faster than this, in metres per second, is a teleport, not a speed: the range alone deals with it.</summary>
+        public float MaxTrackSpeed = 100f;
+
         public void Validate()
         {
+            Require(RangeMin >= 0f && RangeMin <= Distance && Distance <= RangeMax, "RangeMin <= Distance <= RangeMax must hold (and RangeMin must not be negative).");
+            Require(BendPullback >= 0f && BendPullbackDegrees > 0f, "BendPullback must not be negative and BendPullbackDegrees positive.");
+            Require(RangeSharpness > 0f && VelocityTime > 0f && RestoreSharpness >= 0f && MaxTrackSpeed > 0f, "RangeSharpness, VelocityTime and MaxTrackSpeed must be positive, RestoreSharpness not negative.");
             Require(Distance >= 0f && Height >= 0f && LookAhead >= 0f, "Distance, Height and LookAhead must not be negative.");
             Require(MaxCarPitchDegrees > 0f && MaxCarPitchDegrees < 90f && MaxCarYawDegrees > 0f && MaxCarYawDegrees < 90f, "MaxCarPitchDegrees and MaxCarYawDegrees must be in (0, 90).");
             Require(UpBlend >= 0f && UpBlend <= 1f, "UpBlend must be in [0, 1].");

@@ -137,6 +137,7 @@ namespace WrongLine.Traffic
                 _crashCollider = gameObject.AddComponent<BoxCollider>();
             }
 
+            _crashCollider.sharedMaterial = WrongLine.Crash.WreckPhysics.Material;
             _crashCollider.center = new Vector3(0f, height * 0.5f, 0f);
             _crashCollider.size = new Vector3(halfWidth * 2f, height, length);
             _crashCollider.enabled = true;

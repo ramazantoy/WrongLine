@@ -59,23 +59,28 @@ namespace WrongLine.Crash
         {
             public float BodyMass = 900f;
 
+            /// <summary>The body keeps this share of the speed the parts are thrown with (it is the car: it slides on), and everything slows down by this drag.</summary>
+            public float BodyShare = 0.8f;
+
+            public float Damping = 0.4f;
+
             public float PartMass = 25f;
 
             /// <summary>Share of the car's speed the parts fly off with, and the extra random sideways and upward speed, in metres per second.</summary>
-            public float SpeedShare = 0.6f;
+            public float SpeedShare = 0.5f;
 
-            public float Spread = 4f;
+            public float Spread = 2.5f;
 
-            public float UpKick = 3f;
+            public float UpKick = 1.5f;
 
             /// <summary>Greatest spin of a part, in degrees per second.</summary>
-            public float SpinDegrees = 360f;
+            public float SpinDegrees = 200f;
 
             /// <summary>Force a door, hood or trunk hinge holds before it breaks off.</summary>
-            public float BreakForce = 3000f;
+            public float BreakForce = 30000f;
 
             /// <summary>The temporary ground the parts land on: this many boxes of this length (metres) around the crash.</summary>
-            public int GroundSegments = 12;
+            public int GroundSegments = 16;
 
             public float GroundSegmentLength = 8f;
         }
@@ -83,10 +88,23 @@ namespace WrongLine.Crash
         [Serializable]
         public sealed class CameraGroup
         {
-            /// <summary>How fast the camera moves along the road to keep the wreck in the picture, and how fast it turns to look at it (per second).</summary>
-            public float FollowSharpness = 3f;
+            /// <summary>
+            /// The crash camera's field of view, in degrees, and how long the cut to it takes, in seconds. Not much tighter than the chase
+            /// camera's: the camera keeps the wreck within 24° of its look (<see cref="WrongLine.Driving.ChaseCameraSettings.MaxCarPitchDegrees"/>),
+            /// so half the field of view must be well over that (55° put the wreck on the picture's edge).
+            /// </summary>
+            public float CrashFov = 66f;
 
-            public float LookSharpness = 6f;
+            public float BlendSeconds = 0.5f;
+
+            /// <summary>Camera shake of a sideswipe and of the crash: how far the camera moves at the most, in metres, and for how many (real) seconds. 0 is no shake.</summary>
+            public float SideswipeShake = 0f;
+
+            public float SideswipeShakeSeconds = 0.25f;
+
+            public float CrashShake = 0.12f;
+
+            public float CrashShakeSeconds = 0.45f;
         }
 
         public HitboxGroup Hitbox = new HitboxGroup();
@@ -104,9 +122,11 @@ namespace WrongLine.Crash
             Require(Sideswipe.MaxDepth >= 0f && Sideswipe.OncomingMaxDepth >= 0f && Sideswipe.PushSpeed >= 0f && Sideswipe.PushMeters >= 0f, "Sideswipe: depths, push speed and push distance must not be negative.");
             Require(Sideswipe.KickYawDegrees >= 0f && Sideswipe.KickRollDegrees >= 0f && Sideswipe.KickSeconds > 0f, "Sideswipe: kick angles must not be negative and KickSeconds positive.");
             Require(SlowMotion.Scale > 0f && SlowMotion.Scale <= 1f && SlowMotion.EaseSeconds >= 0f && SlowMotion.GameOverSeconds > SlowMotion.EaseSeconds, "SlowMotion: Scale in (0, 1], GameOverSeconds longer than EaseSeconds.");
+            Require(Wreck.BodyShare >= 0f && Wreck.Damping >= 0f, "Wreck: BodyShare and Damping must not be negative.");
             Require(Wreck.BodyMass > 0f && Wreck.PartMass > 0f && Wreck.BreakForce > 0f && Wreck.SpeedShare >= 0f && Wreck.Spread >= 0f && Wreck.UpKick >= 0f && Wreck.SpinDegrees >= 0f, "Wreck: masses and break force must be positive, the rest not negative.");
             Require(Wreck.GroundSegments >= 1 && Wreck.GroundSegmentLength > 0f, "Wreck: the ground needs at least one box of positive length.");
-            Require(Camera.FollowSharpness > 0f && Camera.LookSharpness > 0f, "Camera: sharpness must be positive.");
+            Require(Camera.CrashFov > 0f && Camera.CrashFov < 180f && Camera.BlendSeconds >= 0f, "Camera: CrashFov must be in (0, 180) and BlendSeconds not negative.");
+            Require(Camera.SideswipeShake >= 0f && Camera.CrashShake >= 0f && Camera.SideswipeShakeSeconds > 0f && Camera.CrashShakeSeconds > 0f, "Camera: shake strengths must not be negative and their durations positive.");
         }
 
         private static void Require(bool condition, string message)

@@ -19,7 +19,7 @@ namespace WrongLine.Car
             public float Acceleration = 8f;
 
             /// <summary>After the cruise speed the car keeps gaining this much speed per second (a slow climb), up to <see cref="MaxSpeed"/>. 0 turns it off.</summary>
-            public float GainPerSecond = 0.07f;
+            public float GainPerSecond = 0.21f;
 
             /// <summary>The highest speed of a run, in metres per second (42 is 151 km/h).</summary>
             public float MaxSpeed = 42f;

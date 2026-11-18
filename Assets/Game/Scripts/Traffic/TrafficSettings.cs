@@ -36,6 +36,11 @@ namespace WrongLine.Traffic
 
             public float GapRangeMeters = 60f;
 
+            /// <summary>The gaps of the lanes coming the other way are this many times the gap above (above 1: fewer cars), those of the player's own direction this many (below 1: more).</summary>
+            public float OncomingGapScale = 1.4f;
+
+            public float SameDirectionGapScale = 0.9f;
+
             /// <summary>Chance the corridor stays in its lane for the next slice; otherwise it moves one lane.</summary>
             public float CorridorStayChance = 0.4f;
 
@@ -117,6 +122,7 @@ namespace WrongLine.Traffic
         {
             Require(Layout.ClearStartMeters >= 0f && Layout.SliceMeters > 0f, "Layout: ClearStartMeters not negative, SliceMeters positive.");
             Require(Layout.LaneChangeSeconds > 0f && Layout.PlayerLengthMeters > 0f, "Layout: LaneChangeSeconds and PlayerLengthMeters must be positive.");
+            Require(Layout.OncomingGapScale > 0f && Layout.SameDirectionGapScale > 0f, "Layout: the gap scales must be positive.");
             Require(Layout.PadMeters >= 0f && Layout.PadSeconds >= 0f && Layout.MinGapMeters >= 0f && Layout.GapRangeMeters >= 0f, "Layout: pads and gaps must not be negative.");
             Require(Layout.CorridorStayChance >= 0f && Layout.CorridorStayChance <= 1f, "Layout: CorridorStayChance must be in [0, 1].");
             Require(Layout.LaneSpeedMin > 0f && Layout.LaneSpeedMin <= Layout.LaneSpeedMax && Layout.LaneSpeedMax < 0.85f, "Layout: lane speeds need 0 < min <= max < 0.85 (a car as fast as the player would block the road for ever).");

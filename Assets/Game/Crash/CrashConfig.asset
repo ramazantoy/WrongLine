@@ -32,14 +32,20 @@ MonoBehaviour:
       GameOverSeconds: 2.5
     Wreck:
       BodyMass: 900
+      BodyShare: 0.8
+      Damping: 0.4
       PartMass: 25
-      SpeedShare: 0.6
-      Spread: 4
-      UpKick: 3
-      SpinDegrees: 360
-      BreakForce: 3000
-      GroundSegments: 12
+      SpeedShare: 0.5
+      Spread: 2.5
+      UpKick: 1.5
+      SpinDegrees: 200
+      BreakForce: 30000
+      GroundSegments: 16
       GroundSegmentLength: 8
     Camera:
-      FollowSharpness: 3
-      LookSharpness: 6
+      CrashFov: 66
+      BlendSeconds: 0.5
+      SideswipeShake: 0
+      SideswipeShakeSeconds: 0.25
+      CrashShake: 0.12
+      CrashShakeSeconds: 0.45

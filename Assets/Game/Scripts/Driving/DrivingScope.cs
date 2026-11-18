@@ -67,7 +67,8 @@ namespace WrongLine.Driving
             builder.RegisterEntryPoint<CrashDirector>();
             builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
-            builder.RegisterEntryPoint<ChaseCameraDriver>();
+            builder.RegisterEntryPoint<ChaseCameraDriver>(); // Late tick, after the car placer: the rig it writes is what Cinemachine's brain follows.
+            builder.RegisterEntryPoint<CameraImpulse>();
             builder.RegisterEntryPoint<CurveWorldDriver>(); // After the camera driver: it reads where the camera ended up.
             builder.RegisterEntryPoint<GroundBackdropDriver>(); // After the camera driver too: it follows the camera.
             builder.RegisterEntryPoint<DayNightDriver>().As<IDayNight>();

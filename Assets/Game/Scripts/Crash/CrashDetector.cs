@@ -75,9 +75,10 @@ namespace WrongLine.Crash
 
                 case CollisionKind.Crash:
                     _done = true;
+                    float speed = _motion.Speed; // Before the crash stops the car.
                     _impact.Crash();
-                    Log.Info($"Crash with car {result.CarId} at {result.ClosingSpeed:F1} m/s.");
-                    _crashed.Publish(new CarCrashed(result.CarId, result.Side, result.ClosingSpeed, result.Ahead, now.Distance));
+                    Log.Info($"Crash with car {result.CarId} at {result.ClosingSpeed:F1} m/s (own speed {speed:F1}).");
+                    _crashed.Publish(new CarCrashed(result.CarId, result.Side, result.ClosingSpeed, speed, result.Ahead, now.Distance));
                     break;
             }
         }
