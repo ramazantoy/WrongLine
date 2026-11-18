@@ -6,6 +6,9 @@ namespace WrongLine.Car
         /// <summary>Metres per second along the road.</summary>
         float Speed { get; }
 
+        /// <summary>Metres covered along the road since the run began (it stops growing at a crash).</summary>
+        double Distance { get; }
+
         /// <summary>Metres right of the road's centre line.</summary>
         float X { get; }
 
@@ -20,5 +23,8 @@ namespace WrongLine.Car
         SignalDirection Signal { get; }
 
         bool LampOn { get; }
+
+        /// <summary>True once the car has crashed: it no longer moves.</summary>
+        bool Crashed { get; }
     }
 }

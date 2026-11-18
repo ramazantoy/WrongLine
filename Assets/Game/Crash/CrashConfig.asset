@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5acf432541751054bb35a21ce5fa1678, type: 3}
+  m_Name: CrashConfig
+  m_EditorClassIdentifier: Game::WrongLine.Crash.CrashConfig
+  _settings:
+    Hitbox:
+      PlayerHalfLength: 2.1
+      PlayerHalfWidth: 0.85
+      TrafficScale: 0.92
+      StepMeters: 0.25
+    Sideswipe:
+      MaxDepth: 0.35
+      OncomingMaxDepth: 0.35
+      PushSpeed: 5
+      PushMeters: 0.8
+      KickYawDegrees: 6
+      KickRollDegrees: 4
+      KickSeconds: 0.35
+    SlowMotion:
+      Scale: 0.25
+      EaseSeconds: 0.1
+      GameOverSeconds: 2.5
+    Wreck:
+      BodyMass: 900
+      PartMass: 25
+      SpeedShare: 0.6
+      Spread: 4
+      UpKick: 3
+      SpinDegrees: 360
+      BreakForce: 3000
+      GroundSegments: 12
+      GroundSegmentLength: 8
+    Camera:
+      FollowSharpness: 3
+      LookSharpness: 6

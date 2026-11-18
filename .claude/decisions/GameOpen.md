@@ -123,20 +123,26 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
   4. **Sonraki ortam fikirleri:** biyoma göre gökyüzü/sis tonu, uzak siluet (dağ, kanyon, tepe kartları), biyom başına prop
      yoğunluğu ayarı oynanınca.
 
-- **Sıradaki iş: kaza milestone'u (K1–K3), yeni context'te plan moduyla (2026-11-17, kullanıcı fikri + önerim):**
-  1. **K1 (önce):** çarpışma kuralı saf C# (oyuncunun `(s, x)` kutusu ile `ITrafficFrame`'deki araçlar; `RoadCursor`, `RoadSampler`
-     aynı kalır), **kaza** ve **sürtme** ayrımı (az yan örtüşme = sürtme: yanal itme + kamera sarsıntısı + ceza, **hız kaybı
-     yok**; yoksa trafiğin geçilebilirlik garantisi oyuncunun planlı hız profilinden kayar, ayrı karar), kaza durumu + yavaş çekim
-     (`IGameClock.Scale`), oyuncu aracının parçalarının Rigidbody'ye geçmesi (`Hinge_*` çocukları, kütle merkezli pivotlar hazır;
-     parçaların oturacağı zemin yok: kaza noktasında yol çerçevesine hizalı geçici zemin collider'ı), dummy uGUI "game over"
-     ekranı prefab'ı ve `ISceneLoader.Load(Gameplay)` ile yeniden başlatma (input modu UI için istenir). Kamera sarsıntısı mevcut
-     kamera kuralına eklenir.
-  2. **K2:** Cinemachine (paket onayı ister): kural saf C# kalır (`ChaseCameraRule`, `BendVisibilityTests` değişmez), Brain
-     `ManualUpdate`, bizim `PostLateTick` sürücümüzden çağrılır (yoksa titreme geri gelir); Impulse ve kaza kamerası blend'i.
-  3. **K3:** zamanla hızlanma: `SpeedRule` zamanın deterministik bir fonksiyonu olmalı; trafik düzeni (`PlayerSpeedProfile`,
-     `TrafficPlanner.SliceLength` en yüksek hızla, şerit hızları, testler) buna uyarlanır.
-  Önce Android ölçüm build'i (yukarıdaki "İlk Android build" + "Trafik (M3) açıkları"); trafik üçgeni ~11–16 bin, düz parçalar
-  +100…+730 üçgen oldu.
+- **Kaza milestone'u (K1 + K1b kodu bitti 2026-11-18, `Game.md` K1/K1b kararları; kullanıcı gözü ve commit bekliyor):**
+  - ~~**K1** çarpışma, sürtme, kaza, parçalanma, game over~~ ve ~~**K1b** zamanla hızlanma (eski K3)~~ yapıldı.
+  - **Kalanlar (K1):** (1) **Android ölçüm build'i yapılamadı** (cihaz bağlı değildi, `adb devices` boş): bağlanınca "İlk Android
+    build" + `FrameStatsLog` (planlandı, yazılmadı) + kaza anının (16 rigidbody, zemin collider'ları, yavaş çekim) maliyeti;
+    (2) sürtmenin Play'de görülmesi (yalnız testle; hitbox 0,92 ölçek ve 0,35 m eşiği his işi); (3) kaza hissi: menteşeler Play'de
+    hemen koptu (`CrashSettings.Wreck.BreakForce` 3000 düşük kalıyor olabilir), parça ve gövde kütleleri, fırlatma gücü, kaza
+    kamerasının dönüşü; (4) **puan/kombo** yok (`CarSideswiped.Count` mesajı hazır; sürtme cezası ayrı karar); (5) Menü
+    butonu Play'de denenmedi; game over ekranı dummy; (6) `TrafficCatalog.Entry`'ye model genişliği yazılmadı:
+    `TrafficModelSpec.HalfWidth` hepsinde 0,9 varsayılanı, `Rebuild Traffic` FBX sınırlarından yazmalı; (7) kaza noktasında
+    parçalar yola oturuyor ama curve shader yolu görüntüde büker, fizik gerçek yolda (uzaktaki enkaz için fark ölçülmedi);
+    (8) donan araca aynı şeritte arkadan gelen trafik yavaş çekimde enkaza girebilir (nadir; görülürse o şeridin araçları da
+    durdurulur); (9) kaza kamerası (enkazı izleyip ileri geri gider) kullanıcı gözüyle; (10) sürüş kamerasında "aracı hep görünür
+    tutma" için mesafe kısaltma (dolly) K2 kamera işine madde (bugünkü kenetler aracı zaten kadrajda tutuyor).
+  - **K1b kalanları:** 0,07 m/sn² kazanç (30 → 42 m/sn ~3 dk) hissi ve üst hıza Play'de ulaşma; `ChaseCameraConfig` FOV'u (76°) ve
+    sonrasında hızlanma hissi post-process'i (Işıklar açıkları 6).
+  - **K2:** Cinemachine (paket onayı ister): kural saf C# kalır (`ChaseCameraRule`, `BendVisibilityTests` değişmez); Impulse
+    (`CarSideswiped`/`CarCrashed` mesajlarını dinler), kaza kamerası blend'i. **ManualUpdate gerekmez:** VContainer `LateTick`
+    MonoBehaviour `LateUpdate`'ten önce koşuyor; sürücü sanal kamerayı `LateTick`'te (`CarPlacer`'dan sonra) yazarsa Brain'in
+    varsayılan `LateUpdate`'i aynı kareyi görür (kullanıcı önerisi, `Game.md` K1 "Cinemachine notu"). `PostLateTick`'te yazılırsa bir kare
+    gecikir (Faz A'daki titreme). Kaza kamerası (`CrashCameraRule`, `RoadProjection`) kuralı Cinemachine'e taşınır, kural kalır.
 
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"

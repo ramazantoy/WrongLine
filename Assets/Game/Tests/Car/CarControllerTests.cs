@@ -53,14 +53,25 @@ namespace WrongLine.Car.Tests
         }
 
         [Test]
-        public void TheCarPullsAwayToItsCruiseSpeed()
+        public void TheCarPullsAwayToItsCruiseSpeedAndThenGainsSpeedSlowly()
         {
             CarSettings settings = _config.Settings;
             Assert.AreEqual(settings.Speed.StartSpeed, _car.Speed);
 
             Run(10f);
 
-            Assert.AreEqual(settings.Speed.CruiseSpeed, _car.Speed);
+            float rampSeconds = (settings.Speed.CruiseSpeed - settings.Speed.StartSpeed) / settings.Speed.Acceleration;
+            Assert.AreEqual(settings.Speed.CruiseSpeed + settings.Speed.GainPerSecond * (10f - rampSeconds), _car.Speed, 0.02f);
+        }
+
+        [Test]
+        public void TheDistanceCoveredIsWhatTheSpeedProfileSaysForTheTimeTheRunHasLasted()
+        {
+            var profile = new PlayerSpeedProfile(_config.Settings.Speed);
+
+            Run(20f);
+
+            Assert.AreEqual(profile.DistanceAt(20.0), _car.Distance, 0.05);
         }
 
         [Test]

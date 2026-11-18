@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 using VContainer;
 using VContainer.Unity;
 using WrongLine.Car;
+using WrongLine.Crash;
 using WrongLine.Scenery;
 using WrongLine.Traffic;
 using WrongLine.World;
@@ -27,6 +28,8 @@ namespace WrongLine.Driving
         [SerializeField, Required] private CarView _car;
         [SerializeField, Required] private ChaseCameraView _camera;
         [SerializeField, Required] private RoadDebugHud _hud;
+        [SerializeField, Required] private CrashConfig _crashConfig;
+        [SerializeField, Required] private GameOverScreen _gameOver;
 
         /// <summary>Mixed into the run seed for the biomes, so they do not repeat the road generator's numbers.</summary>
         private const ulong BiomeSeedSalt = 0xB10E5EEDC0FFEE11UL;
@@ -34,8 +37,11 @@ namespace WrongLine.Driving
         protected override void ConfigureScene(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
             builder.RegisterMessageBroker<RoadOriginShifted>(messagePipe);
+            builder.RegisterMessageBroker<CarSideswiped>(messagePipe);
+            builder.RegisterMessageBroker<CarCrashed>(messagePipe);
 
             builder.RegisterInstance(_carConfig);
+            builder.RegisterInstance(_crashConfig);
             builder.RegisterInstance(_cameraConfig);
             builder.RegisterInstance(_curveConfig);
             builder.RegisterInstance(_dayNightConfig);
@@ -45,10 +51,11 @@ namespace WrongLine.Driving
             builder.RegisterComponent(_car);
             builder.RegisterComponent(_camera);
             builder.RegisterComponent(_hud).As<IRoadDebugHud>();
+            builder.RegisterComponent(_gameOver).As<IGameOverScreen>();
 
             builder.Register<RunSeed>(Lifetime.Singleton).As<IRunSeed>();
             builder.Register<SteerInput>(Lifetime.Singleton).As<ISteerInput>();
-            builder.RegisterEntryPoint<CarController>().As<ICarMotion>(); // Before the streamer: it reads the speed.
+            builder.RegisterEntryPoint<CarController>().As<ICarMotion>().As<ICarImpact>(); // Before the streamer: it reads the speed.
             builder.RegisterEntryPoint<RoadStreamer>().As<IRoadFrame>();
             builder.Register(resolver => new BiomeSchedule(
                 resolver.Resolve<IRunSeed>().Value ^ BiomeSeedSalt,
@@ -56,6 +63,8 @@ namespace WrongLine.Driving
                 resolver.Resolve<SceneryConfig>().Biomes), Lifetime.Singleton);
             builder.RegisterEntryPoint<SceneryStreamer>().As<IRoadsideLamps>(); // After the road streamer: it reads the pieces the road put out.
             builder.RegisterEntryPoint<TrafficStreamer>().As<ITrafficFrame>(); // After the road streamer: it reads where the player is and the road's origin.
+            builder.RegisterEntryPoint<CrashDetector>(); // After the road and the traffic: it reads where everything is this frame.
+            builder.RegisterEntryPoint<CrashDirector>();
             builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
             builder.RegisterEntryPoint<ChaseCameraDriver>();

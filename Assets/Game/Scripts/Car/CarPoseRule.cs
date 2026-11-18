@@ -13,6 +13,11 @@ namespace WrongLine.Car
         private readonly CarSettings _settings;
         private float _lastVelocity;
         private bool _started;
+        private float _roll;
+        private float _kickYaw;
+        private float _kickRoll;
+        private float _kickSeconds = 1f;
+        private float _kickLeft;
 
         public CarPoseRule(CarSettings settings)
         {
@@ -32,6 +37,19 @@ namespace WrongLine.Car
         /// <summary>How far the wheels have rolled, wrapped to [0, 360).</summary>
         public float WheelSpinDegrees { get; private set; }
 
+        /// <summary>
+        /// A sideswipe's kick: the nose and the body jerk towards <paramref name="direction"/> (+1 right, −1 left, the way the car is
+        /// pushed) by up to these angles and settle over <paramref name="seconds"/>. Only the look of the car; the view applies it.
+        /// </summary>
+        public void Kick(int direction, float yawDegrees, float rollDegrees, float seconds)
+        {
+            float sign = direction >= 0 ? 1f : -1f;
+            _kickYaw = sign * yawDegrees;
+            _kickRoll = -sign * rollDegrees;
+            _kickSeconds = Mathf.Max(seconds, 0.01f);
+            _kickLeft = _kickSeconds;
+        }
+
         public void Update(float sidewaysVelocity, float speed, float deltaTime)
         {
             CarSettings.PoseGroup pose = _settings.Pose;
@@ -48,11 +66,18 @@ namespace WrongLine.Car
             {
                 float acceleration = _started ? (sidewaysVelocity - _lastVelocity) / deltaTime : 0f;
                 float wanted = Mathf.Clamp(-acceleration * pose.RollPerAcceleration, -pose.MaxRollDegrees, pose.MaxRollDegrees);
-                RollDegrees = Mathf.Lerp(RollDegrees, wanted, 1f - Mathf.Exp(-pose.RollSharpness * deltaTime));
+                _roll = Mathf.Lerp(_roll, wanted, 1f - Mathf.Exp(-pose.RollSharpness * deltaTime));
                 WheelSpinDegrees = Mod(WheelSpinDegrees + speed / pose.WheelRadius * Mathf.Rad2Deg * deltaTime, 360f);
                 _lastVelocity = sidewaysVelocity;
                 _started = true;
+                _kickLeft = Mathf.Max(0f, _kickLeft - deltaTime);
             }
+
+            // The kick fades out smoothly (squared), on top of the angles above.
+            float fade = _kickLeft / _kickSeconds;
+            fade *= fade;
+            YawDegrees += _kickYaw * fade;
+            RollDegrees = _roll + _kickRoll * fade;
         }
 
         private static float Mod(float value, float modulus)

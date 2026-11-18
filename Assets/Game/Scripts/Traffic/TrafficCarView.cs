@@ -6,7 +6,8 @@ namespace WrongLine.Traffic
 {
     /// <summary>
     /// The root of a traffic car prefab: three levels of detail as child objects (LOD0 has the four wheels under it), only one
-    /// switched on at a time, and the paint on all of them. Purely visual: no collider, nothing reads it. Going back to the pool
+    /// switched on at a time, and the paint on all of them. Purely visual: the traffic's collisions are the road-space rule's, and
+    /// the one solid box it ever gets is for the wreck to land on (<see cref="EnableCrashCollider"/>). Going back to the pool
     /// clears its place and level.
     /// </summary>
     public sealed class TrafficCarView : MonoBehaviour, IPoolable
@@ -28,6 +29,7 @@ namespace WrongLine.Traffic
 
         private MeshRenderer[] _renderers;
         private MeshFilter[] _filters;
+        private BoxCollider _crashCollider;
 
         /// <summary>The level shown now (0 to 2), or <see cref="TrafficLodRule.None"/> when none is.</summary>
         public int Level { get; private set; } = TrafficLodRule.None;
@@ -124,8 +126,29 @@ namespace WrongLine.Traffic
         {
         }
 
+        /// <summary>
+        /// Switches on a solid box the size of the car, so the wreck of the player's car lands on it instead of passing through. Only
+        /// the car the player crashed into gets one; it goes off again when the car returns to the pool.
+        /// </summary>
+        public void EnableCrashCollider(float length, float halfWidth, float height)
+        {
+            if (_crashCollider == null)
+            {
+                _crashCollider = gameObject.AddComponent<BoxCollider>();
+            }
+
+            _crashCollider.center = new Vector3(0f, height * 0.5f, 0f);
+            _crashCollider.size = new Vector3(halfWidth * 2f, height, length);
+            _crashCollider.enabled = true;
+        }
+
         void IPoolable.OnDespawned()
         {
+            if (_crashCollider != null)
+            {
+                _crashCollider.enabled = false;
+            }
+
             transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             for (int i = 0; i < _levels.Length; i++)
             {

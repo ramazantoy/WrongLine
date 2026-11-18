@@ -41,7 +41,7 @@ namespace WrongLine.Road
         }
 
         /// <summary>Metres of lane per metre of distance along the road at <paramref name="distance"/>, <paramref name="lateral"/> metres from the centre line.</summary>
-        private static double LaneLengthRatio(IRoadPath path, double distance, float lateral, in WorldPoint origin)
+        public static double LaneLengthRatio(IRoadPath path, double distance, float lateral, in WorldPoint origin)
         {
             Vector3 behind = Wheel(path, distance - 1.0, lateral, origin);
             Vector3 ahead = Wheel(path, distance + 1.0, lateral, origin);

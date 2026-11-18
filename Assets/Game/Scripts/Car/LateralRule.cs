@@ -28,6 +28,18 @@ namespace WrongLine.Car
 
         public float TargetX { get; private set; }
 
+        /// <summary>
+        /// A sideswipe: moves the target <paramref name="meters"/> and the car's sideways speed to <paramref name="speed"/> towards
+        /// <paramref name="direction"/> (+1 right, −1 left), the target kept on the road. The speed along the road is not touched.
+        /// </summary>
+        public void Push(int direction, float meters, float speed)
+        {
+            float limit = _settings.LateralLimit;
+            float sign = direction >= 0 ? 1f : -1f;
+            TargetX = Mathf.Clamp(TargetX + sign * meters, -limit, limit);
+            Velocity = Mathf.Clamp(sign * speed, -_settings.Lateral.MaxLateralSpeed, _settings.Lateral.MaxLateralSpeed);
+        }
+
         /// <param name="dragFraction">Pointer movement since the last update as a fraction of the screen width (right is positive).</param>
         /// <param name="axis">A held direction in [-1, 1].</param>
         public void Update(float dragFraction, float axis, float deltaTime)

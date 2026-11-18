@@ -17,6 +17,12 @@ namespace WrongLine.Car
 
             /// <summary>Metres per second gained per second until the cruise speed is reached.</summary>
             public float Acceleration = 8f;
+
+            /// <summary>After the cruise speed the car keeps gaining this much speed per second (a slow climb), up to <see cref="MaxSpeed"/>. 0 turns it off.</summary>
+            public float GainPerSecond = 0.07f;
+
+            /// <summary>The highest speed of a run, in metres per second (42 is 151 km/h).</summary>
+            public float MaxSpeed = 42f;
         }
 
         [Serializable]
@@ -88,6 +94,7 @@ namespace WrongLine.Car
         {
             Require(Speed.StartSpeed >= 0f && Speed.CruiseSpeed > 0f && Speed.StartSpeed <= Speed.CruiseSpeed, "Speed: StartSpeed must be in [0, CruiseSpeed] and CruiseSpeed positive.");
             Require(Speed.Acceleration > 0f, "Speed: Acceleration must be positive.");
+            Require(Speed.GainPerSecond >= 0f && Speed.MaxSpeed >= Speed.CruiseSpeed, "Speed: GainPerSecond must not be negative and MaxSpeed at least CruiseSpeed.");
             Require(Lateral.CarHalfWidth >= 0f && Lateral.CarHalfWidth < RoadSection.HalfWidth, "Lateral: CarHalfWidth must fit on the road.");
             Require(Lateral.DragMetersPerScreen > 0f && Lateral.AxisSpeed > 0f, "Lateral: DragMetersPerScreen and AxisSpeed must be positive.");
             Require(Lateral.SmoothTime > 0f && Lateral.MaxLateralSpeed > 0f, "Lateral: SmoothTime and MaxLateralSpeed must be positive.");

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using WrongLine.Car;
 using WrongLine.Road;
 
 namespace WrongLine.Traffic
@@ -81,7 +82,8 @@ namespace WrongLine.Traffic
         /// <summary>Length of a slice: long enough for the player to change lane (at cruise speed) with some to spare.</summary>
         public static double SliceLength(TrafficSettings settings, PlayerSpeedProfile player)
         {
-            return Math.Max(settings.Layout.SliceMeters, player.Cruise * settings.Layout.LaneChangeSeconds * 1.25 + 5.0);
+            // At the top speed: the player covers the most road in a lane change then.
+            return Math.Max(settings.Layout.SliceMeters, player.Top * settings.Layout.LaneChangeSeconds * 1.25 + 5.0);
         }
 
         /// <summary>Settles every car up to σ <paramref name="sigma"/> (what is planned already stays).</summary>

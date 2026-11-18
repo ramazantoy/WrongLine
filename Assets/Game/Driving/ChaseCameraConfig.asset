@@ -23,6 +23,6 @@ MonoBehaviour:
     LookFollowX: 0.5
     LateralSharpness: 8
     BaseFov: 60
-    MaxFov: 70
+    MaxFov: 76
     FovMinSpeed: 12
-    FovMaxSpeed: 30
+    FovMaxSpeed: 42

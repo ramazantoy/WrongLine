@@ -19,6 +19,18 @@ MonoBehaviour:
     m_Key: menu.play
     m_Metadata:
       m_Items: []
+  - m_Id: 5979583918387200
+    m_Key: gameover.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5979584883077120
+    m_Key: gameover.retry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5979585541582848
+    m_Key: gameover.menu
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -1,5 +1,6 @@
 using AF.Core;
 using UnityEngine;
+using WrongLine.Crash;
 using WrongLine.World;
 
 namespace WrongLine.Car
@@ -72,9 +73,31 @@ namespace WrongLine.Car
             _steeringAxisNormalized = _steeringAxis.normalized;
         }
 
+        /// <summary>The wreck's middle once the car has broken up (see <see cref="Break"/>), null before.</summary>
+        public Transform WreckBody { get; private set; }
+
+        public bool IsWrecked => WreckBody != null;
+
         public void Place(Vector3 position, Quaternion rotation)
         {
             transform.SetPositionAndRotation(position, rotation);
+        }
+
+        /// <summary>The car breaks up: lights out, the parts become rigid bodies and fly off (see <see cref="CarWreck"/>).</summary>
+        public void Break(WreckRule wreck, CrashSettings.WreckGroup settings)
+        {
+            if (IsWrecked)
+            {
+                return;
+            }
+
+            ShowSignal(SignalDirection.None, false, null);
+            foreach (Light light in new[] { _headlight, _headlightRight, _headlightGlow, _tailLight })
+            {
+                light.enabled = false;
+            }
+
+            WreckBody = CarWreck.Break(transform, wreck, settings);
         }
 
         public void Pose(CarPoseRule pose)

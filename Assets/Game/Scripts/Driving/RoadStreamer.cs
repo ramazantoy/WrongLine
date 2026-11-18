@@ -21,22 +21,21 @@ namespace WrongLine.Driving
         private readonly RoadConfig _road;
         private readonly CurveWorldConfig _curve;
         private readonly ICarMotion _motion;
-        private readonly IGameClock _clock;
         private const float BoundsDistanceMargin = 50f; // The camera sits behind the car; pieces ahead are this much further from it than AheadMeters.
 
         private readonly IPublisher<RoadOriginShifted> _shifted;
         private readonly IRoadDebugHud _hud;
         private readonly Dictionary<int, RoadPieceView> _views = new Dictionary<int, RoadPieceView>();
         private RoadRun _run;
+        private double _lastCovered;
 
-        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, ICarMotion motion, IGameClock clock, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud, IRunSeed seed)
+        public RoadStreamer(IRoadPiecePool pool, RoadConfig road, CurveWorldConfig curve, ICarMotion motion, IPublisher<RoadOriginShifted> shifted, IRoadDebugHud hud, IRunSeed seed)
         {
             _seed = seed;
             _curve = curve;
             _pool = pool;
             _road = road;
             _motion = motion;
-            _clock = clock;
             _shifted = shifted;
             _hud = hud;
         }
@@ -63,7 +62,10 @@ namespace WrongLine.Driving
 
         public void Tick()
         {
-            _run.Advance(_motion.Speed * _clock.DeltaTime);
+            // How far the car has got comes from its speed profile (the traffic is laid out for the same numbers), not from adding up speed × frame time.
+            double covered = _motion.Distance;
+            _run.Advance(covered - _lastCovered);
+            _lastCovered = covered;
             Apply();
         }
 

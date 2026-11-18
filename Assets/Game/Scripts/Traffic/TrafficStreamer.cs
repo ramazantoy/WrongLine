@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using AF.Core;
+using MessagePipe;
 using UnityEngine;
 using VContainer.Unity;
 using WrongLine.Car;
+using WrongLine.Crash;
 using WrongLine.Driving;
 using WrongLine.Road;
 using WrongLine.World;
@@ -18,6 +20,9 @@ namespace WrongLine.Traffic
     /// </summary>
     internal sealed class TrafficStreamer : IStartable, ITickable, IDisposable, ITrafficFrame
     {
+        /// <summary>Height of the solid box the car the player crashed into gets, in metres.</summary>
+        private const float CrashBoxHeight = 1.4f;
+
         /// <summary>Mixed into the run seed, so the traffic does not repeat the road generator's numbers.</summary>
         private const ulong SeedSalt = 0x7AFF1C5EED5A17E5UL;
 
@@ -33,11 +38,15 @@ namespace WrongLine.Traffic
         private readonly CurveWorldConfig _curve;
         private readonly IRunSeed _seed;
         private readonly Dictionary<int, TrafficCarView> _views = new Dictionary<int, TrafficCarView>();
+        private readonly ISubscriber<CarCrashed> _crashes;
+        private IDisposable _crashSubscription;
         private TrafficRun _run;
         private TrafficLodRule _lod;
+        private int _frozenId = -1;
 
-        public TrafficStreamer(ITrafficPool pool, IRoadFrame road, IGameClock clock, TrafficConfig config, CarConfig car, RoadConfig roadConfig, CurveWorldConfig curve, IRunSeed seed)
+        public TrafficStreamer(ITrafficPool pool, IRoadFrame road, IGameClock clock, TrafficConfig config, CarConfig car, RoadConfig roadConfig, CurveWorldConfig curve, IRunSeed seed, ISubscriber<CarCrashed> crashes)
         {
+            _crashes = crashes;
             _pool = pool;
             _road = road;
             _clock = clock;
@@ -69,7 +78,28 @@ namespace WrongLine.Traffic
             var planner = new TrafficPlanner(_pool.Models, settings, profile, _seed.Value ^ SeedSalt, _car.Settings.Lateral.StartLane, _pool.PaintCount);
             _run = new TrafficRun(planner, settings);
             _lod = new TrafficLodRule(settings.Lod);
+            _crashSubscription = _crashes.Subscribe(OnCrashed);
             Apply(0f);
+        }
+
+        /// <summary>The car the player hit stays where it is, solid, for the wreck to land on; the rest of the traffic goes on.</summary>
+        private void OnCrashed(CarCrashed crash)
+        {
+            if (_run == null || !_views.TryGetValue(crash.CarId, out TrafficCarView view))
+            {
+                return;
+            }
+
+            _frozenId = crash.CarId;
+            foreach (TrafficCarPlan plan in _run.Active)
+            {
+                if (plan.Id == crash.CarId)
+                {
+                    TrafficModelSpec model = _pool.Models[plan.Model];
+                    view.EnableCrashCollider(plan.Length, model.HalfWidth, CrashBoxHeight);
+                    break;
+                }
+            }
         }
 
         public void Tick()
@@ -84,6 +114,7 @@ namespace WrongLine.Traffic
 
         public void Dispose()
         {
+            _crashSubscription?.Dispose();
             _pool.ReleaseAll();
             _views.Clear();
         }
@@ -96,6 +127,11 @@ namespace WrongLine.Traffic
 
             foreach (int id in _run.Despawned)
             {
+                if (id == _frozenId)
+                {
+                    continue; // The wreck lies on it: it stays until the scene ends.
+                }
+
                 _pool.Release(_views[id]);
                 _views.Remove(id);
             }
@@ -112,6 +148,11 @@ namespace WrongLine.Traffic
 
             foreach (TrafficCarPlan plan in _run.Active)
             {
+                if (plan.Id == _frozenId)
+                {
+                    continue;
+                }
+
                 double time = _run.Time;
                 double distance = plan.DistanceAt(time);
                 TrafficCarView view = _views[plan.Id];

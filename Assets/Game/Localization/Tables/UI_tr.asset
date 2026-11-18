@@ -22,6 +22,18 @@ MonoBehaviour:
     m_Localized: Oyna
     m_Metadata:
       m_Items: []
+  - m_Id: 5979583918387200
+    m_Localized: Oyun bitti
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5979584883077120
+    m_Localized: Tekrar dene
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5979585541582848
+    m_Localized: "Men\xFC"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

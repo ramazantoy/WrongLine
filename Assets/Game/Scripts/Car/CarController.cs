@@ -4,7 +4,7 @@ using VContainer.Unity;
 namespace WrongLine.Car
 {
     /// <summary>Runs the car's rules each frame from the player's input. The road run and the views read the result through <see cref="ICarMotion"/>.</summary>
-    internal sealed class CarController : ITickable, ICarMotion
+    internal sealed class CarController : ITickable, ICarMotion, ICarImpact
     {
         private readonly ISteerInput _input;
         private readonly IGameClock _clock;
@@ -22,26 +22,48 @@ namespace WrongLine.Car
             _signal = new TurnSignalRule(config.Settings);
         }
 
-        public float Speed => _speed.Speed;
+        public bool Crashed { get; private set; }
+
+        public float Speed => Crashed ? 0f : _speed.Speed;
+
+        public double Distance => _speed.Distance;
 
         public float X => _lateral.X;
 
         public float TargetX => _lateral.TargetX;
 
-        public float Velocity => _lateral.Velocity;
+        public float Velocity => Crashed ? 0f : _lateral.Velocity;
 
         public int Lane => _signal.CarLane;
 
-        public SignalDirection Signal => _signal.Direction;
+        public SignalDirection Signal => Crashed ? SignalDirection.None : _signal.Direction;
 
-        public bool LampOn => _signal.LampOn;
+        public bool LampOn => !Crashed && _signal.LampOn;
 
         public void Tick()
         {
+            if (Crashed)
+            {
+                return;
+            }
+
             float deltaTime = _clock.DeltaTime;
             _speed.Update(deltaTime);
             _lateral.Update(_input.DragFraction, _input.Axis, deltaTime);
             _signal.Update(_lateral.X, _lateral.TargetX, deltaTime);
+        }
+
+        public void Sideswipe(int direction, float meters, float speed)
+        {
+            if (!Crashed)
+            {
+                _lateral.Push(direction, meters, speed);
+            }
+        }
+
+        public void Crash()
+        {
+            Crashed = true;
         }
     }
 }
