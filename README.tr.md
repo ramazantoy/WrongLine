@@ -1,115 +1,128 @@
-# Unity Oyun Şablonu
+# WrongLine
 
 [English](README.md)
 
-PC ve mobil oyunlar için bir Unity 6.3 (URP) proje şablonu. Her oyunda yeniden yazılan sistemler ilk günden hazır:
-bağımlılık enjeksiyonu scope'ları, oyun durumları, sahne yükleme, kayıt, input modları, ses, nesne havuzları, oyuncu
-ayarları, yerelleştirme, platform servisleri ve kontrollü bir build hattı. Yeni oyun GitHub'ın **Use this template**
-düğmesiyle başlar ve bunun üstüne kurulur.
+*Yolda kal. Trafiğin arasından geç. Göz kırpma.*
 
-## Ne değildir
+<p align="center"><img src="docs/media/gameplay.day.gif" width="280" alt="WrongLine gündüz sürüşü, iki kat hızda oynatılıyor">&nbsp;&nbsp;<img src="docs/media/gameplay.night.gif" width="280" alt="WrongLine gece sürüşü, farlar ve sokak lambalarıyla, iki kat hızda oynatılıyor"></p>
 
-- **UI yok.** Menü, HUD ya da ayarlar ekranı yok. Sistemler bir UI'ın ihtiyaç duyduğu servisleri ve mesajları sunar.
-- **Oynanış sistemi yok.** Karakter, savaş, envanter gibi sistemler her oyunun kendisine ait.
-- **Paket değil.** Framework `Assets/Framework/` altında kaynak koddur ve her oyuna kopyalanır. Oyunlar arasında güncelleme
-  akışı yok; bir oyunda yapılan düzeltme o tek klasör karşılaştırılarak şablona geri taşınır.
+<p align="center"><em>Gündüz (solda) ve gece (sağda) bir sürüş, ikisi de iki kat hızda.</em></p>
 
-## Gereksinimler
+WrongLine, lunapark rayı gibi inip çıkan ve kıvrılan sonsuz bir yolda geçen, dikey Android araba oyunudur. Ufuk bir shader'la
+bükülür, kamera arabanın arkasından gider ve yolun dört şeridi vardır: ikisi senin yönünde, ikisi sana doğru gelir. Arabayı
+parmağını yana sürükleyerek yönlendirirsin; gaz da fren de yoktur ve araba sürekli hızlanır. Hafif bir sürtme seni şeridine
+geri iter. Gerçek bir çarpışma kazadır: yavaş çekim, araba parçalanır ve tur biter.
 
-Unity **6000.3.27f2** (6.3 LTS), Universal Render Pipeline 17.3. Build için platformun build desteği gerekir: Windows için
-Windows Build Support (IL2CPP), Android için Android Build Support.
+Prototip değil, küçük ve bitmiş bir portföy oyunudur: temiz kurallar, testler ve altında bir framework olan gerçek bir Unity
+projesi.
 
-| Paket | Sürüm | Kaynak | Kullanım |
-|---|---|---|---|
-| VContainer | 1.19.0 | OpenUPM | Bağımlılık enjeksiyonu |
-| UniTask | 2.5.11 | OpenUPM | Async |
-| MessagePipe, MessagePipe.VContainer | 1.8.2 | OpenUPM | Mesajlar |
-| PrimeTween | 1.5.2 | npmjs | Tween'ler |
-| Newtonsoft Json | 3.2.2 | Unity | Kayıt dosyaları |
-| Input System | 1.20.1 | Unity | Input |
-| Localization (Addressables 2.10.3 ile gelir) | 1.5.13 | Unity | Diller |
-| Mono.Cecil | 1.11.6 | Unity | Build kontrolleri (yalnız Editor) |
-| Pipeline | 0.9.1-exp.1 (deneysel) | Unity | Unity CLI'ın Editor'a ve Development build'lere bağlanması |
+## Nasıl oynanır
 
-OpenUPM paketleri imzasız: proje ilk açıldığında Unity eksik imza için soru sorar.
+- **Sürükleyerek yönlendir.** Parmağını sola ve sağa kaydır; araba dört şeridin arasında seni izler. Hız senin elinde değil.
+- **Soldaki iki şerit karşıdan gelir.** Oradan geçmek hızlı yoldur ve risklidir.
+- **Sürtme kaza değildir.** Sığ bir yan temas arabayı iter ve sana bir şeye mal olmaz; daha derin temas kazadır.
+- **Hızlanmaya devam eder.** Hız tur boyunca artar, dolayısıyla uzun süre dayandıkça aynı boşluk daralır.
+- **Skor mesafedir.** Oyun bitti ekranı metreni sayarak gösterir ve en iyi turunu verir.
+- **Dünya değişir.** Dört biyom, başlangıçta gün ya da gece, karanlıkta sokak lambaları ve farlar. Her tur farklı bir yoldur.
 
-## Modüller
+## Ekran görüntüleri
 
-Her modül `Assets/Framework/` altında tek klasör ve kendi assembly'leri var (`AF.<Modül>`, ayrıca `.Editor` ve `.Tests`).
+<p align="center"><img src="docs/media/screens.jpg" alt="WrongLine: ana menü, ayarlar, gündüz ve gece sürüş ekranı ve kaza ekranı"></p>
 
-| Modül | Ne yapar | Gerektirir | Doküman (İngilizce) |
-|---|---|---|---|
-| Core | Root ve sahne scope'ları, oyun durumları, sahne yükleme, pause ve oyun saati, boot adımları, nesne havuzları, tween kuralları, log, doğrulama | — | [Core.md](Assets/Framework/Documentation~/Core.md) |
-| Save | Migration'lı, sürümlü JSON kayıtlar; atomik yazma, yedek ve tek yazma kuyruğu; slotlar, global ve cihaz verisi | Core | [Save.md](Assets/Framework/Documentation~/Save.md) |
-| Input | Action map'lerin ve cursor'ın tek sahibi olarak input modları, kontrol şeması takibi, tuş atama | Core, Save | [Input.md](Assets/Framework/Documentation~/Input.md) |
-| Audio | Havuzlanmış kaynaklarda ses cue'ları, crossfade'li müzik, mixer kanal sesleri, susturma, tek AudioListener | Core | [Audio.md](Assets/Framework/Documentation~/Audio.md) |
-| Settings | Ekran ayarları ve kanal seslerinin kaydı | Core, Save, Audio, Input | [Settings.md](Assets/Framework/Documentation~/Settings.md) |
-| Localization | Unity Localization ile oyunun dili, global veriyle birlikte kaydedilir | Core, Save | [Localization.md](Assets/Framework/Documentation~/Localization.md) |
-| Platform | Küçük arayüzlerin arkasında başarımlar ve mağaza overlay'i; Mock backend, SDK paketi kurulunca uyanan Steam ve Epic backend'leri | Core | [Platform.md](Assets/Framework/Documentation~/Platform.md) |
-| Build | Build öncesi ve sonrası kontrolleriyle tek build menüsü (yalnız Editor) | Core | [Build.md](Assets/Framework/Documentation~/Build.md) |
+*Ana menü, ayarlar, gündüz ve gece sürüş ekranı ve kaza ekranı.*
 
-`Assets/Game/` yer tutucu oyundur: `Game` assembly'si, root scope prefab'ı, Intro, Menu ve Gameplay sahneleri, ses mixer'ı,
-input action'ları ve örnek yerelleştirme asset'leri. **AF > Validate All** projeyi ve build sahnelerini kontrol eder; build
-menüsü de onu çalıştırır.
+## İndir
 
-## Yeni oyuna başlamak
+Bir sürüm yayınlandığında Android APK'sı (Android 7.1 ve üstü, ARM64) projenin
+[GitHub Releases](https://github.com/ramazantoy/WrongLine/releases) sayfasına eklenir. Debug anahtarıyla imzalıdır; bilinmeyen
+kaynaklardan kuruluma izin vererek kurulur, Play Protect bilinmeyen geliştirici uyarısı verebilir. Oyun hiçbir mağazada
+değil. APK repoda tutulmaz, kaynaktan yeniden derlenebilir (aşağıya bak).
 
-1. Şablondan bir repo oluştur (**Use this template**) ve klonla.
-2. Unity 6000.3.27f2 ile aç; OpenUPM paketleri için eksik imza diyaloğunu kabul et.
-3. Gereken build desteğini kur (Windows IL2CPP; Android için SDK, NDK ve OpenJDK'siyle Android Build Support). Platformu
-   **File > Build Profiles**'tan değiştir; build menüsü etkin platformu build eder, platformu kendisi değiştirmez.
-4. **Player Settings**'te Company Name, Product Name ve Version'ı ayarla. `persistentDataPath` ve uygulama kimliği
-   (`com.<Company>.<Product>`) bunlardan türer; ürün adında boşluk ya da simge varsa Player Settings'te görünen kimliği
-   kontrol et.
-5. **AF > Build > Check Release** çalıştır: yer tutucu ad hatası kalmamalı.
-6. `Assets/Game/Scripts/` içindeki `Game` namespace'ini ve `Game` assembly'sinin Root Namespace'ini değiştir. Assembly adı
-   aynı kalır.
-7. Gerekmeyen modül varsa çıkar: `GameRootScope`'taki `Use…` satırı, klasörü ve `Game.asmdef`'teki referansı (Localization
-   için ek adımlar [Localization.md](Assets/Framework/Documentation~/Localization.md)'de).
-8. Sahneler: Intro (build index 0, Boot Target Manual), Menu (Boot Target Menu), Gameplay (Boot Target Playing). Sahne
-   eklerken ya da adını değiştirirken build'in sahne listesini ve `Assets/Game/Scripts/Scenes.cs`'i birlikte güncelle:
-   ikisini karşılaştıran bir kontrol yok, eksik ad ilk yüklemede hata verir. Sahne ekleme:
-   [Core.md](Assets/Framework/Documentation~/Core.md).
-9. Root prefab `Assets/Game/Prefabs/RootScope.prefab`: oyunun root scope'u ve tek EventSystem. Loading screen de buraya.
-10. Ses: mixer'ın grupları (`Assets/Game/Audio/GameMixer.mixer`) ile `AudioChannels.cs` eşleşir.
-11. Input: `Assets/Game/Input/Controls.inputactions`'ın map'leri ile `InputModes.cs`'teki modlar eşleşir. Şablonda Escape hem
-    `Gameplay/Pause`'a hem `UI/Cancel`'a bağlı; oyunun ne istediğine karar ver ([Input.md](Assets/Framework/Documentation~/Input.md)).
-12. Yerelleştirme: örnek dilleri (İngilizce, Türkçe) ve `UI` tablosundaki `menu.play` girdisini değiştir; Specific Locale
-    Selector oyunun ana dilini göstersin. Tek dilli oyun modülü çıkarabilir.
-13. Mobil: Default Orientation'ı ayarla (şablon dört yönü de açık bırakır). Android API seviyesi 25, ARM64, IL2CPP ve Minimal
-    stripping ayarlı; imzalama ayarlı değil.
-14. Kalite seviyeleri: Android ve iOS'ta varsayılan Mobile, Windows, macOS ve Linux'ta PC.
-15. Console'da hata olmadığını, EditMode testlerinin Test Runner'da geçtiğini ve **AF > Validate All**'ın bir şey
-    raporlamadığını kontrol et.
-16. **AF > Build > Development** ile build al ve çalıştır, sonra **AF > Build > Release**. İlk build URP'nin pipeline
-    asset'lerini yeniden yazabilir; bu değişiklikleri ayrı commit'le.
+## Durum
 
-## Platform durumu
+Menüden kaza ekranına kadar oynanabilir; İngilizce ve Türkçe, ses, müzik ve titreşimle (hepsi Ayarlar'dan kapatılabilir).
+Hâlâ pürüzlü olanlar:
 
-**Windows (IL2CPP, managed stripping Minimal): doğrulandı**, Development ve Release build'leriyle. Player'da: root scope ve
-boot adımları, global ve cihaz kayıt verisinin okunup geri yazılması (kayıtlı tuş atamaları dahil), intro'dan menüye sahne
-akışı, MessagePipe üzerinden struct mesajlar, ses mixer'ı ve ses kaynağı havuzunun kurulumu, pencere odakta değilken
-susturma, kayıtlı ekran ayarlarının ve dilin açılışta uygulanması, Unity Localization içeriğinin build'de olması ve Release
-build'de Pipeline runtime'ının olmaması. Şablonda UI olmadığı için player'da denenmeyenler: oynanıştan slot kaydı, ses
-çalma, pause ve overlay mesajları. Exclusive fullscreen denenmedi.
+- Sesler kendi sentezim ve yalnız ilk ince ayardan geçti.
+- Mesafeden başka skor yok: jeton, görev ya da lider tablosu yok.
 
-**Mobil: doğrulanmadı.** Kodda mobil yollar var (dokunmatik kontrol şeması, mobil kare hızı varsayılanı, uygulama arka
-plana geçerken kayıt, PlayerPrefs kayıt deposu, Android IL2CPP ayarları), ama hiç Android ya da iOS build'i alınmadı ve
-hiçbir şey cihazda çalışmadı. Şablondan yapılacak ilk mobil oyun bunu deneyecek; düzeltmeler şablona geri gelir.
+## Nasıl yapıldı
 
-**macOS ve Linux:** build alınmadı.
+Unity 6000.3.27f2 (6.3 LTS), Universal Render Pipeline, özel bir ufuk bükme shader'ı ve kamera için Cinemachine 3.1.7.
+Kod VContainer, MessagePipe, UniTask, PrimeTween ve Input System kullanır.
 
-**Steam ve Epic:** şablonda Steam (Steamworks.NET) ve Epic (PlayEveryWare'in EOS plugin'i) backend'leri var, ama SDK
-paketlerinin hiçbiri kurulu değil: oyun paketi kurana kadar o mağazanın build'leri reddedilir ve oyun Mock'la çalışır.
-Steam, Valve'ın test uygulamasıyla Windows IL2CPP Development build'inde çalıştırıldı (açılış kontrolü, başarım,
-kapanış); overlay'i denenemedi, çünkü Steam overlay'i yalnız kendi başlattığı oyunda gösterir. Epic derleniyor ve
-testleri geçiyor, ama EOS'a karşı çalıştırılmadı. Backend'i açmak: [Platform.md](Assets/Framework/Documentation~/Platform.md),
-"Store backends".
+Kurallar mümkün olduğunca Unity tipi olmayan düz C#'tır: yol örnekleme, araba ve trafiğin yaşadığı `(s, x)` yol uzayı, sonsuz
+yol zinciri, yanal hareket, hız profili, trafik doluluğu (her zaman geçilebilir bir yol vardır), sürtme ve kaza tespiti,
+kamera dolly'si. MonoBehaviour'lar yalnızca bunları çizer. Her kural sınıfının EditMode testi vardır (yaklaşık 700 test
+metodu) ve her yeni test dosyası, kodu bir kez bozup testin kırıldığı görülerek denendi. Özellikler birbirini küçük
+arayüzler ve MessagePipe mesajlarıyla tanır.
 
-Development build, Pipeline paketinin kendisine gönderilen kodu çalıştıran yerel HTTP sunucusunu taşır. Kimseye verilmez;
-test edenler Release build alır.
+```mermaid
+flowchart TD
+    Root["GameRootScope (kök)<br/>Save · Input · Audio · Settings · Localization · Platform<br/>Haptics · UI geri bildirimi · kalıcı havuzlar"]
+    Menu["Menü sahnesi scope'u<br/>ana menü · ayarlar · arka planda canlı sürüş"]
+    Driving["Sürüş sahnesi scope'u<br/>yol · trafik · çevre · araba · kamera · HUD · pause · kaza"]
+    Root --> Menu
+    Root --> Driving
+```
+
+```mermaid
+flowchart LR
+    Input["Input<br/>sürükleme"] --> Lateral["Yanal kural<br/>şerit konumu"]
+    Lateral --> Car["Araba<br/>poz · ışıklar · tekerlekler"]
+    Road["Yol<br/>düzen · örnekleyici"] --> Traffic["Trafik<br/>şeritler · doluluk"]
+    Road --> Scenery["Çevre<br/>biyomlar · prop'lar"]
+    Car --> Collision["Çarpışma<br/>sürtme ya da kaza"]
+    Traffic --> Collision
+    Collision -->|mesajlar| Crash["Kaza<br/>yavaş çekim · oyun bitti"]
+    Collision -->|mesajlar| Camera["Kamera<br/>takip · kaza · sarsıntı"]
+    Crash --> HUD["HUD ve ekranlar"]
+    Collision --> Feedback["Ses + titreşim"]
+```
+
+Arabalar Meshy ile üretildi ve bir Editor script'iyle oyuna hazır mesh'e pişirildi. Yol parçaları ve yol kenarı prop'ları
+Blender'da modellendi, arayüzün fırça sprite'ları Krita'da çizildi, sesler `.claude/scripts/` altındaki Python
+script'leriyle sentezlendi. Ayarlanabilir her sayı config asset'lerinde durur.
+
+Altında `Assets/Framework/` var: küçük bir framework (scope'lar, oyun state'leri, sahne yükleme, kayıt, input modları, ses,
+havuzlar, ayarlar, yerelleştirme, platform servisleri ve denetimli bir build hattı). Modül modül
+[`Assets/Framework/Documentation~`](Assets/Framework/Documentation~/Core.md) altında belgelenmiştir (İngilizce).
+
+## Proje yapısı
+
+| Yol | İçerik |
+|---|---|
+| `Assets/Game/` | Oyun: `Game` assembly'si, `WrongLine` namespace'i, özellik başına bir klasör (`Road`, `Traffic`, `Car`, `Driving`, `Crash`, `Scenery`, `UI`, `Audio`, `Menu`, ...) |
+| `Assets/Game/Tests/` | Kural sınıflarının EditMode testleri (`Game.Tests`) |
+| `Assets/Framework/` | Framework (`AF.*`), kendi testleri ve [belgeleriyle](Assets/Framework/Documentation~/Core.md) |
+| `.claude/` | Karar kaydı (`decisions/`, alan başına bir dosya), editor ve asset script'leri ve işin izlediği kurallar |
+| `CLAUDE.md` | Bu projede Claude Code için çalışma kuralları |
+
+## Kaynaktan derleme
+
+1. Projeyi Unity **6000.3.27f2** ile aç ve OpenUPM paketleri için çıkan imza eksik uyarısını kabul et.
+2. Android için Android Build Support'u (SDK, NDK, OpenJDK) kur ve platformu **File > Build Profiles**'tan değiştir.
+3. Testleri **Window > General > Test Runner**'dan (EditMode) ve **AF > Validate All** ile koş.
+4. **AF > Build > Release** aktif platformu `Builds/<Platform>/Release/` altına derler; bir kontrol başarısızsa derlemeyi reddeder.
+
+## Kaynaklar ve lisanslar
+
+Kod [MIT lisanslıdır](LICENSE). Üçüncü taraf asset'ler ve paketler kendi lisanslarını korur; her asset klasöründe lisans metni
+dosyaların yanında durur.
+
+| Asset | Yazar ve kaynak | Lisans |
+|---|---|---|
+| Barlow ve Barlow Condensed fontları | [The Barlow Project Authors](https://github.com/jpt/barlow) | SIL OFL 1.1 (`Assets/Game/UI/Fonts/Barlow - OFL.txt`) |
+| Liberation Sans fontu (TextMesh Pro varsayılanı) | Red Hat, Inc.; sayısallaştırma Google | SIL OFL 1.1 (`Assets/TextMesh Pro/Fonts/LiberationSans - OFL.txt`) |
+| Oyuncu ve trafik arabaları | Ücretli planda Meshy ile üretildi, sonra kendi script'lerimle pişirildi ve dokulandı | Kendi işim, kod gibi MIT |
+| Yol parçaları, yol kenarı prop'ları, shader'lar, arayüz fırça sprite'ları, açılış videosu | Kendi işim | Kod gibi MIT |
+| Ses efektleri, motor döngüleri ve müzik | Kendi Python script'lerimle sentezlendi (`.claude/scripts/audio/`) | Kendi işim, kod gibi MIT |
+| Ekran görüntüleri ve GIF'ler | Yazar tarafından Unity Editor'da çalışan oyundan kaydedildi; GIF'ler iki kat hızda oynar | Kendi işim, kod gibi MIT; içindeki font ve görseller yukarıdaki lisansları korur |
+| VContainer, UniTask, MessagePipe | [hadashiA](https://github.com/hadashiA/VContainer) ve [Cysharp](https://github.com/Cysharp) | MIT |
+| PrimeTween | [Kyrylo Kuzyk](https://github.com/KyryloKuzyk/PrimeTween) | PrimeTween lisansı; şartları gereği npm'den kurulur, bu repoya kopyalanmaz |
+| Cinemachine, Input System, Localization, URP ve diğer Unity paketleri; Newtonsoft Json | Unity Technologies; James Newton-King | Unity paket şartları (Package Manager'dan kurulur); MIT |
 
 ## Yazarlık
 
-Mimari, kararlar ve inceleme: Ramazan Toy. Kodun büyük kısmı bu yönlendirmeyle Claude Code ile yazıldı; o commit'lerde
-Co-Authored-By satırı var. `CLAUDE.md` ve `.claude/` bu çalışmanın uyduğu kuralları ve karar kaydını tutar.
+Mimari, kararlar ve gözden geçirme Ramazan Toy'a ait. Kodun büyük kısmı bu yönlendirmeyle Claude Code ile yazıldı; bu
+commit'lerde Co-Authored-By satırı var. `CLAUDE.md` ve `.claude/`, işin izlediği kuralları ve karar kaydını tutar.

@@ -42,13 +42,9 @@ not on any store. The APK is not kept in the repository and can be rebuilt from 
 ## Status
 
 Playable from the menu to the crash screen, in English and Turkish, with sound, music and vibration (each can be switched
-off in Settings). What is still rough, so nobody has to find it out:
+off in Settings). Still rough:
 
-- Not yet measured on a phone: frame rate, heat and how the controls feel are still to be checked on real devices.
-- The sounds are my own synthesis and have only had a first tuning pass; the balance between engine, effects and music is
-  not final.
-- The player car is a 120k-triangle model and the traffic cars have no third level of detail yet; their cost on mobile
-  GPUs is unmeasured.
+- The sounds are my own synthesis and have only had a first tuning pass.
 - There is no score beyond distance: no coins, missions or leaderboards.
 
 ## How it is built
@@ -56,11 +52,10 @@ off in Settings). What is still rough, so nobody has to find it out:
 Unity 6000.3.27f2 (6.3 LTS) with the Universal Render Pipeline, a custom curved-horizon shader and Cinemachine 3.1.7 for
 the camera. Code uses VContainer, MessagePipe, UniTask, PrimeTween and the Input System.
 
-The rules are plain C# with no Unity types where that is possible: sampling the road, the `(s, x)` path space the car and
-traffic live in, the endless road chain and its floating origin, lateral movement, the speed profile, traffic occupancy
-(which guarantees there is always a way through), scrape and crash detection, the camera dolly. MonoBehaviours only draw
-them. Every rule class has EditMode tests (about 700 test methods in the game assembly), and each new test file was checked
-by breaking the code once and seeing the test fail. Gameplay code reads input only through its own interface, and features
+The rules are plain C# with no Unity types where that is possible: road sampling, the `(s, x)` path space the car and
+traffic live in, the endless road chain, lateral movement, the speed profile, traffic occupancy (there is always a way
+through), scrape and crash detection, the camera dolly. MonoBehaviours only draw them. Every rule class has EditMode tests
+(about 700 test methods), and each new test file was checked by breaking the code once and seeing the test fail. Features
 reach each other through small interfaces and MessagePipe messages.
 
 ```mermaid
@@ -86,10 +81,9 @@ flowchart LR
     Collision --> Feedback["Audio + haptics"]
 ```
 
-The cars were generated with Meshy and baked into game-ready meshes by an Editor script that finds the nose direction,
-scales the model and turns the texture into paint and light masks. Road pieces and roadside props were modelled in
-Blender, the UI brush sprites drawn in Krita, and the sounds synthesised with Python scripts kept in `.claude/scripts/`.
-Tunable numbers live in config assets.
+The cars were generated with Meshy and baked into game-ready meshes by an Editor script. Road pieces and roadside props
+were modelled in Blender, the UI brush sprites drawn in Krita, and the sounds synthesised with Python scripts kept in
+`.claude/scripts/`. Tunable numbers live in config assets.
 
 Underneath is `Assets/Framework/`, a small framework (scopes, game states, scene loading, saving, input modes, audio, pools,
 settings, localization, platform services and a checked build pipeline), documented module by module in

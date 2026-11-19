@@ -1,20 +1,19 @@
 # CLAUDE.md
 
-WrongLine: Unity 6.3 LTS + URP ile Android araba oyunu. Lunapark rayı gibi spline yol: yokuş aşağı, yokuş yukarı, sağa sola
-kıvrılır; ufuk curve shader'la bükülür, kamera aracı takip eder. Fikir oynadıkça netleşir. Oyun mağazaya çıkmaz; amaç public
-GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir: DI context, GameManager, SceneManager, Save,
-Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
-modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
+WrongLine: Unity 6.3 LTS + URP ile Android araba oyunu. Lunapark rayı gibi spline yol; ufuk curve shader'la bükülür, kamera
+aracı takip eder. Oyun mağazaya çıkmaz; amaç public GitHub portföyü ve template'in sahada denenmesi. Framework template'ten
+gelir (DI, GameManager, SceneManager, Save, Audio, Input, Pool, Settings, Localization, Platform, Build).
 
-**Durum:** Oynanabilir oyun kodu bitti (yol, trafik, kaza, kamera, araçlar, UI, ses; aşağıdaki tablo). Cihazda hiçbir şey
-ölçülmedi: his ve Android ölçümü kullanıcıda. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe, kararlar ve
-ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan moduna geç.
-Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
+**Durum:** Oyun bitti ve Android'de iki telefonda denendi (açılış, ses, titreşim, akıcılık sorunsuz); Release APK 0.1.0
+alındı, README (EN/TR) yazıldı. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe ve kararlar
+`decisions/Game.md`'de, framework kararları `decisions/` altında (indeks `README.md`, modül başına dosya). Template tabanı
+`4cd74e6` (`template` remote'u). Yeni milestone başlarken plan moduna geç. Yarım iş varsa `.claude/notes/<konu>/` altındaki
+handoff'a bak.
 
-**Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`).
-Oyun `Assets/Game/`: asmdef `Game`, namespace `WrongLine`, özellik klasörü `WrongLine.<Özellik>`.
-Testler `Assets/Game/Tests/` (`Game.Tests`), editor kodu ilk editor script'iyle `Game.Editor`. Framework oyuna referans
-vermez. İnsan için doküman: `Assets/Framework/Documentation~/`. Tasarım `Design/`'da (gitignored, yalnız yerel).
+**Yapı:** framework `Assets/Framework/` (`AF.*`, modül başına `<Modül>/{Runtime,Editor,Tests}`); oyun `Assets/Game/` (asmdef
+`Game`, namespace `WrongLine`, özellik klasörü `WrongLine.<Özellik>`); testler `Assets/Game/Tests/` (`Game.Tests`), editor
+kodu `Game.Editor`. Framework oyuna referans vermez. İnsan için doküman `Assets/Framework/Documentation~/`; tasarım `Design/`'da
+(gitignored, yalnız yerel).
 
 ## WrongLine
 Oyuna özel her şey bu bölümde ve dosyanın başında durur. Aşağıdaki bölümler template'le aynı kalır; template'ten gelen
@@ -27,9 +26,9 @@ cherry-pick'ler çakışmasın diye.
 - **Template:** framework burada yamanmaz. Kapsam: `Assets/Framework/`, `.claude/scripts/`, `.claude/decisions/`'ın
   framework dosyaları ve bu dosyanın WrongLine dışı bölümleri. Bulunan sorun `GameOpen.md` → "Template'e gidenler"e yazılır,
   template'te düzeltilir, sonra `git fetch template` + `git cherry-pick -x <sha>` ile alınır.
-- **Faz = milestone:** template'in faz kuralları milestone'lar için de geçerli. Her milestone oynanabilir halde biter.
-  Milestone'lar önceden dizilmez: biri bitince oynanır, sonraki o zaman yazılır. Dış asset'i (model, ses) bekleyen milestone
-  açılmaz; placeholder'la biter, asset işi `GameOpen.md`'de ayrı madde olur. Commit mesajı kısa, emir kipinde ve İngilizce.
+- **Faz = milestone:** her milestone oynanabilir halde biter; sonraki, biri bitip oynanınca yazılır. Dış asset'i (model, ses)
+  bekleyen milestone açılmaz; placeholder'la biter, asset işi `GameOpen.md`'de ayrı madde olur. Commit mesajı kısa, emir
+  kipinde ve İngilizce.
 - **Oyun kuralları:**
   - Kurallar (yol örnekleme, path space, hareket, çarpışma, puan) saf C# ile yazılır; MonoBehaviour yalnız view içindir.
   - Her kural sınıfının EditMode testi aynı milestone'da yazılır. Her test dosyasında kod bir kez bilerek bozulur; test yine
@@ -37,15 +36,14 @@ cherry-pick'ler çakışmasın diye.
   - Testleri kullanıcı Test Runner'da koşar ve kırılanları söyler. Claude derlemeyi (`console status`) kontrol eder, yeni
     yazdığı test dosyasını gerekirse filtreyle koşar; tam koşu yapmaz.
   - Ayarlanabilir her sayı ScriptableObject config'de durur.
-  - Özellikler birbirini interface ve MessagePipe mesajıyla tanır (aşağıdaki mimari kurallar).
   - Oynanış kodu input'u yalnız kendi arayüzünden okur; legacy `Input.*` kullanılmaz.
   - Dosyalar küçük ve tek amaçlı olur. Template API'si uydurulmaz; eksikse söylenir ve öneri yapılır.
   - Ekranlar ve HUD Canvas (uGUI) + TextMeshPro ile, her ekran bir prefab.
-  - Repo public olacak: asset yalnız CC0 ya da kendi işin olur; font OFL olabilir, `OFL.txt` yanında durur. Ücretli paket
-    (Asset Store, Synty) repoya girmez.
+  - Repo public: asset yalnız CC0 ya da kendi işin olur (Meshy çıktısı ücretli planla kendi iş sayılır); font OFL olabilir,
+    `OFL.txt` yanında durur. Ücretli paket (Asset Store, Synty) repoya girmez.
 
 ### Milestone'lar
-Hepsi kodca bitti. Ayrıntı, "bitti sayılır" ölçüleri ve cihazda denenmeyenler `decisions/Game.md` ve `GameOpen.md`'de.
+Hepsi bitti. Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de, açıklar `GameOpen.md`'de.
 
 | # | İçerik | Bitti |
 |---|---|---|
@@ -60,7 +58,8 @@ Hepsi kodca bitti. Ayrıntı, "bitti sayılır" ölçüleri ve cihazda denenmeye
 | V3 | Oyuncu aracı Meshy ile (tekerlek ayrı, pişirme script'i, dokudan ışık maskesi) | 2026-11-19 |
 | T1 | Trafik araçları Meshy ile (4 model, anahtar renkten boya); LOD2 ve çarpışma genişliği açık | 2026-11-19 |
 | U1 | Arayüz: fırça sprite'ları, Barlow, ayarlar, ana menü, yükleme, canlı menü arka planı, HUD, pause, kaza ekranı, haptic | 2026-11-19 |
-| S1 | Ses: motor pitch'i, geçiş sesi, sürtme ve kaza, UI sesleri, müzik; kendi Python sentezimiz; kulakla dinlenmedi | 2026-11-19 |
+| S1 | Ses: motor pitch'i, geçiş sesi, sürtme ve kaza, UI sesleri, müzik; kendi Python sentezimiz | 2026-11-19 |
+| R1 | README (EN/TR), GIF'ler, Recorder paketi, Release APK 0.1.0, iki telefonda deneme | 2026-11-19 |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.
