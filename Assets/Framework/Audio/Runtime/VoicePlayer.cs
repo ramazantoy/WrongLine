@@ -97,6 +97,19 @@ namespace AF.Audio
                 .SetCancellationToken(life.Token);
         }
 
+        public void SetPitch(SoundVoice voice, PoolLife life, float pitch)
+        {
+            if (life.IsCurrent)
+                voice.Source.pitch = Mathf.Clamp(pitch, -3f, 3f);
+        }
+
+        public void SetVolume(SoundVoice voice, PoolLife life, float volume)
+        {
+            // While fading out, the fade owns the volume.
+            if (life.IsCurrent && !voice.Stopping)
+                voice.Source.volume = Mathf.Clamp01(volume);
+        }
+
         /// <summary>Stops at once every sound <paramref name="owner"/> played.</summary>
         public void StopOwned(object owner)
         {

@@ -113,6 +113,57 @@ namespace AF.Audio.Tests
         }
 
         [Test]
+        public void SetPitchAndVolume_WriteToThePlayingSource_Clamped()
+        {
+            var handle = new ScopeSounds(_player).Play(_loop);
+            var source = handle.Voice.Source;
+
+            handle.SetPitch(1.5f);
+            handle.SetVolume(0.4f);
+            Assert.AreEqual(1.5f, source.pitch, 0.0001f);
+            Assert.AreEqual(0.4f, source.volume, 0.0001f);
+
+            handle.SetPitch(10f);
+            handle.SetVolume(2f);
+            Assert.AreEqual(3f, source.pitch, 0.0001f);
+            Assert.AreEqual(1f, source.volume, 0.0001f);
+        }
+
+        [Test]
+        public void SetPitchAndVolume_OnAStaleHandle_DoNotTouchTheNextSound()
+        {
+            var sounds = new ScopeSounds(_player);
+            var first = sounds.Play(_loop);
+            first.Stop();
+            var second = sounds.Play(_loop);
+            Assert.AreSame(first.Voice, second.Voice, "The source is reused.");
+            var pitch = second.Voice.Source.pitch;
+            var volume = second.Voice.Source.volume;
+
+            first.SetPitch(2.5f);
+            first.SetVolume(0.123f);
+
+            Assert.AreEqual(pitch, second.Voice.Source.pitch, 0.0001f);
+            Assert.AreEqual(volume, second.Voice.Source.volume, 0.0001f);
+            Assert.DoesNotThrow(() => default(SoundHandle).SetPitch(2f));
+            Assert.DoesNotThrow(() => default(SoundHandle).SetVolume(0.5f));
+        }
+
+        [Test]
+        public void SetVolume_IsIgnoredWhileFadingOut_ButPitchStillApplies()
+        {
+            var handle = new ScopeSounds(_player).Play(_loop);
+            var source = handle.Voice.Source;
+            handle.Stop(5f);
+
+            handle.SetVolume(0.123f);
+            handle.SetPitch(2f);
+
+            Assert.AreNotEqual(0.123f, source.volume, "The fade owns the volume.");
+            Assert.AreEqual(2f, source.pitch, 0.0001f);
+        }
+
+        [Test]
         public void FinishedSound_GoesBack_UnlessPausedWithTheGame()
         {
             var sounds = new ScopeSounds(_player);

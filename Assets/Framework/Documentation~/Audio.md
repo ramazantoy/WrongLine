@@ -49,6 +49,12 @@ sounds.Play(_clickCue);                     // 2D
 plays another sound, so it is safe to keep. A looping cue plays until its handle stops it or its scope ends. A sound
 stopped with a fade ends when the fade does, even if the fade is killed elsewhere.
 
+A sound whose pitch or volume follows something, such as an engine loop, writes it through the handle: `SetPitch(pitch)`
+(clamped to -3..3) and `SetVolume(volume)` (clamped to 0..1, on top of the cue's mixer group). Both do nothing once the
+sound has ended, so a stale handle cannot touch the next sound on the same source, and `SetVolume` does nothing while the
+sound fades out. The next play starts from its cue again. Call them each frame the value changes; they only write the
+source.
+
 Each play sets every field of the pooled source again, so nothing carries over from the sound it played before.
 
 ### Which scope a sound belongs to
