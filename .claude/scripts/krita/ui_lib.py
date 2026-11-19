@@ -31,6 +31,29 @@ def bar(node, view, x0, y0, x1, y1, size, seed, amp=3.0, preset=INK7, col=WHITE)
         pts = [(xa + (xb - xa) * i / (n - 1), py + drift * math.sin(i / 11.0 + k) + wob(rs, amp * 0.25)) for i in range(n)]
         stroke(node, pts, p0=0.75, pmid=1.0, p1=0.35, jitter=0.5, seed=seed * 31 + k)
 
+def bar_both(node, view, x0, y0, x1, y1, size, seed, amp=3.0, preset=INK7, col=WHITE):
+    """Like bar(), but symmetric: every pass is two half strokes from the middle outwards, so both ends run dry the same way
+    (a stroke drawn from one side is heavy where it starts and dry where it ends, which made the sprites lean to the left)."""
+    brush(view, preset, size=size, opacity=1.0, color=col)
+    rs = random.Random(seed)
+    cx = (x0 + x1) / 2.0
+    half = (x1 - x0) / 2.0
+    n = max(12, int(half / 8))
+    y = y0 + size * 0.5
+    ye = y1 - size * 0.5
+    step = max(size * 0.45, 4)
+    passes = []
+    while y < ye + step * 0.5:
+        passes.append(min(y, ye))
+        y += step
+    for k, py in enumerate(passes):
+        short = rs.uniform(0, size * 0.9)  # the same on both sides: the two ends stop at the same distance from the middle
+        for side, sign in enumerate((1, -1)):
+            end = cx + sign * (half - short)
+            drift = rs.uniform(-amp, amp)
+            pts = [(cx + (end - cx) * i / (n - 1), py + drift * math.sin(i / 11.0 + k) + wob(rs, amp * 0.25)) for i in range(n)]
+            stroke(node, pts, p0=1.0, pmid=1.0, p1=0.3, jitter=0.5, seed=seed * 31 + k * 2 + side)
+
 def line_stroke(node, view, pts, size, seed, preset=INK7, p=(0.6, 1.0, 0.45), jitter=0.8):
     brush(view, preset, size=size, opacity=1.0, color=WHITE)
     stroke(node, pts, p0=p[0], pmid=p[1], p1=p[2], jitter=jitter, seed=seed)

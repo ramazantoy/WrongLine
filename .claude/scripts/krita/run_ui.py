@@ -17,4 +17,26 @@ read = lambda f: open(os.path.join(here, f), encoding="utf-8").read()
 send(read("kdraw.py"))
 font = os.path.abspath(os.path.join(here, "..", "..", "..", "Assets", "Game", "UI", "Fonts", "BarlowCondensed-ExtraBold.ttf"))
 send("OUTDIR = %r\nONLY = %r\nFONT_PATH = %r\n" % (out, only or None, font) + read("ui_lib.py"))
-print(json.dumps(send(read("ui_sprites.py")), indent=1))
+result = send(read("ui_sprites.py"))
+print(json.dumps(result, indent=1))
+
+# Sprites that are used centred (buttons, underline, divider) are shifted sideways so the visible brush has the same margin on both sides.
+CENTRED = ("Brush_Button_", "Brush_Underline", "Brush_Divider")
+try:
+    from PIL import Image
+    import numpy as np
+except ImportError:
+    sys.exit(0)
+for name in result:
+    if not name.startswith(CENTRED):
+        continue
+    path = os.path.join(out, name + ".png")
+    img = Image.open(path).convert("RGBA")
+    alpha = np.asarray(img)[..., 3]
+    cols = np.where(alpha.max(axis=0) > 12)[0]
+    shift = ((img.width - 1 - cols.max()) - cols.min()) // 2
+    if shift:
+        shifted = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        shifted.paste(img, (shift, 0))
+        shifted.save(path)
+    print("%s centred by %d px" % (name, shift))
