@@ -7,7 +7,7 @@ Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararlar�
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
 **Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) ve Faz A3 (gece ışıkları) bitti; K1 (çarpışma, sürtme, kaza, game over), K1b (zamanla hızlanma) ve K2 (Cinemachine kamera) bitti (2026-11-18, pushlandı);
-V3 (oyuncu aracı Meshy ile, ışıklar dokudan emission) bitti (2026-11-19); sıradaki fikir trafik araçlarının Meshy ile yeniden yapılması (ayrı context). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
+V3 (oyuncu aracı Meshy ile, ışıklar dokudan emission) ve T1 (trafik araçları Meshy ile, boya/sinyal renderer user value ile) bitti (2026-11-19). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
 kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
 moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
@@ -59,6 +59,7 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | K1 / K1b | Kaza: yol uzayında çarpışma kuralı, sürtme (itme) ve kaza (yavaş çekim, parçalanma, game over, yeniden başlatma), kaza kamerası; zamanla hızlanma (hız profili) | Bitti 2026-11-18 (pushlandı `6fe2bf8`); his ve Android ölçümü (cihaz yoktu) kullanıcıda |
 | K2 | Cinemachine 3.1.7: rig + iki sanal kamera (chase, crash), yolda kayan dolly kuralı (kamera konuyu aralıkta tutar), Impulse sarsıntısı, kaza blend'i, kurulum doğrulayıcısı | Bitti 2026-11-18 (pushlandı `90b1aec`); his kullanıcıda |
 | V3 | Araç v3: oyuncu aracı Meshy ile (tekerleksiz gövde + ayrı tekerlek, pişirme script'i, dokudan ışık maskesi ve emission, eski araç ve sinyal küpleri silindi) | Bitti 2026-11-19; his ve Android ölçümü kullanıcıda |
+| T1 | Trafik araçları v3: dört model Meshy ile (20k / 6k, anahtar renkten boya, tekerlek gövdede), boya ve sinyal `SetShaderUserValue` ile (SRP Batcher korunur), V3 gövdesi tekerleksiz yeniden üretildi | Bitti 2026-11-19; LOD2, çarpışma genişliği, his ve Android ölçümü açık |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

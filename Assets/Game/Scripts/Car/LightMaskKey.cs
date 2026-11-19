@@ -17,10 +17,12 @@ namespace WrongLine.Car
     public static class LightMaskKey
     {
         private const float HeadlightRedMin = 0.9f;
-        private const float HeadlightGreenMin = 0.85f;
-        private const float HeadlightBlueMin = 0.75f;
+        private const float HeadlightGreenMin = 0.8f;
+        // A generated model's headlight can come out a pale yellow (down to about 0.5 blue).
+        private const float HeadlightBlueMin = 0.5f;
 
-        private const float StopRedMin = 0.85f;
+        // Generated models paint the brake light a little darker than the flat red they were drawn with (down to about 0.7).
+        private const float StopRedMin = 0.65f;
         private const float StopGreenMax = 0.25f;
         private const float StopBlueMax = 0.25f;
 

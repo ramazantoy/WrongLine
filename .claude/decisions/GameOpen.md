@@ -148,6 +148,8 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
     `UpBlend` kuralda): ileride composer'ın dead zone'u istenirse bakış hedefi ayrı vcam'e; (5) Cinemachine'in `Noise` (hızda titreşim)
     kullanılmadı; (6) Android'de Brain ve Impulse maliyeti ölçülmedi.
 
+- **Trafik araçları Meshy (T1, 2026-11-19):** yapıldı (`Game.md` T1 kararları). Açıklar: (1) **LOD2 yok**: LOD1 (6k) gösteriliyor, daha düşük LOD'lar sonra (Meshy düşük poligonda bozuyor; Unity'de ya da elle). (2) **Çarpışma genişliği** `TrafficModelSpec.DefaultHalfWidth` 0,9 hepsinde; kamyon 1,25 yarı genişlikte görünüyor: katalog girdisine `_halfWidth` (mesh'ten) eklenip `CollisionRule`'a verilmeli. (3) Kaza anında trafik araçları parçalanmaz (tek mesh); oyuncu aracı da yalnız tekerlek ve gövde: kapı/kaput için gövdeyi koddan kesme ya da kırık parça (shard) denemesi ayrı iş. (4) Play'de his, yoğunluk ve **Android ölçümü** (aktif 12–19 araç, çoğu LOD1 6k, yakın LOD0 20k; draw call ve SRP Batcher Frame Debugger'da bakılmadı) kullanıcıda. (5) Kamyon ve van `MaxWidths` ile sınırlı; kamyonun ilk üretimi bozuk ön ref (yan+ön birleşik görsel) yüzünden açılmış karton gibiydi, ön + arka ref ile yeniden üretildi (4 görselli multi_image). Form beğenilmezse ref'ten yeniden üretilir (58 kr/model). (6) Boya palet rengi gri tabana çarpıyor: turuncu kamyon soluk; palet ayarı.
+
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"
   tercihi varsayılan "Recompile And Continue Playing"; Play sırasında derleme olunca (ya da `wait-editor.sh --refresh`)

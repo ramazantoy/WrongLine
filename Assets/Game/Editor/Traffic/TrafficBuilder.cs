@@ -6,8 +6,8 @@ using UnityEngine;
 namespace WrongLine.Traffic.Editor
 {
     /// <summary>
-    /// <c>WrongLine/Traffic/Rebuild Traffic</c>: makes the traffic's assets from the artist's models in <c>Traffic/Art</c> and wires the
-    /// root scope to them. Run it again when the artist's files change; nothing it writes is edited by hand.
+    /// <c>WrongLine/Traffic/Rebuild Traffic</c>: makes the traffic's assets from the Meshy models in <c>Traffic/Art/Meshy</c> and wires the
+    /// root scope to them. Run it again when a model's files change; nothing it writes is edited by hand.
     /// </summary>
     public static class TrafficBuilder
     {
@@ -31,6 +31,21 @@ namespace WrongLine.Traffic.Editor
             ("Truck", 0.4f),
         };
 
+        /// <summary>Bumper to bumper, per model, in metres (the catalog's length; a Meshy model is scaled to it).</summary>
+        private static readonly float[] Lengths = { 3.88f, 4.58f, 5.24f, 7.72f };
+
+        /// <summary>The widest a Meshy model may be, per model, in metres (the lane is 3 m wide).</summary>
+        private static readonly float[] MaxWidths = { 2.1f, 2.1f, 2.2f, 2.5f };
+
+        /// <summary>The length each Meshy model came out at (after the width limit), for the catalog.</summary>
+        private static readonly System.Collections.Generic.Dictionary<string, float> MeshyLengths = new System.Collections.Generic.Dictionary<string, float>();
+
+        /// <summary>The texture size of each level of a Meshy model.</summary>
+        private static readonly int[] MeshyTextureSizes = { 1024, 512, 512 };
+
+        /// <summary>The axles of the Meshy models made in this run (they have no wheel nodes to read them from).</summary>
+        private static readonly System.Collections.Generic.Dictionary<string, WheelContactEstimate.Result> MeshyAxles = new System.Collections.Generic.Dictionary<string, WheelContactEstimate.Result>();
+
         /// <summary>Paint colours, multiplied into the body's neutral light grey (the paint mask picks the body).</summary>
         private static readonly Color[] Paints =
         {
@@ -52,64 +67,26 @@ namespace WrongLine.Traffic.Editor
             EnsureFolder(PREFABS);
 
             EnsureFolder(MESHES);
-            Texture2D emission = WriteEmission();
-            Texture2D signalMask = WriteSignalMask();
-            Material bodyMaterial = MakeBodyMaterial(emission, signalMask);
             Material blobMaterial = MakeBlobMaterial();
             Mesh blobMesh = MakeBlobMesh();
             var prefabs = new TrafficCarView[Models.Length];
             for (int i = 0; i < Models.Length; i++)
             {
-                prefabs[i] = MakePrefab(Models[i].Name, bodyMaterial, blobMaterial, blobMesh);
+                prefabs[i] = MakeMeshyPrefab(Models[i].Name, Lengths[i], MaxWidths[i], blobMaterial, blobMesh);
             }
 
             TrafficCatalog catalog = FillCatalog(prefabs);
             TrafficConfig config = EnsureConfig();
             Wire(catalog, config);
-            DeleteObsolete();
             AssetDatabase.SaveAssets();
+
+            // A prefab saved in the same run as the meshes it points at can be imported before them and keep empty references.
+            foreach (TrafficCarView prefab in prefabs)
+            {
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(prefab), ImportAssetOptions.ForceUpdate);
+            }
+
             Log.Info($"[Traffic] Rebuilt {Models.Length} models and {Paints.Length} paints.");
-        }
-
-        /// <summary>
-        /// The light mask keeps one light per channel (R headlights, G brake lights, B and A the signals). The shader's emission
-        /// map is a colour, so the headlights are made white and the brake lights red here; both light with the headlights.
-        /// </summary>
-        private static Texture2D WriteEmission()
-        {
-            string maskPath = $"{ART}/Traffic_LightMask.png";
-            string outPath = $"{ART}/Traffic_Emission.png";
-            var mask = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
-            mask.LoadImage(File.ReadAllBytes(maskPath));
-            Color32[] pixels = mask.GetPixels32();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                float head = pixels[i].r / 255f;
-                float stop = pixels[i].g / 255f;
-                var color = new Color(
-                    Mathf.Clamp01(head + stop),
-                    Mathf.Clamp01(head * 0.96f + stop * 0.05f),
-                    Mathf.Clamp01(head * 0.80f + stop * 0.03f),
-                    1f);
-                pixels[i] = color;
-            }
-
-            var result = new Texture2D(mask.width, mask.height, TextureFormat.RGBA32, false, false);
-            result.SetPixels32(pixels);
-            byte[] png = result.EncodeToPNG();
-            Object.DestroyImmediate(mask);
-            Object.DestroyImmediate(result);
-
-            if (!File.Exists(outPath) || !FileEquals(outPath, png))
-            {
-                File.WriteAllBytes(outPath, png);
-            }
-
-            AssetDatabase.ImportAsset(outPath, ImportAssetOptions.ForceUpdate);
-            var importer = (TextureImporter)AssetImporter.GetAtPath(outPath);
-            importer.sRGBTexture = true;
-            importer.SaveAndReimport();
-            return AssetDatabase.LoadAssetAtPath<Texture2D>(outPath);
         }
 
         private static bool FileEquals(string path, byte[] bytes)
@@ -129,89 +106,6 @@ namespace WrongLine.Traffic.Editor
             }
 
             return true;
-        }
-
-        /// <summary>The light mask without its headlight and stop channels: only the turn signals (B left, A right) are left.</summary>
-        private static Texture2D WriteSignalMask()
-        {
-            string maskPath = $"{ART}/Traffic_LightMask.png";
-            string outPath = $"{ART}/Traffic_SignalMask.png";
-            var mask = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
-            mask.LoadImage(File.ReadAllBytes(maskPath));
-            Color32[] pixels = mask.GetPixels32();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                pixels[i].r = 0;
-                pixels[i].g = 0;
-            }
-
-            var result = new Texture2D(mask.width, mask.height, TextureFormat.RGBA32, false, true);
-            result.SetPixels32(pixels);
-            byte[] png = result.EncodeToPNG();
-            Object.DestroyImmediate(mask);
-            Object.DestroyImmediate(result);
-
-            if (!File.Exists(outPath) || !FileEquals(outPath, png))
-            {
-                File.WriteAllBytes(outPath, png);
-            }
-
-            AssetDatabase.ImportAsset(outPath, ImportAssetOptions.ForceUpdate);
-            var importer = (TextureImporter)AssetImporter.GetAtPath(outPath);
-            importer.sRGBTexture = false;
-            importer.alphaSource = TextureImporterAlphaSource.FromInput;
-            importer.alphaIsTransparency = false;
-            importer.SaveAndReimport();
-            return AssetDatabase.LoadAssetAtPath<Texture2D>(outPath);
-        }
-
-        /// <summary>
-        /// The one material of the artist's models (a shared atlas): the paint colour and the turn signals come from each car's
-        /// renderer user value (<c>_TRAFFIC_ON</c>), the headlights and brake lights from the emission map as before.
-        /// </summary>
-        private static Material MakeBodyMaterial(Texture2D emission, Texture2D signalMask)
-        {
-            string path = $"{MATERIALS}/TrafficBody.mat";
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material == null)
-            {
-                material = new Material(Shader.Find(SHADER));
-                AssetDatabase.CreateAsset(material, path);
-            }
-
-            material.shader = Shader.Find(SHADER);
-            material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_Atlas.png"));
-            material.SetTexture("_PaintMask", AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_PaintMask.png"));
-            material.SetTexture("_EmissionMap", emission);
-            material.SetTexture("_LightMask", signalMask);
-            material.SetColor("_EmissionColor", Color.white);
-            material.SetVector("_EmissionLevelMask", new Vector4(0f, 1f, 0f, 0f));
-            material.SetFloat("_PaintMaskOn", 1f);
-            material.SetFloat("_EmissionOn", 1f);
-            material.SetFloat("_LightMaskOn", 1f);
-            material.SetFloat("_TrafficOn", 1f);
-            // Double-sided like the player's car: a one-layer body shows its inside through any open face (the truck's box).
-            material.SetFloat("_Cull", 0f);
-            material.EnableKeyword("_PAINTMASK_ON");
-            material.EnableKeyword("_EMISSION");
-            material.EnableKeyword("_LIGHTMASK_ON");
-            material.EnableKeyword("_TRAFFIC_ON");
-            EditorUtility.SetDirty(material);
-            AssetDatabase.SaveAssetIfDirty(material);
-            return material;
-        }
-
-        /// <summary>What the paint materials and the lamp boxes left behind: the paint is a palette now, the signals a light mask.</summary>
-        private static void DeleteObsolete()
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                AssetDatabase.DeleteAsset($"{MATERIALS}/TrafficPaint_{i:00}.mat");
-            }
-
-            AssetDatabase.DeleteAsset($"{MATERIALS}/TrafficSignal.mat");
-            AssetDatabase.DeleteAsset($"{MESHES}/SignalLamp.asset");
-            AssetDatabase.DeleteAsset($"{ART}/Traffic_White.png");
         }
 
         /// <summary>A soft black disc fading to nothing at the edge (alpha is the shadow).</summary>
@@ -296,68 +190,83 @@ namespace WrongLine.Traffic.Editor
             return mesh;
         }
 
-        private static TrafficCarView MakePrefab(string name, Material body, Material blobMaterial, Mesh blobMesh)
+        /// <summary>The contact shadow, the view component and the prefab asset, for a car whose levels are made.</summary>
+        private static TrafficCarView FinishPrefab(GameObject root, string name, GameObject[] levels, Bounds body, Material blobMaterial, Mesh blobMesh)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{name}.fbx");
+            var blob = new GameObject("Blob");
+            blob.transform.SetParent(root.transform, false);
+            blob.transform.localPosition = new Vector3(0f, 0.03f, 0f);
+            blob.transform.localScale = new Vector3(body.size.x * 1.3f, 1f, body.size.z * 1.2f);
+            blob.AddComponent<MeshFilter>().sharedMesh = blobMesh;
+            var blobRenderer = blob.AddComponent<MeshRenderer>();
+            blobRenderer.sharedMaterial = blobMaterial;
+            blobRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            blobRenderer.receiveShadows = false;
+            blob.SetActive(false);
+
+            var view = root.AddComponent<TrafficCarView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_blob").objectReferenceValue = blob;
+            SerializedProperty list = serialized.FindProperty("_levels");
+            list.arraySize = levels.Length;
+            for (int i = 0; i < levels.Length; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, $"{PREFABS}/Traffic_{name}.prefab");
+            return saved.GetComponent<TrafficCarView>();
+        }
+
+        /// <summary>
+        /// A car from a Meshy model: one mesh and one material per level (the wheels are part of the mesh, so the axles are read off its
+        /// tyre contacts). A level without a file of its own (not made yet) shows the level above it.
+        /// </summary>
+        private static TrafficCarView MakeMeshyPrefab(string name, float length, float maxWidth, Material blobMaterial, Mesh blobMesh)
+        {
             var root = new GameObject($"Traffic_{name}");
             try
             {
-                var instance = (GameObject)PrefabUtility.InstantiatePrefab(model, root.transform);
-
-                // Unity makes a LODGroup of the *_LOD0/1/2 nodes on import. It would cull the levels by screen size over the
-                // distance rule's head (the near levels vanished), so it is switched off: TrafficLodRule picks the level.
-                foreach (LODGroup group in instance.GetComponentsInChildren<LODGroup>(true))
-                {
-                    group.enabled = false;
-                }
-
                 var levels = new GameObject[TrafficCarView.LevelCount];
+                MeshyTrafficLevelBuilder.Level previous = null;
                 for (int level = 0; level < levels.Length; level++)
                 {
-                    Transform part = instance.transform.Find($"{name}_LOD{level}");
-                    levels[level] = part.gameObject;
-                    foreach (MeshRenderer renderer in part.GetComponentsInChildren<MeshRenderer>(true))
+                    MeshyTrafficLevelBuilder.Level made = MeshyTrafficLevelBuilder.Has(name, level)
+                        ? MeshyTrafficLevelBuilder.Build(name, level, length, maxWidth, MeshyTextureSizes[level])
+                        : previous;
+                    if (made == null)
                     {
-                        renderer.sharedMaterial = body;
-                        // Only the nearest level throws a shadow: the others are too far for it to show.
-                        renderer.shadowCastingMode = level == 0 ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
-                        renderer.receiveShadows = true;
+                        throw new System.InvalidOperationException($"{name}: the nearest level has no Meshy model.");
                     }
 
-                    part.gameObject.SetActive(false);
+                    Log.Info($"[Traffic] {made.Report}");
+                    previous = made;
+
+                    var part = new GameObject($"{name}_LOD{level}");
+                    part.transform.SetParent(root.transform, false);
+                    part.AddComponent<MeshFilter>().sharedMesh = made.Mesh;
+                    var renderer = part.AddComponent<MeshRenderer>();
+                    renderer.sharedMaterial = made.Material;
+                    // Only the nearest level throws a shadow: the others are too far for it to show.
+                    renderer.shadowCastingMode = level == 0 ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
+                    renderer.receiveShadows = true;
+                    part.SetActive(false);
+                    levels[level] = part;
                 }
 
-                // The far level has no wheels, so its lowest point is above the road: sink it until it stands on it.
-                Transform far = levels[2].transform;
-                far.localPosition = new Vector3(0f, -far.GetComponent<MeshFilter>().sharedMesh.bounds.min.y, 0f);
-
-                // The contact shadow, sized from the near level's mesh.
-                Bounds bounds = levels[1].GetComponent<MeshFilter>().sharedMesh.bounds;
-                var blob = new GameObject("Blob");
-                blob.transform.SetParent(root.transform, false);
-                blob.transform.localPosition = new Vector3(0f, 0.03f, 0f);
-                blob.transform.localScale = new Vector3(bounds.size.x * 1.3f, 1f, bounds.size.z * 1.2f);
-                blob.AddComponent<MeshFilter>().sharedMesh = blobMesh;
-                var blobRenderer = blob.AddComponent<MeshRenderer>();
-                blobRenderer.sharedMaterial = blobMaterial;
-                blobRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                blobRenderer.receiveShadows = false;
-                blob.SetActive(false);
-
-                var view = root.AddComponent<TrafficCarView>();
-                var serialized = new SerializedObject(view);
-                serialized.FindProperty("_blob").objectReferenceValue = blob;
-                SerializedProperty list = serialized.FindProperty("_levels");
-                list.arraySize = levels.Length;
-                for (int i = 0; i < levels.Length; i++)
+                Mesh near = levels[0].GetComponent<MeshFilter>().sharedMesh;
+                if (!WheelContactEstimate.TryEstimate(near.vertices, 0.05f, out WheelContactEstimate.Result axles))
                 {
-                    list.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
+                    Bounds b = near.bounds;
+                    axles = new WheelContactEstimate.Result(b.extents.z * 0.62f, -b.extents.z * 0.62f, b.extents.x * 0.85f);
+                    Log.Warning($"[Traffic] {name}: no four tyre contacts found near the road; the axles are guessed from the size.");
                 }
 
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-                string path = $"{PREFABS}/Traffic_{name}.prefab";
-                GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, path);
-                return saved.GetComponent<TrafficCarView>();
+                MeshyAxles[name] = axles;
+                MeshyLengths[name] = near.bounds.size.z;
+                Log.Info($"[Traffic] {name}: axles {axles.FrontAxle:F2} / {axles.RearAxle:F2}, half track {axles.HalfTrack:F2}.");
+                return FinishPrefab(root, name, levels, levels[1].GetComponent<MeshFilter>().sharedMesh.bounds, blobMaterial, blobMesh);
             }
             finally
             {
@@ -374,7 +283,6 @@ namespace WrongLine.Traffic.Editor
                 AssetDatabase.CreateAsset(catalog, CATALOG_PATH);
             }
 
-            float[] lengths = { 3.88f, 4.58f, 5.24f, 7.72f };
             var serialized = new SerializedObject(catalog);
             SerializedProperty models = serialized.FindProperty("_models");
             models.arraySize = Models.Length;
@@ -383,7 +291,7 @@ namespace WrongLine.Traffic.Editor
                 SerializedProperty entry = models.GetArrayElementAtIndex(i);
                 entry.FindPropertyRelative("_name").stringValue = Models[i].Name;
                 entry.FindPropertyRelative("_prefab").objectReferenceValue = prefabs[i];
-                entry.FindPropertyRelative("_length").floatValue = lengths[i];
+                entry.FindPropertyRelative("_length").floatValue = MeshyLengths.TryGetValue(Models[i].Name, out float made) ? made : Lengths[i];
                 entry.FindPropertyRelative("_weight").floatValue = Models[i].Weight;
                 WriteAxles(entry, Models[i].Name);
             }
@@ -401,17 +309,13 @@ namespace WrongLine.Traffic.Editor
             return catalog;
         }
 
-        /// <summary>The axles and the half track from the model's four wheel nodes (their pivots are the axle centres).</summary>
+        /// <summary>The axles and the half track the model's tyre contacts gave (see <see cref="MakeMeshyPrefab"/>).</summary>
         private static void WriteAxles(SerializedProperty entry, string name)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{name}.fbx");
-            Transform body = model.transform.Find($"{name}_LOD0");
-            Vector3 frontLeft = body.Find($"{name}_LOD0_Wheel_FL").localPosition;
-            Vector3 frontRight = body.Find($"{name}_LOD0_Wheel_FR").localPosition;
-            Vector3 rearLeft = body.Find($"{name}_LOD0_Wheel_RL").localPosition;
-            entry.FindPropertyRelative("_frontAxle").floatValue = frontLeft.z;
-            entry.FindPropertyRelative("_rearAxle").floatValue = rearLeft.z;
-            entry.FindPropertyRelative("_halfTrack").floatValue = Mathf.Abs(frontRight.x - frontLeft.x) * 0.5f;
+            WheelContactEstimate.Result axles = MeshyAxles[name];
+            entry.FindPropertyRelative("_frontAxle").floatValue = axles.FrontAxle;
+            entry.FindPropertyRelative("_rearAxle").floatValue = axles.RearAxle;
+            entry.FindPropertyRelative("_halfTrack").floatValue = axles.HalfTrack;
         }
 
         private static TrafficConfig EnsureConfig()

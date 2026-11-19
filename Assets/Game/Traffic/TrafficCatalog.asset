@@ -15,32 +15,32 @@ MonoBehaviour:
   _models:
   - _name: Hatchback
     _prefab: {fileID: 9185880008265927354, guid: d1a7b0448dcf5a74d9bbbc4ef5ab13ef, type: 3}
-    _length: 3.88
+    _length: 3.8799999
     _weight: 1
-    _frontAxle: 1.2
-    _rearAxle: -1.2
-    _halfTrack: 0.75
+    _frontAxle: 1.0959063
+    _rearAxle: -1.2419327
+    _halfTrack: 0.7117986
   - _name: Sedan
     _prefab: {fileID: 7123147553682584484, guid: 29a29be9b8c5c1440b32d45cff135821, type: 3}
-    _length: 4.58
+    _length: 4.459114
     _weight: 1
-    _frontAxle: 1.4
-    _rearAxle: -1.4
-    _halfTrack: 0.8
+    _frontAxle: 1.2860389
+    _rearAxle: -1.2407135
+    _halfTrack: 0.7877437
   - _name: Van
     _prefab: {fileID: 1611665054333045432, guid: d82bda0c62f9e3b478317e09ec82f5b6, type: 3}
-    _length: 5.24
+    _length: 4.2273474
     _weight: 0.6
-    _frontAxle: 1.65
-    _rearAxle: -1.5
-    _halfTrack: 0.8
+    _frontAxle: 1.4824778
+    _rearAxle: -1.3702633
+    _halfTrack: 0.80365276
   - _name: Truck
     _prefab: {fileID: 6793648681336739057, guid: 4a3740f5e12773041a6dcb9616c93417, type: 3}
-    _length: 7.72
+    _length: 6.379997
     _weight: 0.4
-    _frontAxle: 2.7
-    _rearAxle: -2.2
-    _halfTrack: 0.82
+    _frontAxle: 2.081767
+    _rearAxle: -1.526177
+    _halfTrack: 0.84343535
   _paintColors:
   - {r: 0.8, g: 0.8, b: 0.83, a: 1}
   - {r: 0.16, g: 0.16, b: 0.19, a: 1}

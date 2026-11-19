@@ -13,9 +13,10 @@ namespace WrongLine.Car.Editor
     public static class CarLightMaskBuilder
     {
         /// <param name="body">The body mesh as the car uses it (the car's own axes: +X is its right).</param>
+        /// <param name="maxSidewaysNormal">A surface facing sideways more than this (the normal's |x|, 0 to 1) is never a headlight: a silver wheel rim is as white as a lamp. 1 = no limit.</param>
         /// <param name="baseTexturePath">The painted texture's file.</param>
         /// <param name="maskPath">Where the mask PNG is written.</param>
-        public static Texture2D Build(Mesh body, string baseTexturePath, string maskPath, int size)
+        public static Texture2D Build(Mesh body, string baseTexturePath, string maskPath, int size, float maxSidewaysNormal = 1f)
         {
             var source = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             source.LoadImage(File.ReadAllBytes(baseTexturePath));
@@ -31,7 +32,9 @@ namespace WrongLine.Car.Editor
                 int ib = triangles[t + 1];
                 int ic = triangles[t + 2];
                 bool left = (vertices[ia].x + vertices[ib].x + vertices[ic].x) < 0f;
-                Draw(pixels, size, source, uv[ia] * size, uv[ib] * size, uv[ic] * size, left);
+                Vector3[] normals = body.normals;
+                bool sideways = normals.Length == vertices.Length && Mathf.Abs((normals[ia].x + normals[ib].x + normals[ic].x) / 3f) > maxSidewaysNormal;
+                Draw(pixels, size, source, uv[ia] * size, uv[ib] * size, uv[ic] * size, left, sideways);
             }
 
             var mask = new Texture2D(size, size, TextureFormat.RGBA32, false);
@@ -51,7 +54,7 @@ namespace WrongLine.Car.Editor
             return AssetDatabase.LoadAssetAtPath<Texture2D>(maskPath);
         }
 
-        private static void Draw(Color32[] pixels, int size, Texture2D source, Vector2 a, Vector2 b, Vector2 c, bool left)
+        private static void Draw(Color32[] pixels, int size, Texture2D source, Vector2 a, Vector2 b, Vector2 c, bool left, bool sideways)
         {
             float area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
             if (Mathf.Abs(area) < 1e-6f)
@@ -79,7 +82,7 @@ namespace WrongLine.Car.Editor
 
                     Color texel = source.GetPixelBilinear(p.x / size, p.y / size);
                     LightPanel panel = LightMaskKey.Classify(texel.r, texel.g, texel.b);
-                    if (panel == LightPanel.None)
+                    if (panel == LightPanel.None || (panel == LightPanel.Headlight && sideways))
                     {
                         continue;
                     }
