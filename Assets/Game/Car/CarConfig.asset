@@ -17,6 +17,8 @@ MonoBehaviour:
       StartSpeed: 12
       CruiseSpeed: 30
       Acceleration: 8
+      GainPerSecond: 0.21
+      MaxSpeed: 60
     Lateral:
       CarHalfWidth: 0.95
       DragMetersPerScreen: 12

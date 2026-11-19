@@ -204,9 +204,20 @@ namespace WrongLine.Traffic.Editor
             blobRenderer.receiveShadows = false;
             blob.SetActive(false);
 
+            // One spot light at the nose (settings, colour and range come at run time from the lights config).
+            var lamp = new GameObject("Headlight");
+            lamp.transform.SetParent(root.transform, false);
+            lamp.transform.localPosition = new Vector3(0f, Mathf.Clamp(body.size.y * 0.25f, 0.55f, 0.95f), body.max.z - 0.15f);
+            lamp.transform.localRotation = Quaternion.Euler(3f, 0f, 0f);
+            var headlight = lamp.AddComponent<Light>();
+            headlight.type = LightType.Spot;
+            headlight.shadows = LightShadows.None;
+            headlight.enabled = false;
+
             var view = root.AddComponent<TrafficCarView>();
             var serialized = new SerializedObject(view);
             serialized.FindProperty("_blob").objectReferenceValue = blob;
+            serialized.FindProperty("_headlight").objectReferenceValue = headlight;
             SerializedProperty list = serialized.FindProperty("_levels");
             list.arraySize = levels.Length;
             for (int i = 0; i < levels.Length; i++)
@@ -266,7 +277,7 @@ namespace WrongLine.Traffic.Editor
                 MeshyAxles[name] = axles;
                 MeshyLengths[name] = near.bounds.size.z;
                 Log.Info($"[Traffic] {name}: axles {axles.FrontAxle:F2} / {axles.RearAxle:F2}, half track {axles.HalfTrack:F2}.");
-                return FinishPrefab(root, name, levels, levels[1].GetComponent<MeshFilter>().sharedMesh.bounds, blobMaterial, blobMesh);
+                return FinishPrefab(root, name, levels, levels[0].GetComponent<MeshFilter>().sharedMesh.bounds, blobMaterial, blobMesh);
             }
             finally
             {

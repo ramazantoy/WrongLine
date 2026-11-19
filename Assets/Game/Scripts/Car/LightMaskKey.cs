@@ -28,8 +28,11 @@ namespace WrongLine.Car
 
         private const float SignalRedMin = 0.8f;
         private const float SignalGreenMin = 0.5f;
-        private const float SignalGreenMax = 0.75f;
-        private const float SignalBlueMax = 0.3f;
+        private const float SignalGreenMax = 0.8f;
+
+        // A generated model's signal can come out a pale orange (blue up to about 0.55); it must still be clearly more green than blue.
+        private const float SignalBlueMax = 0.55f;
+        private const float SignalGreenOverBlueMin = 0.15f;
 
         public static LightPanel Classify(float red, float green, float blue)
         {
@@ -43,7 +46,7 @@ namespace WrongLine.Car
                 return LightPanel.Stop;
             }
 
-            if (red >= SignalRedMin && green >= SignalGreenMin && green <= SignalGreenMax && blue <= SignalBlueMax)
+            if (red >= SignalRedMin && green >= SignalGreenMin && green <= SignalGreenMax && blue <= SignalBlueMax && green - blue >= SignalGreenOverBlueMin)
             {
                 return LightPanel.Signal;
             }

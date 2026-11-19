@@ -33,6 +33,15 @@ namespace WrongLine.Car.Tests
         }
 
         [Test]
+        public void APaleOrangeGeneratedSignal_IsASignal_ButAHeadlightIsNot()
+        {
+            Assert.AreEqual(LightPanel.Signal, LightMaskKey.Classify(0.98f, 0.75f, 0.52f));
+            Assert.AreEqual(LightPanel.Signal, LightMaskKey.Classify(0.97f, 0.66f, 0.40f));
+            Assert.AreEqual(LightPanel.None, LightMaskKey.Classify(0.9f, 0.6f, 0.5f), "Skin tone: blue too close to green.");
+            Assert.AreEqual(LightPanel.Headlight, LightMaskKey.Classify(0.95f, 0.9f, 0.7f));
+        }
+
+        [Test]
         public void Amber_IsASignal()
         {
             Assert.AreEqual(LightPanel.Signal, LightMaskKey.Classify(0.95f, 0.62f, 0.12f));

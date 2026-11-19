@@ -23,9 +23,22 @@ MonoBehaviour:
       PadSeconds: 0.25
       MinGapMeters: 14
       GapRangeMeters: 60
+      OncomingGapScale: 1.4
+      SameDirectionGapScale: 0.9
       CorridorStayChance: 0.4
       LaneSpeedMin: 0.4
       LaneSpeedMax: 0.7
+    LaneChange:
+      Chance: 0.5
+      Seconds: 1.4
+      SignalLeadSeconds: 0.9
+      SignalTailSeconds: 0.4
+      SignalPeriod: 0.66
+      WindowSeconds: 4
+      MarginSeconds: 0.7
+      ConflictGapMeters: 6
+      MaxShiftMeters: 150
+      SettleMeters: 280
     Stream:
       SpawnAheadMeters: 380
       DespawnBehindMeters: 20
@@ -34,3 +47,7 @@ MonoBehaviour:
       NearMeters: 55
       FarMeters: 140
       HysteresisMeters: 4
+    Lights:
+      IntensityScale: 0.3
+      RangeScale: 0.55
+      MaxLevel: 1

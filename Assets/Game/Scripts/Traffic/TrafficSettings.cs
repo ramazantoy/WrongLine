@@ -109,10 +109,24 @@ namespace WrongLine.Traffic
             public float HysteresisMeters = 4f;
         }
 
+        [Serializable]
+        public sealed class LightsGroup
+        {
+            [Tooltip("A traffic car's headlight as a share of the player's (intensity). The player's own lights stay the strongest.")]
+            public float IntensityScale = 0.3f;
+
+            [Tooltip("The traffic headlight's reach as a share of the player's.")]
+            public float RangeScale = 0.55f;
+
+            [Tooltip("The farthest level of detail whose cars cast real light (0 the nearest only, 1 the middle too): each lit car is one more light for the renderer. The far cars keep the glowing panels.")]
+            public int MaxLevel;
+        }
+
         public LayoutGroup Layout = new LayoutGroup();
         public LaneChangeGroup LaneChange = new LaneChangeGroup();
         public StreamGroup Stream = new StreamGroup();
         public LodGroup Lod = new LodGroup();
+        public LightsGroup Lights = new LightsGroup();
 
         /// <summary>How many times the player's speed can a car's distance grow while it is out: the planned stretch is this much longer than <see cref="StreamGroup.SpawnAheadMeters"/>.</summary>
         public double HorizonRatio => 1.0 / (1.0 - Layout.LaneSpeedMax);
@@ -134,6 +148,7 @@ namespace WrongLine.Traffic
             Require(Stream.DespawnBehindMeters >= 0f && Stream.DespawnBehindMeters < roadBehindMeters, "Stream: DespawnBehindMeters must be less than the road kept behind, so a car leaves before its piece does.");
             Require(Stream.MaxActive > 0, "Stream: MaxActive must be positive.");
             Require(Lod.NearMeters > 0f && Lod.NearMeters < Lod.FarMeters && Lod.HysteresisMeters >= 0f && Lod.HysteresisMeters < Lod.NearMeters, "Lod: 0 < Near < Far, Hysteresis in [0, Near).");
+            Require(Lights.IntensityScale >= 0f && Lights.RangeScale > 0f && Lights.MaxLevel >= 0 && Lights.MaxLevel < TrafficCarView.LevelCount, "Lights: IntensityScale not negative, RangeScale positive, MaxLevel a level of detail.");
             Require(RoadSection.LaneCount >= 3, "Traffic needs at least three lanes (one stays free).");
         }
 

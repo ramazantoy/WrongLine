@@ -37,6 +37,8 @@ namespace WrongLine.Traffic
         private readonly RoadConfig _roadConfig;
         private readonly CurveWorldConfig _curve;
         private readonly IRunSeed _seed;
+        private readonly ILightLevels _lightLevels;
+        private readonly LightsConfig _lights;
         private readonly Dictionary<int, TrafficCarView> _views = new Dictionary<int, TrafficCarView>();
         private readonly ISubscriber<CarCrashed> _crashes;
         private IDisposable _crashSubscription;
@@ -44,9 +46,11 @@ namespace WrongLine.Traffic
         private TrafficLodRule _lod;
         private int _frozenId = -1;
 
-        public TrafficStreamer(ITrafficPool pool, IRoadFrame road, IGameClock clock, TrafficConfig config, CarConfig car, RoadConfig roadConfig, CurveWorldConfig curve, IRunSeed seed, ISubscriber<CarCrashed> crashes)
+        public TrafficStreamer(ITrafficPool pool, IRoadFrame road, IGameClock clock, TrafficConfig config, CarConfig car, RoadConfig roadConfig, CurveWorldConfig curve, IRunSeed seed, ILightLevels lightLevels, LightsConfig lights, ISubscriber<CarCrashed> crashes)
         {
             _crashes = crashes;
+            _lightLevels = lightLevels;
+            _lights = lights;
             _pool = pool;
             _road = road;
             _clock = clock;
@@ -167,6 +171,13 @@ namespace WrongLine.Traffic
                 view.transform.SetPositionAndRotation(position, rotation * Quaternion.Euler(0f, oncoming ? -yaw : yaw, 0f));
 
                 view.ShowLevel(_lod.Evaluate((float)Math.Abs(distance - player), view.Level));
+                LightsSettings lights = _lights.Settings;
+                TrafficSettings.LightsGroup headlight = _config.Settings.Lights;
+                view.ShowHeadlight(
+                    TrafficHeadlightRule.Intensity(_lightLevels.Headlights, view.Level, headlight, lights.HeadlightIntensity),
+                    TrafficHeadlightRule.Range(lights.HeadlightRange, headlight),
+                    lights.HeadlightSpotAngle,
+                    lights.HeadlightColor);
                 TrafficSettings.LaneChangeGroup change = _config.Settings.LaneChange;
                 int side = plan.SignalSideAt(time, change.SignalLeadSeconds, change.SignalTailSeconds);
                 view.ShowSignal(oncoming ? -side : side, side != 0 && plan.SignalLampAt(time, change.SignalLeadSeconds, change.SignalPeriod));

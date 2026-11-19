@@ -20,6 +20,9 @@ namespace WrongLine.Traffic
         [Tooltip("A soft dark patch on the road under the car: real shadows end at the shadow distance (and are soft or missing under the car), and a car without a contact shadow looks like it floats. Optional.")]
         [SerializeField] private GameObject _blob;
 
+        [Tooltip("The headlight: one spot light at the nose, off by day and on the far levels (see TrafficHeadlightRule). Optional.")]
+        [SerializeField] private Light _headlight;
+
         private MeshRenderer[] _renderers;
         private MeshFilter[] _filters;
         private MeshRenderer[] _bodies;
@@ -71,6 +74,31 @@ namespace WrongLine.Traffic
             _leftSignal = lit && side < 0;
             _rightSignal = lit && side > 0;
             ApplyValue();
+        }
+
+        /// <summary>Lights the headlight to <paramref name="intensity"/> (0 switches it off, so it costs the renderer nothing).</summary>
+        public void ShowHeadlight(float intensity, float range, float spotAngle, Color color)
+        {
+            if (_headlight == null)
+            {
+                return;
+            }
+
+            bool on = intensity > 0f;
+            if (_headlight.enabled != on)
+            {
+                _headlight.enabled = on;
+            }
+
+            if (!on)
+            {
+                return;
+            }
+
+            _headlight.color = color;
+            _headlight.intensity = intensity;
+            _headlight.range = range;
+            _headlight.spotAngle = spotAngle;
         }
 
         private void ApplyValue()
@@ -166,6 +194,11 @@ namespace WrongLine.Traffic
             _leftSignal = false;
             _rightSignal = false;
             ApplyValue();
+            if (_headlight != null)
+            {
+                _headlight.enabled = false;
+            }
+
             Level = TrafficLodRule.None;
         }
     }
