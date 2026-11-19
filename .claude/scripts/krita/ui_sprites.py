@@ -4,6 +4,9 @@ def draw_all():
     for i, (seed, amp) in enumerate([(11, 3.0), (23, 4.0), (37, 2.5)]):
         sprite("Brush_Button_" + "ABC"[i], 768, 192,
                lambda d, n, v, s=seed, a=amp: bar_both(n, v, 24, 30, 744, 162, 70, s, amp=a, preset=DRY))
+    # The dialog card (quit prompt): one big dry-brush board, tinted dark in Unity.
+    sprite("Brush_Card", 1024, 768, lambda d, n, v: bar_both(n, v, 24, 28, 1000, 740, 150, 41, amp=5.0, preset=DRY))
+    sprite("Brush_CardTall", 1024, 1280, lambda d, n, v: bar_both(n, v, 24, 28, 1000, 1252, 150, 53, amp=5.0, preset=DRY))
     sprite("Brush_Panel", 1024, 1280, lambda d, n, v: bar(n, v, 30, 40, 994, 1240, 120, 5, amp=6))
     sprite("Brush_Underline", 768, 56, lambda d, n, v: bar_both(n, v, 16, 14, 752, 42, 26, 9, amp=2, preset=DRY))
     sprite("Brush_Divider", 768, 28, lambda d, n, v: bar_both(n, v, 16, 6, 752, 22, 14, 13, amp=1.5, preset=DRY))

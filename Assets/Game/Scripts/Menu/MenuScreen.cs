@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using VContainer;
+using WrongLine.Haptics;
 using WrongLine.UI;
 
 namespace WrongLine.Menu
@@ -22,6 +23,7 @@ namespace WrongLine.Menu
     {
         private const float IntroSeconds = 0.45f;
         private const float IntroStagger = 0.12f;
+        private const float ContentFadeSeconds = 0.25f;
 
         [SerializeField, Required] private Button _play;
         [SerializeField, Required] private Button _settings;
@@ -40,16 +42,18 @@ namespace WrongLine.Menu
         private InputActionAsset _actions;
         private IBestDistance _best;
         private SettingsScreen _settingsScreen;
+        private IHaptics _haptics;
         private IDisposable _backSubscription;
         private bool _loading;
 
         [Inject]
-        public void Construct(ISceneLoader scenes, InputActionAsset actions, IBestDistance best, SettingsScreen settingsScreen)
+        public void Construct(ISceneLoader scenes, InputActionAsset actions, IBestDistance best, SettingsScreen settingsScreen, IHaptics haptics)
         {
             _scenes = scenes;
             _actions = actions;
             _best = best;
             _settingsScreen = settingsScreen;
+            _haptics = haptics;
         }
 
         private void Awake() => _screen = GetComponent<UiScreen>();
@@ -111,6 +115,7 @@ namespace WrongLine.Menu
 
             // The load replaces this scene; a second tap would start a second load.
             _loading = true;
+            _haptics.Play(HapticKind.Tap);
             _play.interactable = false;
             _scenes.Load<PlayingState>(Scenes.Gameplay).Forget();
         }
@@ -122,6 +127,7 @@ namespace WrongLine.Menu
                 return;
             }
 
+            _haptics.Play(HapticKind.Tap);
             // The menu steps back while the settings are up: transparent, no input, and out of the way (UiScreen switches it off).
             _settingsScreen.Show();
             _screen.Hide();
@@ -129,17 +135,37 @@ namespace WrongLine.Menu
 
         private void OnSettingsClosed() => _screen.Show();
 
-        private void OnQuit() => Application.Quit();
+        private void OnQuit()
+        {
+            _haptics.Play(HapticKind.Tap);
+            Application.Quit();
+        }
 
         private void OpenQuitPrompt()
         {
             if (!_loading)
             {
+                _haptics.Play(HapticKind.Tap);
                 _quitPrompt.Show();
+                FadeContent(0f);
             }
         }
 
-        private void CloseQuitPrompt() => _quitPrompt.Hide();
+        private void CloseQuitPrompt()
+        {
+            _quitPrompt.Hide();
+            FadeContent(1f);
+        }
+
+        // Only the prompt is left on screen while it is up: the logo, the best run and the buttons fade out (and back).
+        private void FadeContent(float alpha)
+        {
+            foreach (var group in _intro)
+            {
+                Tween.StopAll(group);
+                Tween.Alpha(group, alpha, ContentFadeSeconds, Ease.OutQuad, useUnscaledTime: true);
+            }
+        }
 
         private void OnBack()
         {

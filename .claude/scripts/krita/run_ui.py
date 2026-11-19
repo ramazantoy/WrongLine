@@ -21,7 +21,7 @@ result = send(read("ui_sprites.py"))
 print(json.dumps(result, indent=1))
 
 # Sprites that are used centred (buttons, underline, divider) are shifted sideways so the visible brush has the same margin on both sides.
-CENTRED = ("Brush_Button_", "Brush_Underline", "Brush_Divider")
+CENTRED = ("Brush_Button_", "Brush_Card", "Brush_Underline", "Brush_Divider")
 try:
     from PIL import Image
     import numpy as np
@@ -40,3 +40,14 @@ for name in result:
         shifted.paste(img, (shift, 0))
         shifted.save(path)
     print("%s centred by %d px" % (name, shift))
+
+# The card is big, so a lopsided edge shows: its left half is mirrored onto the right.
+for name in result:
+    if not name.startswith("Brush_Card"):
+        continue
+    path = os.path.join(out, name + ".png")
+    img = Image.open(path).convert("RGBA")
+    half = img.crop((0, 0, img.width // 2, img.height))
+    img.paste(half.transpose(Image.FLIP_LEFT_RIGHT), (img.width - half.width, 0))
+    img.save(path)
+    print("%s mirrored" % name)

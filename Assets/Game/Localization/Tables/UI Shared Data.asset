@@ -87,6 +87,30 @@ MonoBehaviour:
     m_Key: loading.title
     m_Metadata:
       m_Items: []
+  - m_Id: 6600418207215616
+    m_Key: hud.record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547264
+    m_Key: pause.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547265
+    m_Key: pause.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547266
+    m_Key: pause.menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547267
+    m_Key: crash.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547268
+    m_Key: crash.retry
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

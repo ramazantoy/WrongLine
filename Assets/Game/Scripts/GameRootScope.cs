@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using VContainer;
 using VContainer.Unity;
+using WrongLine.Haptics;
 using WrongLine.Road;
 using WrongLine.Scenery;
 using WrongLine.Traffic;
@@ -54,6 +55,9 @@ namespace WrongLine
         [SerializeField, Required, Tooltip("The traffic's tunable numbers: layout, spawn range, levels of detail.")]
         private TrafficConfig _trafficConfig;
 
+        [SerializeField, Required, Tooltip("The vibration pulses of taps, bumps and the crash.")]
+        private HapticsConfig _hapticsConfig;
+
         [SerializeField, Required, Tooltip("The cover shown while a scene loads. A child of the root prefab, so it survives scene changes.")]
         private LoadingScreen _loadingScreen;
 
@@ -87,6 +91,15 @@ namespace WrongLine
             builder.RegisterComponent(_loadingScreen).As<ILoadingScreen>();
             builder.Register<GameplaySettings>(Lifetime.Singleton).AsImplementedInterfaces();
             builder.Register<BestDistance>(Lifetime.Singleton).AsImplementedInterfaces();
+
+            // The phone's vibration (the menu's taps too): the Android vibrator on a device, a log line elsewhere.
+            builder.RegisterInstance(_hapticsConfig);
+#if UNITY_ANDROID && !UNITY_EDITOR
+            builder.Register<AndroidHapticOutput>(Lifetime.Singleton).As<IHapticOutput>();
+#else
+            builder.Register<NullHapticOutput>(Lifetime.Singleton).As<IHapticOutput>();
+#endif
+            builder.Register<HapticsService>(Lifetime.Singleton).As<IHaptics>();
 
             // The road pieces live in the root's pools, so they are made once and outlast every scene.
             builder.RegisterInstance(_roadCatalog);

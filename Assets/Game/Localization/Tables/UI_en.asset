@@ -90,6 +90,30 @@ MonoBehaviour:
     m_Localized: LOADING
     m_Metadata:
       m_Items: []
+  - m_Id: 6600418207215616
+    m_Localized: NEW RECORD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547264
+    m_Localized: PAUSED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547265
+    m_Localized: RESUME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547266
+    m_Localized: MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547267
+    m_Localized: CRASH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547268
+    m_Localized: AGAIN
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

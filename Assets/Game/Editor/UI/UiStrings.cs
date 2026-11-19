@@ -26,6 +26,12 @@ namespace WrongLine.UI.Editor
             ("settings.haptics", "Vibration", "Titreşim"),
             ("settings.language", "Language", "Dil"),
             ("settings.back", "BACK", "GERİ"),
+            ("hud.record", "NEW RECORD", "YENİ REKOR"),
+            ("pause.title", "PAUSED", "DURAKLATILDI"),
+            ("pause.resume", "RESUME", "DEVAM"),
+            ("pause.menu", "MENU", "MENÜ"),
+            ("crash.title", "CRASH", "KAZA"),
+            ("crash.retry", "AGAIN", "TEKRAR"),
         };
 
         [MenuItem("WrongLine/UI/Write UI Strings")]

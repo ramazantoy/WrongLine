@@ -90,6 +90,30 @@ MonoBehaviour:
     m_Localized: "Y\xDCKLEN\u0130YOR"
     m_Metadata:
       m_Items: []
+  - m_Id: 6600418207215616
+    m_Localized: "YEN\u0130 REKOR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547264
+    m_Localized: DURAKLATILDI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547265
+    m_Localized: DEVAM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547266
+    m_Localized: "MEN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547267
+    m_Localized: KAZA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6600418257547268
+    m_Localized: TEKRAR
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

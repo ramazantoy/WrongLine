@@ -6,15 +6,16 @@ using VContainer;
 using VContainer.Unity;
 using WrongLine.Car;
 using WrongLine.Crash;
-using WrongLine.Scenery;
-using WrongLine.Traffic;
+using WrongLine.Haptics;
+using WrongLine.UI;
 using WrongLine.World;
 
 namespace WrongLine.Driving
 {
     /// <summary>
-    /// The driving scene's scope: the endless road streamed around the player's car, a chase camera behind it, and a debug
-    /// readout. The road pieces themselves come from the root's pool.
+    /// The driving scene's scope: the endless road streamed around the player's car (<see cref="DriveWorldInstaller"/>, shared with
+    /// the menu's background drive), a chase camera behind it, the crash, and the screens on the UI canvas: HUD, pause, settings,
+    /// game over and a debug readout. The road pieces themselves come from the root's pool.
     /// </summary>
     public sealed class DrivingScope : SceneScope
     {
@@ -29,50 +30,33 @@ namespace WrongLine.Driving
         [SerializeField, Required] private ChaseCameraView _camera;
         [SerializeField, Required] private RoadDebugHud _hud;
         [SerializeField, Required] private CrashConfig _crashConfig;
+        [SerializeField, Required] private UiConfig _uiConfig;
+        [SerializeField, Required] private HudScreen _hudScreen;
+        [SerializeField, Required] private PauseScreen _pauseScreen;
+        [SerializeField, Required] private SettingsScreen _settings;
         [SerializeField, Required] private GameOverScreen _gameOver;
-
-        /// <summary>Mixed into the run seed for the biomes, so they do not repeat the road generator's numbers.</summary>
-        private const ulong BiomeSeedSalt = 0xB10E5EEDC0FFEE11UL;
 
         protected override void ConfigureScene(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
-            builder.RegisterMessageBroker<RoadOriginShifted>(messagePipe);
-            builder.RegisterMessageBroker<CarSideswiped>(messagePipe);
-            builder.RegisterMessageBroker<CarCrashed>(messagePipe);
-
-            builder.RegisterInstance(_carConfig);
-            builder.RegisterInstance(_crashConfig);
-            builder.RegisterInstance(_cameraConfig);
-            builder.RegisterInstance(_curveConfig);
-            builder.RegisterInstance(_dayNightConfig);
-            builder.RegisterInstance(_lightsConfig);
-            builder.RegisterComponent(_nightBloom);
-            builder.RegisterComponent(_sun);
-            builder.RegisterComponent(_car);
-            builder.RegisterComponent(_camera);
+            builder.RegisterInstance(_uiConfig);
             builder.RegisterComponent(_hud).As<IRoadDebugHud>();
+            builder.RegisterComponent(_hudScreen);
+            builder.RegisterComponent(_pauseScreen);
+            builder.RegisterComponent(_settings);
             builder.RegisterComponent(_gameOver).As<IGameOverScreen>();
 
-            builder.Register<RunSeed>(Lifetime.Singleton).As<IRunSeed>();
             builder.Register<SteerInput>(Lifetime.Singleton).As<ISteerInput>();
-            builder.RegisterEntryPoint<CarController>().As<ICarMotion>().As<ICarImpact>(); // Before the streamer: it reads the speed.
-            builder.RegisterEntryPoint<RoadStreamer>().As<IRoadFrame>();
-            builder.Register(resolver => new BiomeSchedule(
-                resolver.Resolve<IRunSeed>().Value ^ BiomeSeedSalt,
-                resolver.Resolve<ISceneryPool>().Set.Biomes.Count,
-                resolver.Resolve<SceneryConfig>().Biomes), Lifetime.Singleton);
-            builder.RegisterEntryPoint<SceneryStreamer>().As<IRoadsideLamps>(); // After the road streamer: it reads the pieces the road put out.
-            builder.RegisterEntryPoint<TrafficStreamer>().As<ITrafficFrame>(); // After the road streamer: it reads where the player is and the road's origin.
+            DriveWorldInstaller.RegisterWorld(builder, messagePipe, new DriveWorldParts(_carConfig, _crashConfig, _cameraConfig, _curveConfig, _dayNightConfig, _lightsConfig, _nightBloom, _sun, _car, _camera));
             builder.RegisterEntryPoint<CrashDetector>(); // After the road and the traffic: it reads where everything is this frame.
+            builder.RegisterEntryPoint<RunRecorder>().As<IRunResult>(); // Before the director: the game over screen reads the result it keeps.
             builder.RegisterEntryPoint<CrashDirector>();
-            builder.RegisterEntryPoint<BiomeBlendDriver>();
-            builder.RegisterEntryPoint<CarPlacer>();
-            builder.RegisterEntryPoint<ChaseCameraDriver>(); // Late tick, after the car placer: the rig it writes is what Cinemachine's brain follows.
-            builder.RegisterEntryPoint<CameraImpulse>();
-            builder.RegisterEntryPoint<CurveWorldDriver>(); // After the camera driver: it reads where the camera ended up.
-            builder.RegisterEntryPoint<GroundBackdropDriver>(); // After the camera driver too: it follows the camera.
-            builder.RegisterEntryPoint<DayNightDriver>().As<IDayNight>();
-            builder.RegisterEntryPoint<LightsDriver>().As<ILightLevels>(); // After the day and night driver: it reads the darkness.
+            DriveWorldInstaller.RegisterPlacement(builder);
+            DriveWorldInstaller.RegisterChaseCamera(builder);
+            DriveWorldInstaller.RegisterSky(builder);
+
+            builder.RegisterEntryPoint<HudDriver>();
+            builder.RegisterEntryPoint<PauseDriver>();
+            builder.RegisterEntryPoint<HapticsDriver>();
         }
     }
 }

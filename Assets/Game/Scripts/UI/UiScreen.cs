@@ -20,6 +20,9 @@ namespace WrongLine.UI
         [Tooltip("The scale it grows from and shrinks to. 1 only fades; 0 grows from nothing.")]
         [SerializeField, Range(0f, 1f)] private float _hiddenScale = 1f;
 
+        [Tooltip("What grows and shrinks, if not the screen itself: a dialog's card, while the dimmed ground behind it only fades.")]
+        [SerializeField] private Transform _scaleTarget;
+
         [SerializeField, Min(0.05f)] private float _seconds = 0.25f;
 
         private CanvasGroup _group;
@@ -31,6 +34,8 @@ namespace WrongLine.UI
         private bool? _state;
 
         private CanvasGroup Group => _group != null ? _group : (_group = GetComponent<CanvasGroup>());
+
+        private Transform ScaleTarget => _scaleTarget != null ? _scaleTarget : transform;
 
         private float HiddenScale => Mathf.Max(_hiddenScale, SmallestScale);
 
@@ -68,7 +73,7 @@ namespace WrongLine.UI
             _fade = Tween.Alpha(Group, 1f, _seconds, Ease.OutQuad, useUnscaledTime: true);
             if (_hiddenScale < 1f)
             {
-                _zoom = Tween.Scale(transform, 1f, _seconds, Ease.OutBack, useUnscaledTime: true);
+                _zoom = Tween.Scale(ScaleTarget, 1f, _seconds, Ease.OutBack, useUnscaledTime: true);
             }
         }
 
@@ -87,7 +92,7 @@ namespace WrongLine.UI
             _fade = Tween.Alpha(Group, 0f, _seconds, Ease.InQuad, useUnscaledTime: true).OnComplete(this, static screen => screen.Finish(), warnIfTargetDestroyed: false);
             if (_hiddenScale < 1f)
             {
-                _zoom = Tween.Scale(transform, HiddenScale, _seconds, Ease.InBack, useUnscaledTime: true);
+                _zoom = Tween.Scale(ScaleTarget, HiddenScale, _seconds, Ease.InBack, useUnscaledTime: true);
             }
         }
 
@@ -99,7 +104,7 @@ namespace WrongLine.UI
             Group.alpha = 0f;
             Group.interactable = false;
             Group.blocksRaycasts = false;
-            transform.localScale = Vector3.one * HiddenScale;
+            ScaleTarget.localScale = Vector3.one * HiddenScale;
         }
 
         private void StopTweens()

@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
 using VContainer;
+using WrongLine.Haptics;
 
 namespace WrongLine.UI
 {
@@ -34,14 +35,16 @@ namespace WrongLine.UI
         private IGameplaySettings _gameplay;
         private ILocaleService _locales;
         private ISaveService _save;
+        private IHaptics _vibration;
 
         [Inject]
-        public void Construct(IAudioVolumes volumes, IGameplaySettings gameplay, ILocaleService locales, ISaveService save)
+        public void Construct(IAudioVolumes volumes, IGameplaySettings gameplay, ILocaleService locales, ISaveService save, IHaptics haptics)
         {
             _volumes = volumes;
             _gameplay = gameplay;
             _locales = locales;
             _save = save;
+            _vibration = haptics;
         }
 
         /// <summary>Raised when the screen is closed, whoever closed it (the Back button, the menu's Back key).</summary>
@@ -85,7 +88,7 @@ namespace WrongLine.UI
             _haptics.onValueChanged.AddListener(OnHaptics);
             _previousLanguage.onClick.AddListener(OnPreviousLanguage);
             _nextLanguage.onClick.AddListener(OnNextLanguage);
-            _back.onClick.AddListener(Hide);
+            _back.onClick.AddListener(OnBackClicked);
         }
 
         private void OnDisable()
@@ -96,20 +99,50 @@ namespace WrongLine.UI
             _haptics.onValueChanged.RemoveListener(OnHaptics);
             _previousLanguage.onClick.RemoveListener(OnPreviousLanguage);
             _nextLanguage.onClick.RemoveListener(OnNextLanguage);
-            _back.onClick.RemoveListener(Hide);
+            _back.onClick.RemoveListener(OnBackClicked);
         }
 
-        private void OnMaster(float value) => _volumes.Set(AudioChannels.Master, value);
+        private void OnBackClicked()
+        {
+            _vibration.Play(HapticKind.Tap);
+            Hide();
+        }
 
-        private void OnMusic(float value) => _volumes.Set(AudioChannels.Music, value);
+        private void OnMaster(float value)
+        {
+            _volumes.Set(AudioChannels.Master, value);
+            _vibration.Play(HapticKind.Tick);
+        }
 
-        private void OnSfx(float value) => _volumes.Set(AudioChannels.Sfx, value);
+        private void OnMusic(float value)
+        {
+            _volumes.Set(AudioChannels.Music, value);
+            _vibration.Play(HapticKind.Tick);
+        }
 
-        private void OnHaptics(bool on) => _gameplay.SetHaptics(on);
+        private void OnSfx(float value)
+        {
+            _volumes.Set(AudioChannels.Sfx, value);
+            _vibration.Play(HapticKind.Tick);
+        }
 
-        private void OnPreviousLanguage() => ChangeLanguage(-1).Forget();
+        private void OnHaptics(bool on)
+        {
+            _gameplay.SetHaptics(on);
+            _vibration.Play(HapticKind.Tap); // Only felt when it was just switched on.
+        }
 
-        private void OnNextLanguage() => ChangeLanguage(1).Forget();
+        private void OnPreviousLanguage()
+        {
+            _vibration.Play(HapticKind.Tap);
+            ChangeLanguage(-1).Forget();
+        }
+
+        private void OnNextLanguage()
+        {
+            _vibration.Play(HapticKind.Tap);
+            ChangeLanguage(1).Forget();
+        }
 
         private async UniTaskVoid ChangeLanguage(int step)
         {
