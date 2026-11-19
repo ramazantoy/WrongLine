@@ -473,7 +473,7 @@ Template'in Audio modülü kullanıldı (`UseAudio`, `ISounds`, `IMusic`, `GameM
 
 
 ## Template'e gidenler
-- **`SoundHandle` canlı pitch ve ses vermiyor (2026-11-19):** motor gibi sürekli değişen ses için oyun kendi `AudioSource`'ını mixer grubuna bağlayıp yazıyor (`Game.md` S1). Öneri: `SoundHandle.SetPitch/SetVolume` (havuzdaki kaynağa yazar, yaşam bitince etkisiz) ya da doküman notu: "sürekli parametreli ses kendi kaynağıyla, çıkış grubu şart".
+- ~~**`SoundHandle` canlı pitch ve ses vermiyor (2026-11-19):** motor gibi sürekli değişen ses için oyun kendi `AudioSource`'ını mixer grubuna bağlayıp yazıyor (`Game.md` S1). Öneri: `SoundHandle.SetPitch/SetVolume` (havuzdaki kaynağa yazar, yaşam bitince etkisiz) ya da doküman notu: "sürekli parametreli ses kendi kaynağıyla, çıkış grubu şart".~~ Template'te yapıldı (`07c9b07`: `SetPitch` −3..3, `SetVolume` 0..1, ses bitmişse etkisiz, `SetVolume` fade sırasında etkisiz; 3 test, bozmayla 2'si kırıldı), buraya alındı (2026-11-19). Oyunun motor sesi hâlâ kendi `AudioSource`'ını kullanıyor; geçiş istenirse ayrı iş.
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"
   tercihi varsayılan "Recompile And Continue Playing"; Play sırasında derleme olunca (ya da `wait-editor.sh --refresh`)
   domain reload sonrası `RootScope(Clone)` ikilenir ve konsola "2 event systems" / "2 audio listeners" uyarıları basılır.
