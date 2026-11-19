@@ -21,6 +21,9 @@ namespace WrongLine.Audio
         private readonly IGameClock _clock;
         private readonly ISounds _sounds;
         private CarAudioView _view;
+        private SoundHandle _engineLow;
+        private SoundHandle _engineHigh;
+        private SoundHandle _wind;
         private EngineSoundRule _engine;
         private PassByRule _passBy;
         private SignalClickRule _signal;
@@ -43,6 +46,12 @@ namespace WrongLine.Audio
             _engine = new EngineSoundRule(settings.Engine);
             _passBy = new PassByRule(settings.PassBy);
             _signal = new SignalClickRule();
+
+            // The loops live as long as this scope; each frame writes their pitch and volume through the handles.
+            CarAudioConfig config = _view.Config;
+            _engineLow = _sounds.Play(config.EngineLow);
+            _engineHigh = _sounds.Play(config.EngineHigh);
+            _wind = _sounds.Play(config.Wind);
         }
 
         public void Tick()
@@ -55,7 +64,7 @@ namespace WrongLine.Audio
             CarAudioConfig config = _view.Config;
             float dt = _clock.DeltaTime;
             _engine.Update(dt, _motion.Speed, _motion.Velocity, _clock.Scale, _motion.Crashed);
-            _view.Apply(_engine.Sound);
+            ApplyLoops(_engine.Sound);
 
             switch (_signal.Observe(_motion.LampOn))
             {
@@ -71,6 +80,16 @@ namespace WrongLine.Audio
             {
                 PlayPasses(config, dt);
             }
+        }
+
+        private void ApplyLoops(in EngineSound sound)
+        {
+            _engineLow.SetPitch(sound.Pitch);
+            _engineHigh.SetPitch(sound.Pitch);
+            _engineLow.SetVolume(sound.LowVolume);
+            _engineHigh.SetVolume(sound.HighVolume);
+            _wind.SetPitch(sound.WindPitch);
+            _wind.SetVolume(sound.WindVolume);
         }
 
         private void PlayPasses(CarAudioConfig config, float dt)

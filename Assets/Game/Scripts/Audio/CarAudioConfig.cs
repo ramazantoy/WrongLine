@@ -19,13 +19,17 @@ namespace WrongLine.Audio
     }
 
     /// <summary>
-    /// The car's sound: the numbers and the cues of what happens around it (a car passing, the turn signal, a sideswipe, the crash).
+    /// The car's sound: the numbers and the cues of its loops (two engine loops and the road's rush) and of what happens around it
+    /// (a car passing, the turn signal, a sideswipe, the crash).
     /// The menu's background drive has its own, quieter one and no crash.
     /// </summary>
     [CreateAssetMenu(menuName = "WrongLine/Car Audio Config")]
     public sealed class CarAudioConfig : ScriptableObject
     {
         [SerializeField] private CarAudioSettings _settings = new CarAudioSettings();
+        [SerializeField, Required] private SoundCue _engineLow;
+        [SerializeField, Required] private SoundCue _engineHigh;
+        [SerializeField, Required] private SoundCue _wind;
         [SerializeField, Required] private SoundCue _passBy;
         [SerializeField, Required] private SoundCue _signalTick;
         [SerializeField, Required] private SoundCue _signalTock;
@@ -34,6 +38,9 @@ namespace WrongLine.Audio
         [SerializeField, Required] private SoundCue _crashGlass;
 
         public CarAudioSettings Settings => _settings;
+        public SoundCue EngineLow => _engineLow;
+        public SoundCue EngineHigh => _engineHigh;
+        public SoundCue Wind => _wind;
         public SoundCue PassBy => _passBy;
         public SoundCue SignalTick => _signalTick;
         public SoundCue SignalTock => _signalTock;

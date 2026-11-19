@@ -42,6 +42,9 @@ MonoBehaviour:
       MaxStepMeters: 15
       FullClosingSpeed: 50
       MinVolume: 0.25
+  _engineLow: {fileID: 11400000, guid: 2e1caffe327974344b3b4a8709a0f854, type: 2}
+  _engineHigh: {fileID: 11400000, guid: e589d9cea126deb4981091e5f5d1b317, type: 2}
+  _wind: {fileID: 11400000, guid: 1dbdfa2744bad454c89ce7f5b9401f9c, type: 2}
   _passBy: {fileID: 11400000, guid: 0b4ad9e57e818454baf8fdd41303d998, type: 2}
   _signalTick: {fileID: 11400000, guid: 3fa560e18e9f58a479c1de548413602f, type: 2}
   _signalTock: {fileID: 11400000, guid: 27003815125e8b648aa8c4c10d058adc, type: 2}
