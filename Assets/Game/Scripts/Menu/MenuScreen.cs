@@ -138,7 +138,11 @@ namespace WrongLine.Menu
         private void OnQuit()
         {
             _feedback.Play(UiFeedbackKind.Tap);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false; // Application.Quit does nothing in the Editor.
+#else
             Application.Quit();
+#endif
         }
 
         private void OpenQuitPrompt()

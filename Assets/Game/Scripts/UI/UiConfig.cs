@@ -15,10 +15,15 @@ namespace WrongLine.UI
         [Tooltip("How long the game over screen waits before it starts counting (it fades in meanwhile).")]
         [SerializeField, Min(0f)] private float _countUpDelay = 0.35f;
 
+        [Tooltip("The game over distance ticks at most this often while it counts up, in seconds.")]
+        [SerializeField, Min(0.01f)] private float _countTickInterval = 0.05f;
+
         public float RecordLabelSeconds => _recordLabelSeconds;
 
         public float CountUpSeconds => _countUpSeconds;
 
         public float CountUpDelay => _countUpDelay;
+
+        public float CountTickInterval => _countTickInterval;
     }
 }

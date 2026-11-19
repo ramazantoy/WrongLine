@@ -21,9 +21,9 @@ namespace WrongLine.Audio
         public float FallRate = 1.8f;
 
         /// <summary>The loops' pitch at 0 revs and at full revs.</summary>
-        public float PitchAtIdle = 0.8f;
+        public float PitchAtIdle = 0.85f;
 
-        public float PitchAtRedline = 1.7f;
+        public float PitchAtRedline = 1.5f;
 
         /// <summary>Between these revs the sound fades from the low loop to the high one.</summary>
         public float CrossfadeFrom = 0.35f;

@@ -37,6 +37,7 @@ namespace WrongLine.Crash
         private float _elapsed;
         private int _shown = -1;
         private bool _counting;
+        private CountTickRule _ticks;
 
         [Inject]
         public void Construct(ISceneLoader scenes, IInputModeService input, IRunResult result, UiConfig config, IUiFeedback feedback, ISounds sounds, GameAudioConfig audio)
@@ -65,12 +66,12 @@ namespace WrongLine.Crash
             _retry.interactable = true;
             _menu.interactable = true;
             _recordLabel.SetActive(_result.IsRecord);
-            _sounds.Play(_result.IsRecord ? _audio.RecordJingle : _audio.GameOverJingle);
             _best.SetText("{0} m", _result.Best);
             _elapsed = 0f;
             _shown = -1;
             _counting = true;
-            Count();
+            _ticks = new CountTickRule(_config.CountTickInterval);
+            Count(0f);
         }
 
         private void OnEnable()
@@ -98,20 +99,33 @@ namespace WrongLine.Crash
             }
 
             // Real time: the game is still in slow motion or paused when the screen comes up.
-            _elapsed += Time.unscaledDeltaTime;
-            Count();
+            float dt = Time.unscaledDeltaTime;
+            _elapsed += dt;
+            Count(dt);
         }
 
-        private void Count()
+        // Ticks while the number climbs; the jingle plays when it lands.
+        private void Count(float deltaTime)
         {
             int value = CountUpRule.Value(_result.Meters, _elapsed - _config.CountUpDelay, _config.CountUpSeconds);
-            if (value != _shown)
+            bool changed = value != _shown;
+            if (changed)
             {
                 _shown = value;
                 _distance.SetText("{0} m", value);
             }
 
-            _counting = value < _result.Meters;
+            bool counting = value < _result.Meters;
+            if (counting && _ticks.Step(deltaTime, changed))
+            {
+                _sounds.Play(_audio.MeterTick);
+            }
+            else if (_counting && !counting)
+            {
+                _sounds.Play(_result.IsRecord ? _audio.RecordJingle : _audio.GameOverJingle);
+            }
+
+            _counting = counting;
         }
 
         private void OnRetry()

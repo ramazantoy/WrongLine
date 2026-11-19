@@ -16,6 +16,7 @@ MonoBehaviour:
   _uiBack: {fileID: 11400000, guid: 284a74ee76fa343408a8c0642ace536c, type: 2}
   _uiTick: {fileID: 11400000, guid: b7e2e7ec5250f6846be482066a679388, type: 2}
   _uiToggle: {fileID: 11400000, guid: d9176dc416c8dc94d82a3f5e358244bf, type: 2}
+  _meterTick: {fileID: 11400000, guid: 231e9d8664937a24ab28a832d0a3005a, type: 2}
   _gameOverJingle: {fileID: 11400000, guid: 36182d3053f5af444833268abf1c8a6e, type: 2}
   _recordJingle: {fileID: 11400000, guid: 7d776ccc12eaf0641bfbb9fbf38e293a, type: 2}
   _menuTheme: {fileID: 8300000, guid: f0823f811312b384ea6a465886c4ad86, type: 3}

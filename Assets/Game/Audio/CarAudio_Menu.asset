@@ -23,8 +23,8 @@ MonoBehaviour:
       IdleRevs: 0.3
       RiseRate: 3
       FallRate: 1.8
-      PitchAtIdle: 0.8
-      PitchAtRedline: 1.7
+      PitchAtIdle: 0.85
+      PitchAtRedline: 1.5
       CrossfadeFrom: 0.35
       CrossfadeTo: 0.8
       LateralRevs: 0.05

@@ -15,6 +15,7 @@ namespace WrongLine.Audio
         [SerializeField, Required] private SoundCue _uiToggle;
 
         [Header("Game over")]
+        [SerializeField, Required] private SoundCue _meterTick;
         [SerializeField, Required] private SoundCue _gameOverJingle;
         [SerializeField, Required] private SoundCue _recordJingle;
 
@@ -24,6 +25,7 @@ namespace WrongLine.Audio
         [SerializeField, Min(0f)] private float _menuFadeSeconds = 1.5f;
         [SerializeField, Min(0f)] private float _driveFadeSeconds = 2f;
 
+        public SoundCue MeterTick => _meterTick;
         public SoundCue GameOverJingle => _gameOverJingle;
         public SoundCue RecordJingle => _recordJingle;
         public AudioClip MenuTheme => _menuTheme;
