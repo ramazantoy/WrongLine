@@ -134,3 +134,7 @@ InitTestScene*.unity*
 
 # Game design document and HTML prototype: local working notes, not part of the repository
 /Design/
+
+# Python bytecode
+__pycache__/
+*.pyc
