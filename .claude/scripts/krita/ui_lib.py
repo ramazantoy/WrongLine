@@ -6,6 +6,7 @@ from PyQt5.QtCore import QRect
 WHITE = (255, 255, 255)
 INK7 = "d) Ink-7 Brush Rough"
 INK3 = "d) Ink-3 Gpen"
+DRY = "g) Dry Textured Creases"  # the main brush of the buttons: dry, streaked, ragged ends
 results = {}
 
 def wob(rs, amp):

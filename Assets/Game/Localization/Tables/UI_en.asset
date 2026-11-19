@@ -19,7 +19,7 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 1352413184
-    m_Localized: Play
+    m_Localized: PLAY
     m_Metadata:
       m_Items: []
   - m_Id: 5979583918387200
@@ -32,6 +32,62 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 5979585541582848
     m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004295454720
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563584
+    m_Localized: BEST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563585
+    m_Localized: QUIT THE GAME?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563586
+    m_Localized: QUIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563587
+    m_Localized: STAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563588
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563589
+    m_Localized: Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563590
+    m_Localized: Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563591
+    m_Localized: Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563592
+    m_Localized: Vibration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563593
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563594
+    m_Localized: BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6547603870986240
+    m_Localized: QUIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6551009918464000
+    m_Localized: LOADING
     m_Metadata:
       m_Items: []
   references:

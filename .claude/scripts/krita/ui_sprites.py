@@ -3,10 +3,10 @@ def draw_all():
     # Buttons: wide brush bars, three variants so neighbouring buttons do not look stamped.
     for i, (seed, amp) in enumerate([(11, 3.0), (23, 4.0), (37, 2.5)]):
         sprite("Brush_Button_" + "ABC"[i], 768, 192,
-               lambda d, n, v, s=seed, a=amp: bar(n, v, 24, 30, 744, 162, 56, s, amp=a))
+               lambda d, n, v, s=seed, a=amp: bar(n, v, 24, 30, 744, 162, 70, s, amp=a, preset=DRY))
     sprite("Brush_Panel", 1024, 1280, lambda d, n, v: bar(n, v, 30, 40, 994, 1240, 120, 5, amp=6))
-    sprite("Brush_Underline", 768, 56, lambda d, n, v: bar(n, v, 16, 14, 752, 42, 24, 9, amp=2))
-    sprite("Brush_Divider", 768, 28, lambda d, n, v: bar(n, v, 16, 6, 752, 22, 12, 13, amp=1.5, preset=INK3))
+    sprite("Brush_Underline", 768, 56, lambda d, n, v: bar(n, v, 16, 14, 752, 42, 26, 9, amp=2, preset=DRY))
+    sprite("Brush_Divider", 768, 28, lambda d, n, v: bar(n, v, 16, 6, 752, 22, 14, 13, amp=1.5, preset=DRY))
     sprite("Slider_Track", 512, 48, lambda d, n, v: bar(n, v, 12, 10, 500, 38, 22, 17, amp=1.5))
     sprite("Slider_Fill", 512, 48, lambda d, n, v: bar(n, v, 12, 8, 500, 40, 28, 19, amp=1.0))
     sprite("Slider_Knob", 112, 112, lambda d, n, v: blob(n, v, 56, 56, 46, 3))

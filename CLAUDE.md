@@ -60,6 +60,7 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | K2 | Cinemachine 3.1.7: rig + iki sanal kamera (chase, crash), yolda kayan dolly kuralı (kamera konuyu aralıkta tutar), Impulse sarsıntısı, kaza blend'i, kurulum doğrulayıcısı | Bitti 2026-11-18 (pushlandı `90b1aec`); his kullanıcıda |
 | V3 | Araç v3: oyuncu aracı Meshy ile (tekerleksiz gövde + ayrı tekerlek, pişirme script'i, dokudan ışık maskesi ve emission, eski araç ve sinyal küpleri silindi) | Bitti 2026-11-19; his ve Android ölçümü kullanıcıda |
 | T1 | Trafik araçları v3: dört model Meshy ile (20k / 6k, anahtar renkten boya, tekerlek gövdede), boya ve sinyal `SetShaderUserValue` ile (SRP Batcher korunur), V3 gövdesi tekerleksiz yeniden üretildi | Bitti 2026-11-19; LOD2, çarpışma genişliği, his ve Android ölçümü açık |
+| U1 | Arayüz giydirme: Krita fırça sprite'ları (RDR tarzı), Barlow font, ayarlar (ses, müzik, efekt, titreşim, dil), ana menü, yükleme ekranı; oyunun kendi ayarı PlayerPrefs'te | U1a ve U1b bitti 2026-11-19; U1c (HUD, pause, fail, haptic) ve canlı menü arka planı sırada |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

@@ -150,6 +150,14 @@ Biten madde silinmez, üstü çizilir; kalıcı sonucu `Game.md`'ye taşınır.
 
 - **Trafik araçları Meshy (T1, 2026-11-19):** yapıldı (`Game.md` T1 kararları). Açıklar: (1) **LOD2 yok**: LOD1 (6k) gösteriliyor, daha düşük LOD'lar sonra (Meshy düşük poligonda bozuyor; Unity'de ya da elle). (2) **Çarpışma genişliği** `TrafficModelSpec.DefaultHalfWidth` 0,9 hepsinde; kamyon 1,25 yarı genişlikte görünüyor: katalog girdisine `_halfWidth` (mesh'ten) eklenip `CollisionRule`'a verilmeli. (3) Kaza anında trafik araçları parçalanmaz (tek mesh); oyuncu aracı da yalnız tekerlek ve gövde: kapı/kaput için gövdeyi koddan kesme ya da kırık parça (shard) denemesi ayrı iş. (4) Play'de his, yoğunluk ve **Android ölçümü** (aktif 12–19 araç, çoğu LOD1 6k, yakın LOD0 20k; draw call ve SRP Batcher Frame Debugger'da bakılmadı) kullanıcıda. (5) Kamyon ve van `MaxWidths` ile sınırlı; kamyonun ilk üretimi bozuk ön ref (yan+ön birleşik görsel) yüzünden açılmış karton gibiydi, ön + arka ref ile yeniden üretildi (4 görselli multi_image). Form beğenilmezse ref'ten yeniden üretilir (58 kr/model). (6) Boya palet rengi gri tabana çarpıyor: turuncu kamyon soluk; palet ayarı.
 
+## U1 (arayüz) açıkları (2026-11-19)
+- **U1c sırada:** oyun içi HUD (mesafe, hız, pause ikonu), `PauseScreen` (ayar ekranını paylaşır), `GameOverScreen`'i fırça diliyle yeniden giydirme (mesafe + en iyi + yeni rekor), `RoadDebugHud`'u debug'a almak, haptic çıktısı (`IHaptics`, Android `Vibrator`; ayar ve saklama U1b'de var), `BestDistance.Submit` çağrısı (kazada).
+- **Canlı menü arka planı yapılmadı:** menü sahnesinin arkası şimdi yalnız gökyüzü ve düz zemin. Plan: yol + oyuncu aracı yavaş sürerken menü kamerası (DrivingScope'u çatallamadan, girdisiz). Ayrı iş.
+- **Yapılmadı:** safe area (çentik) bileşeni, ekran geçiş fırça silmesi (yalnız yükleme ekranı var), slider sürüklemede haptic, UI tık sesi (klip yok, CC0 ses ayrı madde), vignette sprite'ı.
+- **TMP dinamik atlas:** Android build'inde atlas büyümesi ve ilk çizim takılması ölçülmedi; gerekirse statik atlas.
+- **Ses seviyesi UI kanalı:** ayarda yalnız Master/Müzik/Efekt; mixer'daki UI kanalı slider'sız.
+- **PlayerPrefs kararı** CLAUDE.md'deki "Save" kuralından sapar (oyunun kendi değerleri için); yeni kalıcı değerler de buraya mı gitsin, kullanıcıyla netleşmeli.
+
 ## Template'e gidenler
 - **Play açıkken script derlenince root scope iki kez kurulur (2026-11-16):** Editor'ın "Script Changes While Playing"
   tercihi varsayılan "Recompile And Continue Playing"; Play sırasında derleme olunca (ya da `wait-editor.sh --refresh`)

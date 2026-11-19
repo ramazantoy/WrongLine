@@ -19,7 +19,7 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 1352413184
-    m_Localized: Oyna
+    m_Localized: OYNA
     m_Metadata:
       m_Items: []
   - m_Id: 5979583918387200
@@ -32,6 +32,62 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 5979585541582848
     m_Localized: "Men\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004295454720
+    m_Localized: AYARLAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563584
+    m_Localized: "EN \u0130Y\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563585
+    m_Localized: "OYUNDAN \xC7IKILSIN MI?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563586
+    m_Localized: "\xC7IK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563587
+    m_Localized: KAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563588
+    m_Localized: AYARLAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563589
+    m_Localized: Ses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563590
+    m_Localized: "M\xFCzik"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563591
+    m_Localized: Efekt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563592
+    m_Localized: "Titre\u015Fim"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563593
+    m_Localized: Dil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563594
+    m_Localized: "GER\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6547603870986240
+    m_Localized: "\xC7IKI\u015E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6551009918464000
+    m_Localized: "Y\xDCKLEN\u0130YOR"
     m_Metadata:
       m_Items: []
   references:

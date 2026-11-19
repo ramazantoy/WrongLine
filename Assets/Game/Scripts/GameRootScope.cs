@@ -11,9 +11,11 @@ using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using VContainer;
+using VContainer.Unity;
 using WrongLine.Road;
 using WrongLine.Scenery;
 using WrongLine.Traffic;
+using WrongLine.UI;
 #if STORE_STEAM
 using AF.Platform.Steam;
 #elif STORE_EPIC
@@ -52,6 +54,9 @@ namespace WrongLine
         [SerializeField, Required, Tooltip("The traffic's tunable numbers: layout, spawn range, levels of detail.")]
         private TrafficConfig _trafficConfig;
 
+        [SerializeField, Required, Tooltip("The cover shown while a scene loads. A child of the root prefab, so it survives scene changes.")]
+        private LoadingScreen _loadingScreen;
+
         protected override void ConfigureGame(IContainerBuilder builder, MessagePipeOptions messagePipe)
         {
             // First: a store's launch check is the first boot step, so a refused launch quits before anything loads. The Mock
@@ -75,6 +80,13 @@ namespace WrongLine
             builder.UseLocalization(messagePipe);
             // After UseSave, UseAudio and UseInput: display settings, and saving the channel volumes.
             builder.UseSettings(messagePipe);
+
+            // The game's own small settings and records live in PlayerPrefs (language and volumes stay with the framework's save).
+            builder.RegisterMessageBroker<GameplaySettingsChanged>(messagePipe);
+            builder.Register<PlayerPrefsStore>(Lifetime.Singleton).As<IPrefsStore>();
+            builder.RegisterComponent(_loadingScreen).As<ILoadingScreen>();
+            builder.Register<GameplaySettings>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<BestDistance>(Lifetime.Singleton).AsImplementedInterfaces();
 
             // The road pieces live in the root's pools, so they are made once and outlast every scene.
             builder.RegisterInstance(_roadCatalog);

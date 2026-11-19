@@ -31,6 +31,62 @@ MonoBehaviour:
     m_Key: gameover.menu
     m_Metadata:
       m_Items: []
+  - m_Id: 6540004295454720
+    m_Key: menu.settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563584
+    m_Key: menu.best
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563585
+    m_Key: menu.quit.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563586
+    m_Key: menu.quit.yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563587
+    m_Key: menu.quit.no
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563588
+    m_Key: settings.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563589
+    m_Key: settings.master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563590
+    m_Key: settings.music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563591
+    m_Key: settings.sfx
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563592
+    m_Key: settings.haptics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563593
+    m_Key: settings.language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6540004362563594
+    m_Key: settings.back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6547603870986240
+    m_Key: menu.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6551009918464000
+    m_Key: loading.title
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
