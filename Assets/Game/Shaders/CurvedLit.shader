@@ -42,6 +42,10 @@ Shader "WrongLine/CurvedLit"
         [Toggle(_LIGHTMASK_ON)] _LightMaskOn("Light Mask", Float) = 0
         _LightMask("Light Mask Texture", 2D) = "black" {}
         _CarLightLevels("Car Light Levels (headlight, stop, left signal, right signal)", Vector) = (0, 0, 0, 0)
+        // A traffic car: its paint colour (from the global palette _WL_TrafficPaints) and its turn signals come from the renderer's
+        // user value (WrongLine.Traffic.TrafficRendererValue: bits 0-3 paint, bit 4 left signal, bit 5 right signal), so one material
+        // serves every car and the SRP Batcher keeps batching. The headlight and stop channels follow the global headlight level.
+        [Toggle(_TRAFFIC_ON)] _TrafficOn("Traffic Car", Float) = 0
         [Toggle(_LAMPPOOL_ON)] _LampPool("Lamp Pools Of Light", Float) = 0
         [HideInInspector] _OffsetFactor("Offset Factor", Float) = 0
         [HideInInspector] _OffsetUnits("Offset Units", Float) = 0
@@ -84,6 +88,9 @@ Shader "WrongLine/CurvedLit"
 
         // Globals (BiomeBlendDriver): the two ground colours, the plane where one fades into the other (xyz a point on it,
         // w the fade length in metres), the plane's normal (along the road), and the texture offset of the scene origin.
+        // Global (TrafficPool): the traffic's paint colours, indexed by the low four bits of the renderer's user value.
+        float4 _WL_TrafficPaints[16];
+
         float4 _WL_BiomeColorA;
         float4 _WL_BiomeColorB;
         float4 _WL_BiomePlane;
@@ -125,6 +132,7 @@ Shader "WrongLine/CurvedLit"
             #pragma shader_feature_local_fragment _PAINTMASK_ON
             #pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local_fragment _LIGHTMASK_ON
+            #pragma shader_feature_local_fragment _TRAFFIC_ON
             #pragma shader_feature_local_fragment _LAMPPOOL_ON
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -213,7 +221,12 @@ Shader "WrongLine/CurvedLit"
                 #endif
                 #if defined(_PAINTMASK_ON)
                     half paint = SAMPLE_TEXTURE2D(_PaintMask, sampler_PaintMask, input.uv).r;
-                    albedo.rgb = lerp(albedo.rgb, albedo.rgb * _PaintColor.rgb, paint);
+                    #if defined(_TRAFFIC_ON)
+                        half3 paintColor = _WL_TrafficPaints[unity_RendererUserValue & 15u].rgb;
+                    #else
+                        half3 paintColor = _PaintColor.rgb;
+                    #endif
+                    albedo.rgb = lerp(albedo.rgb, albedo.rgb * paintColor, paint);
                 #endif
                 half3 normalWS = normalize(input.normalWS);
 
@@ -249,7 +262,14 @@ Shader "WrongLine/CurvedLit"
                 #endif
                 #if defined(_LIGHTMASK_ON)
                     // A lit panel glows in the colour it is painted: the base colour (before the day's light) times the level.
-                    color += albedo.rgb * _EmissionColor.rgb * saturate(dot(SAMPLE_TEXTURE2D(_LightMask, sampler_BaseMap, input.uv), _CarLightLevels));
+                    #if defined(_TRAFFIC_ON)
+                        // Bit 4 / bit 5 of the user value: left / right signal lit (the lamp's flashing is decided on the CPU).
+                        half4 lightLevels = half4(_WL_LightLevels.y, _WL_LightLevels.y,
+                            (unity_RendererUserValue >> 4u) & 1u, (unity_RendererUserValue >> 5u) & 1u);
+                    #else
+                        half4 lightLevels = _CarLightLevels;
+                    #endif
+                    color += albedo.rgb * _EmissionColor.rgb * saturate(dot(SAMPLE_TEXTURE2D(_LightMask, sampler_BaseMap, input.uv), lightLevels));
                 #endif
                 color = MixFog(color, input.fogFactor);
                 return half4(color, albedo.a);

@@ -5,8 +5,8 @@ using WrongLine.World;
 namespace WrongLine.Traffic
 {
     /// <summary>
-    /// The root of a traffic car prefab: three levels of detail as child objects (LOD0 has the four wheels under it), only one
-    /// switched on at a time, and the paint on all of them. Purely visual: the traffic's collisions are the road-space rule's, and
+    /// The root of a traffic car prefab: three levels of detail as child objects, only one switched on at a time, and the paint
+    /// and turn signals on all of them. Purely visual: the traffic's collisions are the road-space rule's, and
     /// the one solid box it ever gets is for the wreck to land on (<see cref="EnableCrashCollider"/>). Going back to the pool
     /// clears its place and level.
     /// </summary>
@@ -20,16 +20,13 @@ namespace WrongLine.Traffic
         [Tooltip("A soft dark patch on the road under the car: real shadows end at the shadow distance (and are soft or missing under the car), and a car without a contact shadow looks like it floats. Optional.")]
         [SerializeField] private GameObject _blob;
 
-        [Tooltip("The parent of the signal lamps (kept out of the paint), and the lamps themselves, on the car's left and right. Optional.")]
-        [SerializeField] private Transform _signalRoot;
-
-        [SerializeField] private GameObject[] _leftLamps = new GameObject[0];
-
-        [SerializeField] private GameObject[] _rightLamps = new GameObject[0];
-
         private MeshRenderer[] _renderers;
         private MeshFilter[] _filters;
+        private MeshRenderer[] _bodies;
         private BoxCollider _crashCollider;
+        private int _paint;
+        private bool _leftSignal;
+        private bool _rightSignal;
 
         /// <summary>The level shown now (0 to 2), or <see cref="TrafficLodRule.None"/> when none is.</summary>
         public int Level { get; private set; } = TrafficLodRule.None;
@@ -50,41 +47,41 @@ namespace WrongLine.Traffic
             SetBlob(level >= 0);
         }
 
-        /// <summary>Paints every mesh of the car with <paramref name="paint"/> (a shared material: nothing is written into it).</summary>
-        public void SetPaint(Material paint)
+        /// <summary>
+        /// Dresses the car in the paint colour at <paramref name="paint"/> of the catalog's palette. Nothing is written into a material:
+        /// the choice goes into the renderers' user value (see <see cref="TrafficRendererValue"/>), which the shader reads per draw.
+        /// </summary>
+        public void SetPaint(int paint)
         {
-            Cache();
-            for (int i = 0; i < _renderers.Length; i++)
+            if (paint < 0 || paint >= TrafficRendererValue.MaxPaints)
             {
-                // The blob and the lamps keep their own materials.
-                Transform part = _renderers[i].transform;
-                if ((_blob != null && part.IsChildOf(_blob.transform)) || (_signalRoot != null && part.IsChildOf(_signalRoot)))
-                {
-                    continue;
-                }
-
-                _renderers[i].sharedMaterial = paint;
+                throw new System.ArgumentOutOfRangeException(nameof(paint), $"Paint {paint} is not in 0..{TrafficRendererValue.MaxPaints - 1}.");
             }
+
+            _paint = paint;
+            ApplyValue();
         }
 
         /// <summary>
-        /// Lights the turn signal on the car's <paramref name="side"/> (−1 left, +1 right, 0 none) when <paramref name="lit"/>. The lamps
-        /// show on the two nearest levels only: the far level is too small for them.
+        /// Lights the turn signal on the car's <paramref name="side"/> (−1 left, +1 right, 0 none) when <paramref name="lit"/>: the
+        /// signal panels of the model glow through its light mask, on every level.
         /// </summary>
         public void ShowSignal(int side, bool lit)
         {
-            bool visible = lit && Level >= 0 && Level <= 1;
-            SetLamps(_leftLamps, visible && side < 0);
-            SetLamps(_rightLamps, visible && side > 0);
+            _leftSignal = lit && side < 0;
+            _rightSignal = lit && side > 0;
+            ApplyValue();
         }
 
-        private static void SetLamps(GameObject[] lamps, bool on)
+        private void ApplyValue()
         {
-            foreach (GameObject lamp in lamps)
+            Cache();
+            uint value = TrafficRendererValue.Pack(_paint, _leftSignal, _rightSignal);
+            for (int i = 0; i < _bodies.Length; i++)
             {
-                if (lamp.activeSelf != on)
+                if (_bodies[i].GetShaderUserValue() != value)
                 {
-                    lamp.SetActive(on);
+                    _bodies[i].SetShaderUserValue(value);
                 }
             }
         }
@@ -116,10 +113,19 @@ namespace WrongLine.Traffic
 
             _renderers = GetComponentsInChildren<MeshRenderer>(true);
             _filters = new MeshFilter[_renderers.Length];
+            var bodies = new System.Collections.Generic.List<MeshRenderer>(_renderers.Length);
             for (int i = 0; i < _renderers.Length; i++)
             {
                 _filters[i] = _renderers[i].GetComponent<MeshFilter>();
+
+                // The contact shadow has its own material and takes no paint.
+                if (_blob == null || !_renderers[i].transform.IsChildOf(_blob.transform))
+                {
+                    bodies.Add(_renderers[i]);
+                }
             }
+
+            _bodies = bodies.ToArray();
         }
 
         void IPoolable.OnSpawned(PoolLife life)
@@ -157,8 +163,9 @@ namespace WrongLine.Traffic
             }
 
             SetBlob(false);
-            SetLamps(_leftLamps, false);
-            SetLamps(_rightLamps, false);
+            _leftSignal = false;
+            _rightSignal = false;
+            ApplyValue();
             Level = TrafficLodRule.None;
         }
     }

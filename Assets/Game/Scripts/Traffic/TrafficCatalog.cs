@@ -4,7 +4,7 @@ using UnityEngine;
 namespace WrongLine.Traffic
 {
     /// <summary>
-    /// The traffic car models (one prefab each, with its length and how often it comes up) and the paint materials a car may wear.
+    /// The traffic car models (one prefab each, with its length and how often it comes up) and the paint colours a car may wear.
     /// The prefabs are rebuilt by <c>WrongLine/Traffic/Rebuild Traffic</c>.
     /// </summary>
     [CreateAssetMenu(menuName = "WrongLine/Traffic Catalog")]
@@ -46,12 +46,12 @@ namespace WrongLine.Traffic
 
         [SerializeField] private Entry[] _models = new Entry[0];
 
-        [Tooltip("One material per paint colour: the atlas with the paint mask and a different Paint Color. Built by Rebuild Traffic.")]
-        [SerializeField] private Material[] _paints = new Material[0];
+        [Tooltip("The paint colours a car may wear (at most 16: the shader reads the palette by a four-bit index). Multiplied into the body's neutral grey where its paint mask is lit.")]
+        [SerializeField] private Color[] _paintColors = new Color[0];
 
         public Entry[] Models => _models;
 
-        public Material[] Paints => _paints;
+        public Color[] PaintColors => _paintColors;
 
         /// <exception cref="ArgumentException">The catalog cannot be used.</exception>
         public void Validate()
@@ -61,9 +61,14 @@ namespace WrongLine.Traffic
                 throw new ArgumentException("The traffic catalog has no model.");
             }
 
-            if (_paints.Length == 0)
+            if (_paintColors.Length == 0)
             {
                 throw new ArgumentException("The traffic catalog has no paint.");
+            }
+
+            if (_paintColors.Length > TrafficRendererValue.MaxPaints)
+            {
+                throw new ArgumentException($"The traffic catalog has {_paintColors.Length} paints; at most {TrafficRendererValue.MaxPaints} fit the shader's palette.");
             }
 
             float total = 0f;
@@ -82,13 +87,6 @@ namespace WrongLine.Traffic
                 throw new ArgumentException("The traffic models' weights add up to nothing.");
             }
 
-            foreach (Material paint in _paints)
-            {
-                if (paint == null)
-                {
-                    throw new ArgumentException("A traffic paint is missing its material.");
-                }
-            }
         }
     }
 }

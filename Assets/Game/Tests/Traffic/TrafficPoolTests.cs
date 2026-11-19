@@ -16,7 +16,7 @@ namespace WrongLine.Traffic.Tests
         private FakeTrafficPools _pools;
         private TrafficCarView _small;
         private TrafficCarView _big;
-        private Material _paint;
+        private static readonly Color Red = new Color(0.7f, 0.1f, 0.1f);
 
         [SetUp]
         public void SetUpPool()
@@ -25,7 +25,6 @@ namespace WrongLine.Traffic.Tests
             _pools = new FakeTrafficPools(_kit);
             _small = FakeTrafficPools.MakeView(_kit, "Small");
             _big = FakeTrafficPools.MakeView(_kit, "Big");
-            _paint = _kit.Track(new Material(Shader.Find("Sprites/Default")));
         }
 
         [TearDown]
@@ -34,7 +33,7 @@ namespace WrongLine.Traffic.Tests
             _kit.Dispose();
         }
 
-        private TrafficCatalog MakeCatalog(Material[] paints, params (TrafficCarView Prefab, float Length, float Weight)[] models)
+        private TrafficCatalog MakeCatalog(Color[] paints, params (TrafficCarView Prefab, float Length, float Weight)[] models)
         {
             var catalog = _kit.Track(ScriptableObject.CreateInstance<TrafficCatalog>());
             var serialized = new SerializedObject(catalog);
@@ -49,11 +48,11 @@ namespace WrongLine.Traffic.Tests
                 entry.FindPropertyRelative("_weight").floatValue = models[i].Weight;
             }
 
-            SerializedProperty paintList = serialized.FindProperty("_paints");
+            SerializedProperty paintList = serialized.FindProperty("_paintColors");
             paintList.arraySize = paints.Length;
             for (int i = 0; i < paints.Length; i++)
             {
-                paintList.GetArrayElementAtIndex(i).objectReferenceValue = paints[i];
+                paintList.GetArrayElementAtIndex(i).colorValue = paints[i];
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -63,7 +62,7 @@ namespace WrongLine.Traffic.Tests
         private TrafficPool MakePool()
         {
             var config = _kit.Track(ScriptableObject.CreateInstance<TrafficConfig>());
-            return new TrafficPool(_pools, MakeCatalog(new[] { _paint }, (_small, 3.8f, 3f), (_big, 7.5f, 1f)), config);
+            return new TrafficPool(_pools, MakeCatalog(new[] { Red, Color.blue }, (_small, 3.8f, 3f), (_big, 7.5f, 1f)), config);
         }
 
         [Test]
@@ -75,8 +74,20 @@ namespace WrongLine.Traffic.Tests
             Assert.AreEqual(3.8f, pool.Models[0].Length);
             Assert.AreEqual(3f, pool.Models[0].Weight);
             Assert.AreEqual(7.5f, pool.Models[1].Length);
-            Assert.AreEqual(1, pool.PaintCount);
-            Assert.AreSame(_paint, pool.Paint(0));
+            Assert.AreEqual(2, pool.PaintCount);
+        }
+
+        [Test]
+        public void TheCatalogsColours_BecomeTheShadersPalette_UnusedSlotsBlack()
+        {
+            MakePool();
+
+            Vector4[] palette = Shader.GetGlobalVectorArray("_WL_TrafficPaints");
+
+            Assert.AreEqual(TrafficRendererValue.MaxPaints, palette.Length);
+            Assert.AreEqual(Red.r, palette[0].x, 1e-5f);
+            Assert.AreEqual(Color.blue.b, palette[1].z, 1e-5f);
+            Assert.AreEqual(Vector4.zero, palette[2]);
         }
 
         [Test]
@@ -154,9 +165,10 @@ namespace WrongLine.Traffic.Tests
             var config = _kit.Track(ScriptableObject.CreateInstance<TrafficConfig>());
 
             Assert.Throws<ArgumentOutOfRangeException>(() => pool.Spawn(2, Vector3.zero, Quaternion.identity));
-            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new Material[0], (_small, 3.8f, 1f)), config), "no paint");
-            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new[] { _paint }), config), "no model");
-            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new[] { _paint }, (null, 3.8f, 1f)), config), "no prefab");
+            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new Color[0], (_small, 3.8f, 1f)), config), "no paint");
+            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new[] { Red }), config), "no model");
+            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new[] { Red }, (null, 3.8f, 1f)), config), "no prefab");
+            Assert.Throws<ArgumentException>(() => new TrafficPool(_pools, MakeCatalog(new Color[TrafficRendererValue.MaxPaints + 1], (_small, 3.8f, 1f)), config), "more paints than the palette holds");
         }
 
         [Test]
@@ -174,18 +186,41 @@ namespace WrongLine.Traffic.Tests
         }
 
         [Test]
-        public void SetPaint_ChangesEveryMeshOfTheCar_AndOnlyTheirSharedMaterial()
+        public void SetPaint_WritesTheIndexIntoEveryLevelsRendererUserValue_NotIntoTheContactShadow()
         {
             TrafficCarView view = FakeTrafficPools.MakeView(_kit, "Car");
-            var other = _kit.Track(new Material(Shader.Find("Sprites/Default")));
 
-            view.SetPaint(other);
+            view.SetPaint(5);
 
             MeshRenderer[] renderers = view.GetComponentsInChildren<MeshRenderer>(true);
             MeshRenderer[] bodies = renderers.Where(r => r.name != "Blob").ToArray();
             Assert.AreEqual(3, bodies.Length);
-            Assert.IsTrue(bodies.All(r => r.sharedMaterial == other));
-            Assert.AreNotSame(other, renderers.Single(r => r.name == "Blob").sharedMaterial, "The contact shadow keeps its own material.");
+            Assert.IsTrue(bodies.All(r => TrafficRendererValue.Paint(r.GetShaderUserValue()) == 5));
+            Assert.AreEqual(0u, renderers.Single(r => r.name == "Blob").GetShaderUserValue(), "The contact shadow takes no paint.");
+            Assert.Throws<ArgumentOutOfRangeException>(() => view.SetPaint(TrafficRendererValue.MaxPaints));
+        }
+
+        [Test]
+        public void ShowSignal_LightsOneSideOnEveryLevel_KeepsThePaint_AndGoesOutWithTheCar()
+        {
+            TrafficCarView view = FakeTrafficPools.MakeView(_kit, "Car");
+            MeshRenderer[] bodies = view.GetComponentsInChildren<MeshRenderer>(true).Where(r => r.name != "Blob").ToArray();
+            view.SetPaint(3);
+
+            view.ShowLevel(2);
+            view.ShowSignal(-1, true);
+            Assert.IsTrue(bodies.All(r => TrafficRendererValue.LeftSignal(r.GetShaderUserValue()) && !TrafficRendererValue.RightSignal(r.GetShaderUserValue())), "Left, on the far level too.");
+            Assert.IsTrue(bodies.All(r => TrafficRendererValue.Paint(r.GetShaderUserValue()) == 3));
+
+            view.ShowSignal(1, true);
+            Assert.IsTrue(bodies.All(r => TrafficRendererValue.RightSignal(r.GetShaderUserValue()) && !TrafficRendererValue.LeftSignal(r.GetShaderUserValue())));
+
+            view.ShowSignal(1, false);
+            Assert.IsTrue(bodies.All(r => !TrafficRendererValue.RightSignal(r.GetShaderUserValue())), "The lamp's off beat.");
+
+            view.ShowSignal(-1, true);
+            ((IPoolable)view).OnDespawned();
+            Assert.IsTrue(bodies.All(r => !TrafficRendererValue.LeftSignal(r.GetShaderUserValue())), "None left lit in the pool.");
         }
 
         [Test]

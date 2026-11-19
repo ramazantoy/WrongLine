@@ -41,12 +41,12 @@ MonoBehaviour:
     _frontAxle: 2.7
     _rearAxle: -2.2
     _halfTrack: 0.82
-  _paints:
-  - {fileID: 2100000, guid: 2f459f915fe75da4192cab425062de3b, type: 2}
-  - {fileID: 2100000, guid: 00757ab31ddfcae46970417812782370, type: 2}
-  - {fileID: 2100000, guid: 679ad2261b909d2428f65e97c677a668, type: 2}
-  - {fileID: 2100000, guid: 11a49efb706ede1428f4db1e8c50aa04, type: 2}
-  - {fileID: 2100000, guid: cc2ea949849d91c468113a71ecb11d8b, type: 2}
-  - {fileID: 2100000, guid: e0c22b8c16be8ef41ad721d51fe9931d, type: 2}
-  - {fileID: 2100000, guid: fa0fe12e41762d0458260945f43b5d87, type: 2}
-  - {fileID: 2100000, guid: d752f6fad92703f4c8c3969f51a09679, type: 2}
+  _paintColors:
+  - {r: 0.8, g: 0.8, b: 0.83, a: 1}
+  - {r: 0.16, g: 0.16, b: 0.19, a: 1}
+  - {r: 0.72, g: 0.1, b: 0.1, a: 1}
+  - {r: 0.14, g: 0.3, b: 0.68, a: 1}
+  - {r: 0.92, g: 0.76, b: 0.16, a: 1}
+  - {r: 0.14, g: 0.48, b: 0.3, a: 1}
+  - {r: 0.92, g: 0.5, b: 0.14, a: 1}
+  - {r: 0.97, g: 0.97, b: 0.97, a: 1}

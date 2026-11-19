@@ -28,6 +28,7 @@ namespace WrongLine.Traffic
             catalog.Validate();
             _catalog = catalog;
             _maxActive = config.Settings.Stream.MaxActive;
+            PublishPalette(catalog.PaintColors);
 
             TrafficCatalog.Entry[] entries = catalog.Models;
             _pools = new IPool<TrafficCarView>[entries.Length];
@@ -39,16 +40,25 @@ namespace WrongLine.Traffic
             }
         }
 
+        private static readonly int _paletteId = Shader.PropertyToID("_WL_TrafficPaints");
+
+        /// <summary>The paint colours as the shader's global palette (unused slots black), read by a car's renderer user value.</summary>
+        private static void PublishPalette(Color[] colors)
+        {
+            var palette = new Vector4[TrafficRendererValue.MaxPaints];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                palette[i] = colors[i];
+            }
+
+            Shader.SetGlobalVectorArray(_paletteId, palette);
+        }
+
         public IReadOnlyList<TrafficModelSpec> Models => _models;
 
-        public int PaintCount => _catalog.Paints.Length;
+        public int PaintCount => _catalog.PaintColors.Length;
 
         public int CountActive => _out.Count;
-
-        public Material Paint(int index)
-        {
-            return _catalog.Paints[index];
-        }
 
         public void Prewarm()
         {

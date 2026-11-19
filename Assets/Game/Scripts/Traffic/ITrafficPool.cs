@@ -13,8 +13,6 @@ namespace WrongLine.Traffic
 
         int CountActive { get; }
 
-        Material Paint(int index);
-
         /// <summary>Makes the cars of each model the run can need at most. Doing it again does nothing.</summary>
         void Prewarm();
 

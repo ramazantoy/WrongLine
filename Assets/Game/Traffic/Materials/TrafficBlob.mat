@@ -34,6 +34,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _LightMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _PaintMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -47,6 +51,7 @@ Material:
     - _EmissionOn: 0
     - _GroundBlend: 0
     - _LampPool: 0
+    - _LightMaskOn: 0
     - _LineMinPixels: 1.5
     - _LineSpacing: 3
     - _LineWiden: 0
@@ -55,9 +60,11 @@ Material:
     - _OffsetUnits: -2
     - _PaintMaskOn: 0
     - _SrcBlend: 5
+    - _TrafficOn: 0
     - _ZWrite: 0
     m_Colors:
     - _BaseColor: {r: 0, g: 0, b: 0, a: 0.6}
+    - _CarLightLevels: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionLevelMask: {r: 1, g: 0, b: 0, a: 0}
     - _PaintColor: {r: 1, g: 1, b: 1, a: 1}

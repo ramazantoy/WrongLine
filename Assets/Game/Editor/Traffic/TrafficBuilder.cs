@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using AF.Core;
 using UnityEditor;
@@ -54,26 +53,22 @@ namespace WrongLine.Traffic.Editor
 
             EnsureFolder(MESHES);
             Texture2D emission = WriteEmission();
-            Material[] paints = MakePaints(emission);
+            Texture2D signalMask = WriteSignalMask();
+            Material bodyMaterial = MakeBodyMaterial(emission, signalMask);
             Material blobMaterial = MakeBlobMaterial();
             Mesh blobMesh = MakeBlobMesh();
-            Material signalMaterial = MakeSignalMaterial();
-            Mesh lampMesh = MakeLampMesh();
-            var mask = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
-            mask.LoadImage(File.ReadAllBytes($"{ART}/Traffic_LightMask.png"));
             var prefabs = new TrafficCarView[Models.Length];
             for (int i = 0; i < Models.Length; i++)
             {
-                prefabs[i] = MakePrefab(Models[i].Name, paints[0], blobMaterial, blobMesh, signalMaterial, lampMesh, mask);
+                prefabs[i] = MakePrefab(Models[i].Name, bodyMaterial, blobMaterial, blobMesh);
             }
 
-            Object.DestroyImmediate(mask);
-
-            TrafficCatalog catalog = FillCatalog(prefabs, paints);
+            TrafficCatalog catalog = FillCatalog(prefabs);
             TrafficConfig config = EnsureConfig();
             Wire(catalog, config);
+            DeleteObsolete();
             AssetDatabase.SaveAssets();
-            Log.Info($"[Traffic] Rebuilt {Models.Length} models and {paints.Length} paints.");
+            Log.Info($"[Traffic] Rebuilt {Models.Length} models and {Paints.Length} paints.");
         }
 
         /// <summary>
@@ -136,41 +131,87 @@ namespace WrongLine.Traffic.Editor
             return true;
         }
 
-        private static Material[] MakePaints(Texture2D emission)
+        /// <summary>The light mask without its headlight and stop channels: only the turn signals (B left, A right) are left.</summary>
+        private static Texture2D WriteSignalMask()
         {
-            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_Atlas.png");
-            var paintMask = AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_PaintMask.png");
-            Shader shader = Shader.Find(SHADER);
-            var materials = new Material[Paints.Length];
-            for (int i = 0; i < Paints.Length; i++)
+            string maskPath = $"{ART}/Traffic_LightMask.png";
+            string outPath = $"{ART}/Traffic_SignalMask.png";
+            var mask = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
+            mask.LoadImage(File.ReadAllBytes(maskPath));
+            Color32[] pixels = mask.GetPixels32();
+            for (int i = 0; i < pixels.Length; i++)
             {
-                string path = $"{MATERIALS}/TrafficPaint_{i:00}.mat";
-                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-                if (material == null)
-                {
-                    material = new Material(shader);
-                    AssetDatabase.CreateAsset(material, path);
-                }
-
-                material.shader = shader;
-                material.SetTexture("_BaseMap", atlas);
-                material.SetTexture("_PaintMask", paintMask);
-                material.SetTexture("_EmissionMap", emission);
-                material.SetColor("_PaintColor", Paints[i]);
-                material.SetColor("_EmissionColor", Color.white);
-                material.SetVector("_EmissionLevelMask", new Vector4(0f, 1f, 0f, 0f));
-                material.SetFloat("_PaintMaskOn", 1f);
-                material.SetFloat("_EmissionOn", 1f);
-                // Double-sided like the player's car: a one-layer body shows its inside through any open face (the truck's box).
-                material.SetFloat("_Cull", 0f);
-                material.EnableKeyword("_PAINTMASK_ON");
-                material.EnableKeyword("_EMISSION");
-                EditorUtility.SetDirty(material);
-                AssetDatabase.SaveAssetIfDirty(material);
-                materials[i] = material;
+                pixels[i].r = 0;
+                pixels[i].g = 0;
             }
 
-            return materials;
+            var result = new Texture2D(mask.width, mask.height, TextureFormat.RGBA32, false, true);
+            result.SetPixels32(pixels);
+            byte[] png = result.EncodeToPNG();
+            Object.DestroyImmediate(mask);
+            Object.DestroyImmediate(result);
+
+            if (!File.Exists(outPath) || !FileEquals(outPath, png))
+            {
+                File.WriteAllBytes(outPath, png);
+            }
+
+            AssetDatabase.ImportAsset(outPath, ImportAssetOptions.ForceUpdate);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(outPath);
+            importer.sRGBTexture = false;
+            importer.alphaSource = TextureImporterAlphaSource.FromInput;
+            importer.alphaIsTransparency = false;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(outPath);
+        }
+
+        /// <summary>
+        /// The one material of the artist's models (a shared atlas): the paint colour and the turn signals come from each car's
+        /// renderer user value (<c>_TRAFFIC_ON</c>), the headlights and brake lights from the emission map as before.
+        /// </summary>
+        private static Material MakeBodyMaterial(Texture2D emission, Texture2D signalMask)
+        {
+            string path = $"{MATERIALS}/TrafficBody.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(Shader.Find(SHADER));
+                AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.shader = Shader.Find(SHADER);
+            material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_Atlas.png"));
+            material.SetTexture("_PaintMask", AssetDatabase.LoadAssetAtPath<Texture2D>($"{ART}/Traffic_PaintMask.png"));
+            material.SetTexture("_EmissionMap", emission);
+            material.SetTexture("_LightMask", signalMask);
+            material.SetColor("_EmissionColor", Color.white);
+            material.SetVector("_EmissionLevelMask", new Vector4(0f, 1f, 0f, 0f));
+            material.SetFloat("_PaintMaskOn", 1f);
+            material.SetFloat("_EmissionOn", 1f);
+            material.SetFloat("_LightMaskOn", 1f);
+            material.SetFloat("_TrafficOn", 1f);
+            // Double-sided like the player's car: a one-layer body shows its inside through any open face (the truck's box).
+            material.SetFloat("_Cull", 0f);
+            material.EnableKeyword("_PAINTMASK_ON");
+            material.EnableKeyword("_EMISSION");
+            material.EnableKeyword("_LIGHTMASK_ON");
+            material.EnableKeyword("_TRAFFIC_ON");
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssetIfDirty(material);
+            return material;
+        }
+
+        /// <summary>What the paint materials and the lamp boxes left behind: the paint is a palette now, the signals a light mask.</summary>
+        private static void DeleteObsolete()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                AssetDatabase.DeleteAsset($"{MATERIALS}/TrafficPaint_{i:00}.mat");
+            }
+
+            AssetDatabase.DeleteAsset($"{MATERIALS}/TrafficSignal.mat");
+            AssetDatabase.DeleteAsset($"{MESHES}/SignalLamp.asset");
+            AssetDatabase.DeleteAsset($"{ART}/Traffic_White.png");
         }
 
         /// <summary>A soft black disc fading to nothing at the edge (alpha is the shadow).</summary>
@@ -233,168 +274,6 @@ namespace WrongLine.Traffic.Editor
             return material;
         }
 
-        private static void FillObjects(SerializedProperty list, List<GameObject> objects)
-        {
-            list.arraySize = objects.Count;
-            for (int i = 0; i < objects.Count; i++)
-            {
-                list.GetArrayElementAtIndex(i).objectReferenceValue = objects[i];
-            }
-        }
-
-        private static GameObject MakeLamp(Transform parent, string name, Vector3 at, Material material, Mesh mesh)
-        {
-            var lamp = new GameObject(name);
-            lamp.transform.SetParent(parent, false);
-            lamp.transform.localPosition = at;
-            lamp.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var renderer = lamp.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = material;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-            lamp.SetActive(false);
-            return lamp;
-        }
-
-        /// <summary>
-        /// Where a signal lamp goes: the middle of the body's vertices whose light-mask texel is lit in the signal's channel (blue is
-        /// the left signal, alpha the right), at the front (z above 0) or the rear.
-        /// </summary>
-        private static bool TryLampPosition(Mesh body, Texture2D mask, bool left, bool front, out Vector3 position)
-        {
-            Vector3[] vertices = body.vertices;
-            Vector2[] uvs = body.uv;
-            int[] triangles = body.triangles;
-            Vector3 sum = Vector3.zero;
-            int count = 0;
-            for (int i = 0; i < triangles.Length; i += 3)
-            {
-                int a = triangles[i];
-                int b = triangles[i + 1];
-                int c = triangles[i + 2];
-                Vector3 middle = (vertices[a] + vertices[b] + vertices[c]) / 3f;
-                if (front != (middle.z > 0f))
-                {
-                    continue;
-                }
-
-                // The texel under the triangle's middle, and under each corner pulled towards it.
-                Vector2 uv = (uvs[a] + uvs[b] + uvs[c]) / 3f;
-                Color texel = mask.GetPixelBilinear(uv.x, uv.y);
-                if ((left ? texel.b : texel.a) > 0.5f)
-                {
-                    sum += middle;
-                    count++;
-                }
-            }
-
-            position = count > 0 ? sum / count : Vector3.zero;
-            return count > 0;
-        }
-
-        /// <summary>Where a signal lamp goes when the mask has none: a rear/front corner of the body, at a headlight's height.</summary>
-        private static Vector3 CornerLamp(Mesh body, bool left, bool front)
-        {
-            Bounds bounds = body.bounds;
-            return new Vector3(
-                (left ? -1f : 1f) * (bounds.extents.x - 0.22f),
-                Mathf.Min(0.8f, bounds.max.y * 0.45f),
-                (front ? 1f : -1f) * (bounds.extents.z - 0.04f));
-        }
-
-        /// <summary>A small box (0.22 x 0.14 x 0.10 m) with its own normals on every face.</summary>
-        private static Mesh MakeLampMesh()
-        {
-            string path = $"{MESHES}/SignalLamp.asset";
-            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if (mesh == null)
-            {
-                mesh = new Mesh { name = "SignalLamp" };
-                AssetDatabase.CreateAsset(mesh, path);
-            }
-
-            var half = new Vector3(0.11f, 0.07f, 0.05f);
-            var vertices = new List<Vector3>();
-            var normals = new List<Vector3>();
-            var uvs = new List<Vector2>();
-            var triangles = new List<int>();
-            Vector3[] axes = { Vector3.right, Vector3.up, Vector3.forward };
-            for (int axis = 0; axis < 3; axis++)
-            {
-                for (int sign = -1; sign <= 1; sign += 2)
-                {
-                    Vector3 normal = axes[axis] * sign;
-                    Vector3 u = axes[(axis + 1) % 3];
-                    Vector3 v = axes[(axis + 2) % 3];
-                    int first = vertices.Count;
-                    foreach (Vector2 corner in new[] { new Vector2(-1, -1), new Vector2(-1, 1), new Vector2(1, 1), new Vector2(1, -1) })
-                    {
-                        Vector3 offset = normal + u * corner.x + v * corner.y;
-                        vertices.Add(Vector3.Scale(offset, half));
-                        normals.Add(normal);
-                        uvs.Add(new Vector2(0.5f, 0.5f));
-                    }
-
-                    // Wound so the face looks along its normal: flip when the corner order runs the other way round.
-                    bool flip = Vector3.Dot(Vector3.Cross(u, v), normal) < 0f;
-                    triangles.AddRange(flip ? new[] { first, first + 2, first + 1, first, first + 3, first + 2 } : new[] { first, first + 1, first + 2, first, first + 2, first + 3 });
-                }
-            }
-
-            mesh.Clear();
-            mesh.SetVertices(vertices);
-            mesh.SetNormals(normals);
-            mesh.SetUVs(0, uvs);
-            mesh.SetTriangles(triangles, 0);
-            mesh.RecalculateBounds();
-            EditorUtility.SetDirty(mesh);
-            AssetDatabase.SaveAssetIfDirty(mesh);
-            return mesh;
-        }
-
-        /// <summary>Amber, lit at any hour: the fourth light level is always 1, and this material picks only it.</summary>
-        private static Material MakeSignalMaterial()
-        {
-            string texturePath = $"{ART}/Traffic_White.png";
-            var texture = new Texture2D(4, 4, TextureFormat.RGBA32, false, false);
-            var white = new Color32[16];
-            for (int i = 0; i < white.Length; i++)
-            {
-                white[i] = new Color32(255, 255, 255, 255);
-            }
-
-            texture.SetPixels32(white);
-            byte[] png = texture.EncodeToPNG();
-            Object.DestroyImmediate(texture);
-            if (!File.Exists(texturePath) || !FileEquals(texturePath, png))
-            {
-                File.WriteAllBytes(texturePath, png);
-            }
-
-            AssetDatabase.ImportAsset(texturePath, ImportAssetOptions.ForceUpdate);
-
-            string path = $"{MATERIALS}/TrafficSignal.mat";
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material == null)
-            {
-                material = new Material(Shader.Find(SHADER));
-                AssetDatabase.CreateAsset(material, path);
-            }
-
-            material.shader = Shader.Find(SHADER);
-            material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath));
-            material.SetTexture("_EmissionMap", AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath));
-            material.SetColor("_BaseColor", new Color(1f, 0.55f, 0.05f, 1f));
-            material.SetColor("_EmissionColor", new Color(1f, 0.6f, 0.08f, 1f));
-            material.SetVector("_EmissionLevelMask", new Vector4(0f, 0f, 0f, 1f));
-            material.SetFloat("_EmissionOn", 1f);
-            material.SetFloat("_Cull", 2f);
-            material.EnableKeyword("_EMISSION");
-            EditorUtility.SetDirty(material);
-            AssetDatabase.SaveAssetIfDirty(material);
-            return material;
-        }
-
         /// <summary>A unit square lying flat (x and z from -0.5 to 0.5), facing up.</summary>
         private static Mesh MakeBlobMesh()
         {
@@ -417,7 +296,7 @@ namespace WrongLine.Traffic.Editor
             return mesh;
         }
 
-        private static TrafficCarView MakePrefab(string name, Material paint, Material blobMaterial, Mesh blobMesh, Material signalMaterial, Mesh lampMesh, Texture2D mask)
+        private static TrafficCarView MakePrefab(string name, Material body, Material blobMaterial, Mesh blobMesh)
         {
             var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ART}/{name}.fbx");
             var root = new GameObject($"Traffic_{name}");
@@ -439,7 +318,7 @@ namespace WrongLine.Traffic.Editor
                     levels[level] = part.gameObject;
                     foreach (MeshRenderer renderer in part.GetComponentsInChildren<MeshRenderer>(true))
                     {
-                        renderer.sharedMaterial = paint;
+                        renderer.sharedMaterial = body;
                         // Only the nearest level throws a shadow: the others are too far for it to show.
                         renderer.shadowCastingMode = level == 0 ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
                         renderer.receiveShadows = true;
@@ -453,11 +332,11 @@ namespace WrongLine.Traffic.Editor
                 far.localPosition = new Vector3(0f, -far.GetComponent<MeshFilter>().sharedMesh.bounds.min.y, 0f);
 
                 // The contact shadow, sized from the near level's mesh.
-                Bounds body = levels[1].GetComponent<MeshFilter>().sharedMesh.bounds;
+                Bounds bounds = levels[1].GetComponent<MeshFilter>().sharedMesh.bounds;
                 var blob = new GameObject("Blob");
                 blob.transform.SetParent(root.transform, false);
                 blob.transform.localPosition = new Vector3(0f, 0.03f, 0f);
-                blob.transform.localScale = new Vector3(body.size.x * 1.3f, 1f, body.size.z * 1.2f);
+                blob.transform.localScale = new Vector3(bounds.size.x * 1.3f, 1f, bounds.size.z * 1.2f);
                 blob.AddComponent<MeshFilter>().sharedMesh = blobMesh;
                 var blobRenderer = blob.AddComponent<MeshRenderer>();
                 blobRenderer.sharedMaterial = blobMaterial;
@@ -465,39 +344,9 @@ namespace WrongLine.Traffic.Editor
                 blobRenderer.receiveShadows = false;
                 blob.SetActive(false);
 
-                // The turn signal lamps, where the light mask has them (blue: left, alpha: right), at the front and the rear.
-                var signals = new GameObject("Signals");
-                signals.transform.SetParent(root.transform, false);
-                Mesh bodyMesh = levels[0].GetComponent<MeshFilter>().sharedMesh;
-                var left = new List<GameObject>();
-                var right = new List<GameObject>();
-                foreach (bool front in new[] { true, false })
-                {
-                    string end = front ? "F" : "R";
-                    if (!TryLampPosition(bodyMesh, mask, true, front, out Vector3 leftAt))
-                    {
-                        leftAt = CornerLamp(bodyMesh, true, front);
-                        Log.Warning($"[Traffic] {name}: the light mask has no left signal at the {end}; a lamp is put on the corner.");
-                    }
-
-                    if (!TryLampPosition(bodyMesh, mask, false, front, out Vector3 rightAt))
-                    {
-                        rightAt = CornerLamp(bodyMesh, false, front);
-                        Log.Warning($"[Traffic] {name}: the light mask has no right signal at the {end}; a lamp is put on the corner.");
-                    }
-
-                    left.Add(MakeLamp(signals.transform, "Signal_L_" + end, leftAt, signalMaterial, lampMesh));
-                    right.Add(MakeLamp(signals.transform, "Signal_R_" + end, rightAt, signalMaterial, lampMesh));
-                }
-
-                Log.Info($"[Traffic] {name}: {left.Count} left and {right.Count} right signal lamps.");
-
                 var view = root.AddComponent<TrafficCarView>();
                 var serialized = new SerializedObject(view);
                 serialized.FindProperty("_blob").objectReferenceValue = blob;
-                serialized.FindProperty("_signalRoot").objectReferenceValue = signals.transform;
-                FillObjects(serialized.FindProperty("_leftLamps"), left);
-                FillObjects(serialized.FindProperty("_rightLamps"), right);
                 SerializedProperty list = serialized.FindProperty("_levels");
                 list.arraySize = levels.Length;
                 for (int i = 0; i < levels.Length; i++)
@@ -516,7 +365,7 @@ namespace WrongLine.Traffic.Editor
             }
         }
 
-        private static TrafficCatalog FillCatalog(TrafficCarView[] prefabs, Material[] paints)
+        private static TrafficCatalog FillCatalog(TrafficCarView[] prefabs)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<TrafficCatalog>(CATALOG_PATH);
             if (catalog == null)
@@ -539,11 +388,11 @@ namespace WrongLine.Traffic.Editor
                 WriteAxles(entry, Models[i].Name);
             }
 
-            SerializedProperty paintList = serialized.FindProperty("_paints");
-            paintList.arraySize = paints.Length;
-            for (int i = 0; i < paints.Length; i++)
+            SerializedProperty paintList = serialized.FindProperty("_paintColors");
+            paintList.arraySize = Paints.Length;
+            for (int i = 0; i < Paints.Length; i++)
             {
-                paintList.GetArrayElementAtIndex(i).objectReferenceValue = paints[i];
+                paintList.GetArrayElementAtIndex(i).colorValue = Paints[i];
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();

@@ -141,7 +141,7 @@ namespace WrongLine.Traffic
             foreach (TrafficCarPlan plan in _run.Spawned)
             {
                 TrafficCarView view = _pool.Spawn(plan.Model, Vector3.zero, Quaternion.identity);
-                view.SetPaint(_pool.Paint(plan.Paint));
+                view.SetPaint(plan.Paint);
                 view.ExpandBounds(margin);
                 _views.Add(plan.Id, view);
             }

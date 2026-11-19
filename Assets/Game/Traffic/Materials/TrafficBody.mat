@@ -7,13 +7,15 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TrafficPaint_05
+  m_Name: TrafficBody
   m_Shader: {fileID: 4800000, guid: 6262d231de1b3594996d1d62e86bef1b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _EMISSION
+  - _LIGHTMASK_ON
   - _PAINTMASK_ON
+  - _TRAFFIC_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -33,6 +35,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 69b4d43987c412b40aa86ab7c65cae18, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _LightMask:
+        m_Texture: {fileID: 2800000, guid: a2dd43cd36d64714eae9267d6bd4de57, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _PaintMask:
         m_Texture: {fileID: 2800000, guid: eaada224a95159f46ae1ae92614ee3e2, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -46,6 +52,7 @@ Material:
     - _EmissionOn: 1
     - _GroundBlend: 0
     - _LampPool: 0
+    - _LightMaskOn: 1
     - _LineMinPixels: 1.5
     - _LineSpacing: 3
     - _LineWiden: 0
@@ -54,11 +61,13 @@ Material:
     - _OffsetUnits: 0
     - _PaintMaskOn: 1
     - _SrcBlend: 1
+    - _TrafficOn: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CarLightLevels: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionLevelMask: {r: 0, g: 1, b: 0, a: 0}
-    - _PaintColor: {r: 0.14, g: 0.48, b: 0.3, a: 1}
+    - _PaintColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
