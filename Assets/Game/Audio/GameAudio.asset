@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47711998965ec0d4493e4234851276b3, type: 3}
+  m_Name: GameAudio
+  m_EditorClassIdentifier: Game::WrongLine.Audio.GameAudioConfig
+  _uiTap: {fileID: 11400000, guid: 3fbbb486a85b13447871e51347c2dc91, type: 2}
+  _uiBack: {fileID: 11400000, guid: 284a74ee76fa343408a8c0642ace536c, type: 2}
+  _uiTick: {fileID: 11400000, guid: b7e2e7ec5250f6846be482066a679388, type: 2}
+  _uiToggle: {fileID: 11400000, guid: d9176dc416c8dc94d82a3f5e358244bf, type: 2}
+  _gameOverJingle: {fileID: 11400000, guid: 36182d3053f5af444833268abf1c8a6e, type: 2}
+  _recordJingle: {fileID: 11400000, guid: 7d776ccc12eaf0641bfbb9fbf38e293a, type: 2}
+  _menuTheme: {fileID: 8300000, guid: f0823f811312b384ea6a465886c4ad86, type: 3}
+  _driveTheme: {fileID: 8300000, guid: cb70ec4d476f9b547a2020fb4ddefeee, type: 3}
+  _menuFadeSeconds: 1.5
+  _driveFadeSeconds: 2

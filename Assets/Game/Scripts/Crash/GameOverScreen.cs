@@ -1,11 +1,12 @@
 using System;
+using AF.Audio;
 using AF.Core;
 using AF.Input;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
-using WrongLine.Haptics;
+using WrongLine.Audio;
 using WrongLine.UI;
 
 namespace WrongLine.Crash
@@ -29,20 +30,24 @@ namespace WrongLine.Crash
         private IInputModeService _input;
         private IRunResult _result;
         private UiConfig _config;
-        private IHaptics _haptics;
+        private IUiFeedback _feedback;
+        private ISounds _sounds;
+        private GameAudioConfig _audio;
         private IDisposable _inputMode;
         private float _elapsed;
         private int _shown = -1;
         private bool _counting;
 
         [Inject]
-        public void Construct(ISceneLoader scenes, IInputModeService input, IRunResult result, UiConfig config, IHaptics haptics)
+        public void Construct(ISceneLoader scenes, IInputModeService input, IRunResult result, UiConfig config, IUiFeedback feedback, ISounds sounds, GameAudioConfig audio)
         {
             _actions = new GameOverActions(scenes);
             _input = input;
             _result = result;
             _config = config;
-            _haptics = haptics;
+            _feedback = feedback;
+            _sounds = sounds;
+            _audio = audio;
         }
 
         // Not set in Awake: the screen starts inactive and is shown before Unity has run it.
@@ -60,6 +65,7 @@ namespace WrongLine.Crash
             _retry.interactable = true;
             _menu.interactable = true;
             _recordLabel.SetActive(_result.IsRecord);
+            _sounds.Play(_result.IsRecord ? _audio.RecordJingle : _audio.GameOverJingle);
             _best.SetText("{0} m", _result.Best);
             _elapsed = 0f;
             _shown = -1;
@@ -110,14 +116,14 @@ namespace WrongLine.Crash
 
         private void OnRetry()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             Lock();
             _actions.Retry();
         }
 
         private void OnMenu()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Back);
             Lock();
             _actions.Menu();
         }

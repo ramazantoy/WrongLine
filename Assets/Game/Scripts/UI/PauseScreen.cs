@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
 using WrongLine.Crash;
-using WrongLine.Haptics;
+using WrongLine.Audio;
 
 namespace WrongLine.UI
 {
@@ -24,17 +24,17 @@ namespace WrongLine.UI
         private UiScreen _screen;
         private IPauseService _pause;
         private SettingsScreen _settingsScreen;
-        private IHaptics _haptics;
+        private IUiFeedback _feedback;
         private GameOverActions _actions;
         private IDisposable _handle;
 
         [Inject]
-        public void Construct(IPauseService pause, ISceneLoader scenes, SettingsScreen settingsScreen, IHaptics haptics)
+        public void Construct(IPauseService pause, ISceneLoader scenes, SettingsScreen settingsScreen, IUiFeedback feedback)
         {
             _pause = pause;
             _actions = new GameOverActions(scenes);
             _settingsScreen = settingsScreen;
-            _haptics = haptics;
+            _feedback = feedback;
         }
 
         /// <summary>True from <see cref="Open"/> until <see cref="Resume"/> (or leaving for the menu), also while the settings are up over it.</summary>
@@ -93,13 +93,13 @@ namespace WrongLine.UI
 
         private void OnResume()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Back);
             Resume();
         }
 
         private void OnSettings()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             _settingsScreen.Show();
             Screen.Hide();
         }
@@ -115,7 +115,7 @@ namespace WrongLine.UI
 
         private void OnMenu()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Back);
             // The pause is let go first: the scene change must not start with the game stopped.
             _handle?.Dispose();
             _handle = null;

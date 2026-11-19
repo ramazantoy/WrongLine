@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using VContainer;
 using VContainer.Unity;
+using WrongLine.Audio;
 using WrongLine.Car;
 using WrongLine.Crash;
 using WrongLine.Scenery;
@@ -80,11 +81,12 @@ namespace WrongLine.Driving
             builder.RegisterEntryPoint<TrafficStreamer>().As<ITrafficFrame>(); // After the road streamer: it reads where the player is and the road's origin.
         }
 
-        /// <summary>The biome blend and the car's pose on the road.</summary>
+        /// <summary>The biome blend, the car's pose on the road and the car's sound.</summary>
         public static void RegisterPlacement(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<BiomeBlendDriver>();
             builder.RegisterEntryPoint<CarPlacer>();
+            builder.RegisterEntryPoint<CarAudioDriver>(); // After the placer: the passing cars are heard from where the car is.
         }
 
         /// <summary>The camera that chases the car, with the shake of a touch. A scene with another camera registers its own in its place, between the other two calls.</summary>

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using VContainer;
 using VContainer.Unity;
+using WrongLine.Audio;
 using WrongLine.Car;
 using WrongLine.Crash;
 using WrongLine.Haptics;
@@ -57,6 +58,8 @@ namespace WrongLine.Driving
             builder.RegisterEntryPoint<HudDriver>();
             builder.RegisterEntryPoint<PauseDriver>();
             builder.RegisterEntryPoint<HapticsDriver>();
+            builder.RegisterEntryPoint<CrashAudioDriver>();
+            builder.RegisterEntryPoint<DriveMusic>();
         }
     }
 }

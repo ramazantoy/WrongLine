@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
-using WrongLine.Haptics;
+using WrongLine.Audio;
 
 namespace WrongLine.UI
 {
@@ -22,16 +22,16 @@ namespace WrongLine.UI
 
         private UiScreen _screen;
         private UiConfig _config;
-        private IHaptics _haptics;
+        private IUiFeedback _feedback;
         private int _shownMeters = -1;
         private int _shownSpeed = -1;
         private float _recordLeft;
 
         [Inject]
-        public void Construct(UiConfig config, IHaptics haptics)
+        public void Construct(UiConfig config, IUiFeedback feedback)
         {
             _config = config;
-            _haptics = haptics;
+            _feedback = feedback;
         }
 
         /// <summary>The pause button was pressed.</summary>
@@ -89,7 +89,7 @@ namespace WrongLine.UI
 
         private void OnPause()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             PauseClicked?.Invoke();
         }
     }

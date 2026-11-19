@@ -1,5 +1,6 @@
 using AF.Core;
 using UnityEngine;
+using WrongLine.Audio;
 using WrongLine.Crash;
 using WrongLine.World;
 
@@ -38,6 +39,9 @@ namespace WrongLine.Car
         [Tooltip("A soft point light at the nose, beside the beams.")]
         [SerializeField, Required] private Light _headlightGlow;
 
+        [Tooltip("The car's engine and road loops and the cues of what happens around it.")]
+        [SerializeField, Required] private CarAudioView _audio;
+
         private static readonly int _lightLevelsId = Shader.PropertyToID("_CarLightLevels");
 
         private MaterialPropertyBlock _block;
@@ -51,6 +55,8 @@ namespace WrongLine.Car
         private Vector3 _steeringAxisNormalized;
 
         /// <summary>Where the wheels touch the road, from the wheel nodes: the axles along the car's forward axis and half the track (see <see cref="WrongLine.Road.WheelPoseRule"/>).</summary>
+        public CarAudioView Audio => _audio;
+
         public float FrontAxle { get; private set; }
 
         public float RearAxle { get; private set; }

@@ -59,6 +59,7 @@ MonoBehaviour:
   _trafficCatalog: {fileID: 11400000, guid: 8d9d627309e7bdf4eb509f22e3163793, type: 2}
   _trafficConfig: {fileID: 11400000, guid: c8ec9c2fc1cb6e341a98a2f31466cc2c, type: 2}
   _hapticsConfig: {fileID: 11400000, guid: 5341c8592438f4741a0bc94a480d4ad0, type: 2}
+  _audioConfig: {fileID: 11400000, guid: 8289f118fe90fd74984e6c15b117c632, type: 2}
   _loadingScreen: {fileID: 6919057207844552223}
 --- !u!1 &7598658697932928154
 GameObject:

@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using VContainer;
-using WrongLine.Haptics;
+using WrongLine.Audio;
 using WrongLine.UI;
 
 namespace WrongLine.Menu
@@ -42,18 +42,18 @@ namespace WrongLine.Menu
         private InputActionAsset _actions;
         private IBestDistance _best;
         private SettingsScreen _settingsScreen;
-        private IHaptics _haptics;
+        private IUiFeedback _feedback;
         private IDisposable _backSubscription;
         private bool _loading;
 
         [Inject]
-        public void Construct(ISceneLoader scenes, InputActionAsset actions, IBestDistance best, SettingsScreen settingsScreen, IHaptics haptics)
+        public void Construct(ISceneLoader scenes, InputActionAsset actions, IBestDistance best, SettingsScreen settingsScreen, IUiFeedback feedback)
         {
             _scenes = scenes;
             _actions = actions;
             _best = best;
             _settingsScreen = settingsScreen;
-            _haptics = haptics;
+            _feedback = feedback;
         }
 
         private void Awake() => _screen = GetComponent<UiScreen>();
@@ -115,7 +115,7 @@ namespace WrongLine.Menu
 
             // The load replaces this scene; a second tap would start a second load.
             _loading = true;
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             _play.interactable = false;
             _scenes.Load<PlayingState>(Scenes.Gameplay).Forget();
         }
@@ -127,7 +127,7 @@ namespace WrongLine.Menu
                 return;
             }
 
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             // The menu steps back while the settings are up: transparent, no input, and out of the way (UiScreen switches it off).
             _settingsScreen.Show();
             _screen.Hide();
@@ -137,7 +137,7 @@ namespace WrongLine.Menu
 
         private void OnQuit()
         {
-            _haptics.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             Application.Quit();
         }
 
@@ -145,7 +145,7 @@ namespace WrongLine.Menu
         {
             if (!_loading)
             {
-                _haptics.Play(HapticKind.Tap);
+                _feedback.Play(UiFeedbackKind.Tap);
                 _quitPrompt.Show();
                 FadeContent(0f);
             }

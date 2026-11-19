@@ -4,6 +4,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using WrongLine.Attract;
+using WrongLine.Audio;
 using WrongLine.Car;
 using WrongLine.Driving;
 using WrongLine.UI;
@@ -29,6 +30,7 @@ namespace WrongLine.Menu
         {
             builder.RegisterComponent(_screen);
             builder.RegisterComponent(_settings);
+            builder.RegisterEntryPoint<MenuMusic>();
             builder.RegisterEntryPoint<RoadPrewarm>();
             builder.RegisterEntryPoint<SceneryPrewarm>();
             builder.RegisterEntryPoint<TrafficPrewarm>();

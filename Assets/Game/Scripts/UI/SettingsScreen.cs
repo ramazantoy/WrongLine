@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
 using VContainer;
-using WrongLine.Haptics;
+using WrongLine.Audio;
 
 namespace WrongLine.UI
 {
@@ -35,16 +35,16 @@ namespace WrongLine.UI
         private IGameplaySettings _gameplay;
         private ILocaleService _locales;
         private ISaveService _save;
-        private IHaptics _vibration;
+        private IUiFeedback _feedback;
 
         [Inject]
-        public void Construct(IAudioVolumes volumes, IGameplaySettings gameplay, ILocaleService locales, ISaveService save, IHaptics haptics)
+        public void Construct(IAudioVolumes volumes, IGameplaySettings gameplay, ILocaleService locales, ISaveService save, IUiFeedback feedback)
         {
             _volumes = volumes;
             _gameplay = gameplay;
             _locales = locales;
             _save = save;
-            _vibration = haptics;
+            _feedback = feedback;
         }
 
         /// <summary>Raised when the screen is closed, whoever closed it (the Back button, the menu's Back key).</summary>
@@ -104,43 +104,43 @@ namespace WrongLine.UI
 
         private void OnBackClicked()
         {
-            _vibration.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Back);
             Hide();
         }
 
         private void OnMaster(float value)
         {
             _volumes.Set(AudioChannels.Master, value);
-            _vibration.Play(HapticKind.Tick);
+            _feedback.Play(UiFeedbackKind.Tick);
         }
 
         private void OnMusic(float value)
         {
             _volumes.Set(AudioChannels.Music, value);
-            _vibration.Play(HapticKind.Tick);
+            _feedback.Play(UiFeedbackKind.Tick);
         }
 
         private void OnSfx(float value)
         {
             _volumes.Set(AudioChannels.Sfx, value);
-            _vibration.Play(HapticKind.Tick);
+            _feedback.Play(UiFeedbackKind.Tick);
         }
 
         private void OnHaptics(bool on)
         {
             _gameplay.SetHaptics(on);
-            _vibration.Play(HapticKind.Tap); // Only felt when it was just switched on.
+            _feedback.Play(UiFeedbackKind.Toggle); // Only felt when it was just switched on.
         }
 
         private void OnPreviousLanguage()
         {
-            _vibration.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             ChangeLanguage(-1).Forget();
         }
 
         private void OnNextLanguage()
         {
-            _vibration.Play(HapticKind.Tap);
+            _feedback.Play(UiFeedbackKind.Tap);
             ChangeLanguage(1).Forget();
         }
 

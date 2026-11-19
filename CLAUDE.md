@@ -61,6 +61,7 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | V3 | Araç v3: oyuncu aracı Meshy ile (tekerleksiz gövde + ayrı tekerlek, pişirme script'i, dokudan ışık maskesi ve emission, eski araç ve sinyal küpleri silindi) | Bitti 2026-11-19; his ve Android ölçümü kullanıcıda |
 | T1 | Trafik araçları v3: dört model Meshy ile (20k / 6k, anahtar renkten boya, tekerlek gövdede), boya ve sinyal `SetShaderUserValue` ile (SRP Batcher korunur), V3 gövdesi tekerleksiz yeniden üretildi | Bitti 2026-11-19; LOD2, çarpışma genişliği, his ve Android ölçümü açık |
 | U1 | Arayüz giydirme: Krita fırça sprite'ları (RDR tarzı), Barlow font, ayarlar (ses, müzik, efekt, titreşim, dil), ana menü, yükleme ekranı; oyunun kendi ayarı PlayerPrefs'te | U1a, U1b ve U1c bitti 2026-11-19; U1d (canlı menü arka planı: otopilotlu, araçsız birinci şahıs sürüş, menü scope'unda) kodu bitti 2026-11-19, his ve Android ölçümü kullanıcıda; U1c (HUD, pause, kaza ekranı, haptic; `DrivingScope` installer'a geçti) kodu bitti 2026-11-19, his, Android ölçümü ve titreşim kullanıcıda |
+| S1 | Ses: motor sesi pitch'le hızlanma hissi (sahte vites), geçiş vuuşu, sinyal, sürtme ve kaza, UI sesleri (`IUiFeedback`), menü ve sürüş müziği; hepsi kendi Python sentezimiz (lisans kaygısı yok), mixer grupları üzerinden | Kodu bitti 2026-11-19; hiçbir ses kulakla dinlenmedi, his ve Android ölçümü kullanıcıda |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.

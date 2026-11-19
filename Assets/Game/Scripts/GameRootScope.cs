@@ -12,6 +12,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using VContainer;
 using VContainer.Unity;
+using WrongLine.Audio;
 using WrongLine.Haptics;
 using WrongLine.Road;
 using WrongLine.Scenery;
@@ -58,6 +59,9 @@ namespace WrongLine
         [SerializeField, Required, Tooltip("The vibration pulses of taps, bumps and the crash.")]
         private HapticsConfig _hapticsConfig;
 
+        [SerializeField, Required, Tooltip("The interface clicks, the game over jingles and the music themes.")]
+        private GameAudioConfig _audioConfig;
+
         [SerializeField, Required, Tooltip("The cover shown while a scene loads. A child of the root prefab, so it survives scene changes.")]
         private LoadingScreen _loadingScreen;
 
@@ -80,6 +84,8 @@ namespace WrongLine
             builder.UseSave();
             builder.UseInput(_inputActions, messagePipe, InputModes.CreateOptions());
             builder.UseAudio(_audioMixer, messagePipe, AudioChannels.CreateOptions());
+            builder.RegisterInstance(_audioConfig);
+            builder.Register<UiFeedback>(Lifetime.Singleton).As<IUiFeedback>(); // The click and the vibration of every interface touch.
             // After UseSave: its boot step applies the saved language and waits for its tables.
             builder.UseLocalization(messagePipe);
             // After UseSave, UseAudio and UseInput: display settings, and saving the channel volumes.
