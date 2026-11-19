@@ -31,6 +31,9 @@ namespace WrongLine.Traffic
             _lanes.Add(startLane);
         }
 
+        /// <summary>Where slice 0 begins, in metres along the road.</summary>
+        public double Start => _start;
+
         public double SliceLength => _slice;
 
         /// <summary>The clear lane of slice <paramref name="index"/>.</summary>

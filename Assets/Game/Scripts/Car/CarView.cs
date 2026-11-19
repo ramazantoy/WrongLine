@@ -85,6 +85,13 @@ namespace WrongLine.Car
             transform.SetPositionAndRotation(position, rotation);
         }
 
+        /// <summary>Where the car's body is now: on the road, turned as the car heads and leaning as it rolls (for a camera that rides in it).</summary>
+        public void BodyPose(out Vector3 position, out Quaternion rotation)
+        {
+            position = _chassis.position;
+            rotation = _chassis.rotation;
+        }
+
         /// <summary>The car breaks up: lights out, the parts become rigid bodies and fly off (see <see cref="CarWreck"/>).</summary>
         public void Break(WreckRule wreck, CrashSettings.WreckGroup settings)
         {

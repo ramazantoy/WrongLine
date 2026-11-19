@@ -12,5 +12,8 @@ namespace WrongLine.Traffic
 
         /// <summary>Seconds of play so far.</summary>
         double Time { get; }
+
+        /// <summary>The lane kept clear along the player's path; null while the traffic is switched off.</summary>
+        TrafficCorridor Corridor { get; }
     }
 }

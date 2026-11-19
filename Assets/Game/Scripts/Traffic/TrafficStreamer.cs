@@ -65,6 +65,8 @@ namespace WrongLine.Traffic
 
         public double Time => _run != null ? _run.Time : 0.0;
 
+        public TrafficCorridor Corridor => _run?.Corridor;
+
         public void Start()
         {
             if (!_config.Enabled)

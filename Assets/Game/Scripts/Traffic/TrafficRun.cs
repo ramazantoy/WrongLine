@@ -27,6 +27,9 @@ namespace WrongLine.Traffic
         /// <summary>Seconds of play so far (pause does not count).</summary>
         public double Time { get; private set; }
 
+        /// <summary>The lane kept clear along the player's path.</summary>
+        public TrafficCorridor Corridor => _planner.Corridor;
+
         public IReadOnlyList<TrafficCarPlan> Active => _active;
 
         public IReadOnlyList<TrafficCarPlan> Spawned => _spawned;
