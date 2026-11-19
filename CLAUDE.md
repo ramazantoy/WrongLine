@@ -6,8 +6,8 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) ve Faz A3 (gece ışıkları) bitti; K1 (çarpışma, sürtme, kaza, game over), K1b (zamanla hızlanma) ve K2 (Cinemachine kamera) kodu bitti (2026-11-18; K1/K1b pushlandı, K2
-kullanıcı gözü ve commit bekliyor); araç görseli son faza ertelendi. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
+**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) ve Faz A3 (gece ışıkları) bitti; K1 (çarpışma, sürtme, kaza, game over), K1b (zamanla hızlanma) ve K2 (Cinemachine kamera) bitti (2026-11-18, pushlandı);
+V3 (oyuncu aracı Meshy ile, ışıklar dokudan emission) bitti (2026-11-19); sıradaki fikir trafik araçlarının Meshy ile yeniden yapılması (ayrı context). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
 kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
 moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
@@ -57,7 +57,8 @@ Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 | B | Ara iş: prosedürel ortam (4 biyom, yol parçasına pişirilen zemin, havuzlu yol kenarı prop'ları, curve shader'da biyom rengi) | Bitti 2026-11-17, 22 sanatçı modeli oyunda |
 | A3 | Ara iş: gece ışıkları (lamba emission'ı + sahte ışık havuzu, araçta gerçek far ve sinyal ışığı, `LightSwitchRule`, HDR kapalı + gece bloom'u) | Bitti 2026-11-17; his ve Android ölçümü kullanıcıda |
 | K1 / K1b | Kaza: yol uzayında çarpışma kuralı, sürtme (itme) ve kaza (yavaş çekim, parçalanma, game over, yeniden başlatma), kaza kamerası; zamanla hızlanma (hız profili) | Bitti 2026-11-18 (pushlandı `6fe2bf8`); his ve Android ölçümü (cihaz yoktu) kullanıcıda |
-| K2 | Cinemachine 3.1.7: rig + iki sanal kamera (chase, crash), yolda kayan dolly kuralı (kamera konuyu aralıkta tutar), Impulse sarsıntısı, kaza blend'i, kurulum doğrulayıcısı | Kod bitti 2026-11-18; his ve commit bekliyor |
+| K2 | Cinemachine 3.1.7: rig + iki sanal kamera (chase, crash), yolda kayan dolly kuralı (kamera konuyu aralıkta tutar), Impulse sarsıntısı, kaza blend'i, kurulum doğrulayıcısı | Bitti 2026-11-18 (pushlandı `90b1aec`); his kullanıcıda |
+| V3 | Araç v3: oyuncu aracı Meshy ile (tekerleksiz gövde + ayrı tekerlek, pişirme script'i, dokudan ışık maskesi ve emission, eski araç ve sinyal küpleri silindi) | Bitti 2026-11-19; his ve Android ölçümü kullanıcıda |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.
