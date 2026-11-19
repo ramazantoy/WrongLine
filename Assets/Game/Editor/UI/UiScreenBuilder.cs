@@ -216,22 +216,18 @@ namespace WrongLine.UI.Editor
             var root = Page("Root", canvas.transform);
             var group = root.gameObject.AddComponent<CanvasGroup>();
 
-            // The same road twice, the upper one mirrored: both end at the middle, where the text is.
-            const float gap = 90f;
+            // One road, filled over and over; the text sits below it.
             const float height = 870f;
             const float width = height * 768f / 736f;
-            var bottom = RoadImage("RoadBottom", root, new Vector2(0f, -(gap + height * 0.5f)), new Vector2(width, height));
-            var top = RoadImage("RoadTop", root, new Vector2(0f, gap + height * 0.5f), new Vector2(width, height));
-            top.rectTransform.localScale = new Vector3(1f, -1f, 1f);
+            var road = RoadImage("RoadCenter", root, new Vector2(540f, -888f), new Vector2(width, height));
 
             var label = LocalizedText("Label", root, "loading.title", Heading, 76f, White);
-            Place(label.rectTransform, Center, Vector2.zero, new Vector2(900f, 120f));
+            Place(label.rectTransform, TopLeft, new Vector2(540f, -1603f), new Vector2(900f, 120f));
 
             root.gameObject.SetActive(false);
             SetRef(screen, "_root", root.gameObject);
             SetRef(screen, "_group", group);
-            SetRef(screen, "_roadBottom", bottom);
-            SetRef(screen, "_roadTop", top);
+            SetRef(screen, "_road", road);
             return canvas.gameObject;
         }
 
@@ -239,7 +235,7 @@ namespace WrongLine.UI.Editor
         private static Image RoadImage(string name, Transform parent, Vector2 pos, Vector2 size)
         {
             var road = Image(name, parent, "Loading_Road", White, sliced: false);
-            Place(road.rectTransform, Center, pos, size);
+            Place(road.rectTransform, TopLeft, pos, size);
             road.type = UnityEngine.UI.Image.Type.Filled;
             road.fillMethod = UnityEngine.UI.Image.FillMethod.Vertical;
             road.fillOrigin = 0;

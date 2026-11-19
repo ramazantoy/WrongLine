@@ -3,35 +3,34 @@ using AF.Core;
 using Cysharp.Threading.Tasks;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace WrongLine.UI
 {
     /// <summary>
-    /// The scene change cover, on the root prefab so it outlives every scene: it fades in, two mirrored roads fill towards the middle
-    /// and draw back until the next scene is ready, and it fades away. All in unscaled time; the game may be paused while it loads.
-    /// The roads do not follow the load's progress (they would only be a fake bar); the cover stays up long enough to be seen. The
-    /// change that leaves the intro is not covered (<see cref="LoadingCoverRule"/>).
+    /// The scene change cover, on the root prefab so it outlives every scene: it fades in, the road fills from empty to full at a
+    /// steady speed and starts over, again and again until the next scene is ready, and it fades away. All in unscaled time; the game
+    /// may be paused while it loads. The road does not follow the load's progress (it would only be a fake bar); the cover stays up
+    /// long enough to be seen. The change that leaves the intro is not covered (<see cref="LoadingCoverRule"/>).
     /// </summary>
     public sealed class LoadingScreen : MonoBehaviour, ILoadingScreen
     {
-        /// <summary>Seconds the roads take to fill, and as long to empty.</summary>
-        private const float WaySeconds = 0.9f;
-
-        /// <summary>The cover stays up at least this long once it is fully shown: a fast load would only flash it.</summary>
-        private const float MinShownSeconds = 1.2f;
-
         [Tooltip("The whole screen. Shown and hidden; this component's object stays active.")]
         [SerializeField, Required] private GameObject _root;
 
         [SerializeField, Required] private CanvasGroup _group;
 
-        [Tooltip("The road below the text, a vertically filled sprite (fills from its bottom).")]
-        [SerializeField, Required] private Image _roadBottom;
+        [Tooltip("The road: a vertically filled sprite, filled from its fill origin.")]
+        [FormerlySerializedAs("_roadBottom")]
+        [SerializeField, Required] private Image _road;
 
-        [Tooltip("The same road mirrored above the text.")]
-        [SerializeField, Required] private Image _roadTop;
+        [Tooltip("Seconds one fill from empty to full takes; the speed is constant, then it starts over.")]
+        [SerializeField, Min(0.1f)] private float _secondsPerFill = 1.1f;
+
+        [Tooltip("The cover stays up at least this long (from the moment it starts to show), however fast the scene loads: a quick load would only flash it.")]
+        [SerializeField, Min(0f)] private float _minShownSeconds = 5f;
 
         [SerializeField, Min(0.05f)] private float _fadeSeconds = 0.25f;
 
@@ -50,7 +49,7 @@ namespace WrongLine.UI
             }
 
             _shownAt = Time.unscaledTime;
-            SetRoads(0f);
+            _road.fillAmount = 0f;
             _group.alpha = 0f;
             _group.blocksRaycasts = true;
             _root.SetActive(true);
@@ -59,7 +58,7 @@ namespace WrongLine.UI
 
         public void SetProgress(float progress)
         {
-            // Not shown: the roads run on their own.
+            // Not shown: the road runs on its own.
         }
 
         public async UniTask Hide(CancellationToken cancellation)
@@ -71,7 +70,7 @@ namespace WrongLine.UI
 
             _covering = false;
 
-            while (Time.unscaledTime - _shownAt < MinShownSeconds)
+            while (Time.unscaledTime - _shownAt < _minShownSeconds)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation);
             }
@@ -85,14 +84,8 @@ namespace WrongLine.UI
         {
             if (_root.activeSelf)
             {
-                SetRoads(LoadingWave.Fill(Time.unscaledTime - _shownAt, WaySeconds));
+                _road.fillAmount = LoadingWave.Fill(Time.unscaledTime - _shownAt, _secondsPerFill);
             }
-        }
-
-        private void SetRoads(float fill)
-        {
-            _roadBottom.fillAmount = fill;
-            _roadTop.fillAmount = fill;
         }
     }
 }
