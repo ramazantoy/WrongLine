@@ -6,10 +6,10 @@ GitHub portföyü ve template'in sahada denenmesi. Framework template'ten gelir:
 Audio, Input, Pool, Settings, Localization, Platform, Build. Framework kararları `.claude/decisions/`'ta (indeks `README.md`,
 modül başına dosya), oyunun kararları `.claude/decisions/Game.md`'de, açık işler `GameOpen.md`'de.
 
-**Durum:** M0, M1 ve M2 bitti (M2: 2026-11-17, yol hissi); M2 sonrası ara işlerden Faz A (araç kontrolü, yol uzayı kamera, sinyal) ve Faz A2 (4 şeritli yol, gün-gece başlangıcı, ufuk rengi) ve Faz B (4 biyomlu ortam, sanatçı modelleri) ve Faz A3 (gece ışıkları) bitti; K1 (çarpışma, sürtme, kaza, game over), K1b (zamanla hızlanma) ve K2 (Cinemachine kamera) bitti (2026-11-18, pushlandı);
-V3 (oyuncu aracı Meshy ile, ışıklar dokudan emission) ve T1 (trafik araçları Meshy ile, boya/sinyal renderer user value ile) bitti (2026-11-19). Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe,
-kararlar ve ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan
-moduna geç. Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
+**Durum:** Oynanabilir oyun kodu bitti (yol, trafik, kaza, kamera, araçlar, UI, ses; aşağıdaki tablo). Cihazda hiçbir şey
+ölçülmedi: his ve Android ölçümü kullanıcıda. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe, kararlar ve
+ölçümler `decisions/Game.md`'de. Template tabanı `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan moduna geç.
+Yarım kalan iş varsa `.claude/notes/<konu>/` altındaki handoff'a bak.
 
 **Yapı:** framework `Assets/Framework/` (`AF.*` namespace ve asmdef'ler, modül başına `<Modül>/{Runtime,Editor,Tests}`).
 Oyun `Assets/Game/`: asmdef `Game`, namespace `WrongLine`, özellik klasörü `WrongLine.<Özellik>`.
@@ -45,23 +45,22 @@ cherry-pick'ler çakışmasın diye.
     (Asset Store, Synty) repoya girmez.
 
 ### Milestone'lar
-Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
+Hepsi kodca bitti. Ayrıntı, "bitti sayılır" ölçüleri ve cihazda denenmeyenler `decisions/Game.md` ve `GameOpen.md`'de.
 
-| # | İçerik | Durum |
+| # | İçerik | Bitti |
 |---|---|---|
-| M0 | Kimlik, Android, scope'lar, boş sürüş sahnesi | Bitti 2026-11-14 |
-| M1 | Sonsuz prosedürel yol (tariften pişirilen parçalar, saf C# birleştirici, kalıcı havuz, dummy follower, takip kamerası) | M1a bitti 2026-11-16; gerçek parçalar M2'de geldi |
-| M2 | Yol hissi: curve shader, gökyüzü ve gece/gündüz, sis, dağıtım ince ayarı, gerçek yol parçaları | Bitti 2026-11-17 |
-| A | Ara iş: oyuncu kontrolü (`x` sürükleme), yol uzayında kamera ve FOV, şerit sinyali, titreme kökü | Bitti 2026-11-17; sinyal atlası ve far `GameOpen.md`'de |
-| A2 | Ara iş: 4 şeritli yol (4 × 3 m kesit, 3 çizgi, başlangıç şeridi, şerit sayısından bağımsız sinyal), seed'li gün-gece başlangıcı, ufuk altı sis rengi | Bitti 2026-11-17 (33 parça 4 şeritli, sarı orta çizgi); Play denemesi kullanıcıda |
-| B | Ara iş: prosedürel ortam (4 biyom, yol parçasına pişirilen zemin, havuzlu yol kenarı prop'ları, curve shader'da biyom rengi) | Bitti 2026-11-17, 22 sanatçı modeli oyunda |
-| A3 | Ara iş: gece ışıkları (lamba emission'ı + sahte ışık havuzu, araçta gerçek far ve sinyal ışığı, `LightSwitchRule`, HDR kapalı + gece bloom'u) | Bitti 2026-11-17; his ve Android ölçümü kullanıcıda |
-| K1 / K1b | Kaza: yol uzayında çarpışma kuralı, sürtme (itme) ve kaza (yavaş çekim, parçalanma, game over, yeniden başlatma), kaza kamerası; zamanla hızlanma (hız profili) | Bitti 2026-11-18 (pushlandı `6fe2bf8`); his ve Android ölçümü (cihaz yoktu) kullanıcıda |
-| K2 | Cinemachine 3.1.7: rig + iki sanal kamera (chase, crash), yolda kayan dolly kuralı (kamera konuyu aralıkta tutar), Impulse sarsıntısı, kaza blend'i, kurulum doğrulayıcısı | Bitti 2026-11-18 (pushlandı `90b1aec`); his kullanıcıda |
-| V3 | Araç v3: oyuncu aracı Meshy ile (tekerleksiz gövde + ayrı tekerlek, pişirme script'i, dokudan ışık maskesi ve emission, eski araç ve sinyal küpleri silindi) | Bitti 2026-11-19; his ve Android ölçümü kullanıcıda |
-| T1 | Trafik araçları v3: dört model Meshy ile (20k / 6k, anahtar renkten boya, tekerlek gövdede), boya ve sinyal `SetShaderUserValue` ile (SRP Batcher korunur), V3 gövdesi tekerleksiz yeniden üretildi | Bitti 2026-11-19; LOD2, çarpışma genişliği, his ve Android ölçümü açık |
-| U1 | Arayüz giydirme: Krita fırça sprite'ları (RDR tarzı), Barlow font, ayarlar (ses, müzik, efekt, titreşim, dil), ana menü, yükleme ekranı; oyunun kendi ayarı PlayerPrefs'te | U1a, U1b ve U1c bitti 2026-11-19; U1d (canlı menü arka planı: otopilotlu, araçsız birinci şahıs sürüş, menü scope'unda) kodu bitti 2026-11-19, his ve Android ölçümü kullanıcıda; U1c (HUD, pause, kaza ekranı, haptic; `DrivingScope` installer'a geçti) kodu bitti 2026-11-19, his, Android ölçümü ve titreşim kullanıcıda |
-| S1 | Ses: motor sesi pitch'le hızlanma hissi (sahte vites), geçiş vuuşu, sinyal, sürtme ve kaza, UI sesleri (`IUiFeedback`), menü ve sürüş müziği; hepsi kendi Python sentezimiz (lisans kaygısı yok), mixer grupları üzerinden | Kodu bitti 2026-11-19; hiçbir ses kulakla dinlenmedi, his ve Android ölçümü kullanıcıda |
+| M0 | Kimlik, Android, scope'lar, boş sürüş sahnesi | 2026-11-14 |
+| M1 | Sonsuz prosedürel yol (pişirilen parçalar, saf C# birleştirici, havuz, takip kamerası) | 2026-11-16 |
+| M2 | Yol hissi: curve shader, gökyüzü, gece/gündüz, sis, gerçek yol parçaları | 2026-11-17 |
+| A, A2 | Oyuncu kontrolü (`x` sürükleme), yol uzayında kamera, şerit sinyali; 4 şeritli yol, seed'li gün-gece | 2026-11-17 |
+| B | Prosedürel ortam: 4 biyom, yol kenarı prop'ları, biyom rengi | 2026-11-17 |
+| A3 | Gece ışıkları: lamba emission'ı, araçta far ve sinyal ışığı, `LightSwitchRule` | 2026-11-17 |
+| K1, K1b | Çarpışma, sürtme, kaza (yavaş çekim, game over, yeniden başlatma), kaza kamerası; zamanla hızlanma | 2026-11-18 |
+| K2 | Cinemachine 3.1.7: chase ve crash kameraları, dolly kuralı, Impulse, kaza blend'i | 2026-11-18 |
+| V3 | Oyuncu aracı Meshy ile (tekerlek ayrı, pişirme script'i, dokudan ışık maskesi) | 2026-11-19 |
+| T1 | Trafik araçları Meshy ile (4 model, anahtar renkten boya); LOD2 ve çarpışma genişliği açık | 2026-11-19 |
+| U1 | Arayüz: fırça sprite'ları, Barlow, ayarlar, ana menü, yükleme, canlı menü arka planı, HUD, pause, kaza ekranı, haptic | 2026-11-19 |
+| S1 | Ses: motor pitch'i, geçiş sesi, sürtme ve kaza, UI sesleri, müzik; kendi Python sentezimiz; kulakla dinlenmedi | 2026-11-19 |
 
 ## Çalışma şekli
 - Fazlarla ilerliyoruz. Her seferinde yalnız bir faz planlanır; onaylanınca uygulanır, bitince durulur.
