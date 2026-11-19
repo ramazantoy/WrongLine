@@ -37,6 +37,11 @@ Shader "WrongLine/CurvedLit"
         _EmissionMap("Emission Map", 2D) = "black" {}
         _EmissionColor("Emission Color", Color) = (1, 1, 1, 1)
         _EmissionLevelMask("Emission Level Mask (x street lamps, y headlights)", Vector) = (1, 0, 0, 0)
+        // The player car's lights: a mask (UV as the base map; R headlight, G stop light, B left signal, A right signal) times the
+        // per-car levels in the same channels (set per renderer by CarView), lighting a painted panel in its own colour.
+        [Toggle(_LIGHTMASK_ON)] _LightMaskOn("Light Mask", Float) = 0
+        _LightMask("Light Mask Texture", 2D) = "black" {}
+        _CarLightLevels("Car Light Levels (headlight, stop, left signal, right signal)", Vector) = (0, 0, 0, 0)
         [Toggle(_LAMPPOOL_ON)] _LampPool("Lamp Pools Of Light", Float) = 0
         [HideInInspector] _OffsetFactor("Offset Factor", Float) = 0
         [HideInInspector] _OffsetUnits("Offset Units", Float) = 0
@@ -62,8 +67,10 @@ Shader "WrongLine/CurvedLit"
         TEXTURE2D(_PaintMask);
         SAMPLER(sampler_PaintMask);
         TEXTURE2D(_EmissionMap);
+        TEXTURE2D(_LightMask);
 
         CBUFFER_START(UnityPerMaterial)
+            half4 _CarLightLevels;
             float4 _BaseMap_ST;
             half4 _BaseColor;
             half _Cutoff;
@@ -117,6 +124,7 @@ Shader "WrongLine/CurvedLit"
             #pragma shader_feature_local_fragment _ALPHATEST_ON
             #pragma shader_feature_local_fragment _PAINTMASK_ON
             #pragma shader_feature_local_fragment _EMISSION
+            #pragma shader_feature_local_fragment _LIGHTMASK_ON
             #pragma shader_feature_local_fragment _LAMPPOOL_ON
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -238,6 +246,10 @@ Shader "WrongLine/CurvedLit"
                 half3 color = albedo.rgb * light;
                 #if defined(_EMISSION)
                     color += SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.uv).rgb * _EmissionColor.rgb * saturate(dot(_WL_LightLevels, _EmissionLevelMask));
+                #endif
+                #if defined(_LIGHTMASK_ON)
+                    // A lit panel glows in the colour it is painted: the base colour (before the day's light) times the level.
+                    color += albedo.rgb * _EmissionColor.rgb * saturate(dot(SAMPLE_TEXTURE2D(_LightMask, sampler_BaseMap, input.uv), _CarLightLevels));
                 #endif
                 color = MixFog(color, input.fogFactor);
                 return half4(color, albedo.a);

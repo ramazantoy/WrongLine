@@ -63,7 +63,7 @@ namespace WrongLine.Car
 
             _view.Place(position, rotation * Quaternion.Euler(0f, _pose.YawDegrees, 0f));
             _view.Pose(_pose);
-            _view.ShowSignal(_motion.Signal, _motion.LampOn, _lights.Settings);
+            _view.ShowSignal(_motion.Signal, _motion.LampOn);
             _view.ShowHeadlight(_levels.Headlights, _lights.Settings);
         }
 

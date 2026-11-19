@@ -33,10 +33,4 @@ MonoBehaviour:
     HeadlightGlowColor: {r: 1, g: 0.96, b: 0.85, a: 1}
     HeadlightGlowIntensity: 25
     HeadlightGlowRange: 9
-    TailColor: {r: 1, g: 0.06, b: 0.03, a: 1}
-    TailIntensity: 4
-    TailRange: 5
-    SignalColor: {r: 1, g: 0.55, b: 0.05, a: 1}
-    SignalIntensity: 6
-    SignalRange: 3
     NightBloomWeight: 1

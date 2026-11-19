@@ -113,3 +113,6 @@
 *.a     filter=lfs diff=lfs merge=lfs -text
 *.aar   filter=lfs diff=lfs merge=lfs -text
 *.jar   filter=lfs diff=lfs merge=lfs -text
+
+# --- The player car's baked meshes (text YAML, several MB): LFS, not a text merge ---
+Assets/Game/Car/Art/MeshyV3/*.asset filter=lfs diff=lfs merge=lfs -text

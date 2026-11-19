@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CarGlass
+  m_Name: CarV3_Wheel
   m_Shader: {fileID: 4800000, guid: 6262d231de1b3594996d1d62e86bef1b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -16,18 +16,23 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
-  disabledShaderPasses:
-  - SHADOWCASTER
-  - DepthOnly
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 8ad9f5c9e15f3b840996b787d480c1c6, type: 3}
+        m_Texture: {fileID: 2800000, guid: c0e54decc0c2512449178743e1cf3dce, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LightMask:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PaintMask:
@@ -37,14 +42,27 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
-    - _DstBlend: 10
+    - _DstBlend: 0
+    - _EmissionOn: 0
+    - _GroundBlend: 0
+    - _LampPool: 0
+    - _LightMaskOn: 0
+    - _LineMinPixels: 1.5
+    - _LineSpacing: 3
+    - _LineWiden: 0
+    - _LineWidth: 0.15
+    - _OffsetFactor: 0
+    - _OffsetUnits: 0
     - _PaintMaskOn: 0
-    - _SrcBlend: 5
-    - _ZWrite: 0
+    - _SrcBlend: 1
+    - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 0.4}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CarLightLevels: {r: 0, g: 0, b: 0, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionLevelMask: {r: 1, g: 0, b: 0, a: 0}
     - _PaintColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

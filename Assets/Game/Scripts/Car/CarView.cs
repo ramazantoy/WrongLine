@@ -22,8 +22,13 @@ namespace WrongLine.Car
         [SerializeField, Required] private Transform _wheelRearLeft;
         [SerializeField, Required] private Transform _wheelRearRight;
 
-        [SerializeField, Required] private GameObject[] _leftLamps;
-        [SerializeField, Required] private GameObject[] _rightLamps;
+        [Tooltip("Lamp objects shown with the left and right signal (placeholder cubes). Empty when the model lights its own signal panels through the light mask.")]
+        [SerializeField] private GameObject[] _leftLamps = new GameObject[0];
+
+        [SerializeField] private GameObject[] _rightLamps = new GameObject[0];
+
+        [Tooltip("The body's renderer: its light mask glows with the lights (headlight and stop panels with the headlights, signal panels with the signals).")]
+        [SerializeField, Required] private Renderer _bodyRenderer;
 
         [Tooltip("The two white headlights: spot lights shining ahead, lit at night.")]
         [SerializeField, Required] private Light _headlight;
@@ -33,14 +38,11 @@ namespace WrongLine.Car
         [Tooltip("A soft point light at the nose, beside the beams.")]
         [SerializeField, Required] private Light _headlightGlow;
 
-        [Tooltip("One red point light at the rear, lit with the headlights.")]
-        [SerializeField, Required] private Light _tailLight;
+        private static readonly int _lightLevelsId = Shader.PropertyToID("_CarLightLevels");
 
-        [Tooltip("The amber lights of the left and right turn signal (point lights), blinking with the signal lamps.")]
-        [SerializeField, Required] private Light _signalLightLeft;
-
-        [SerializeField, Required] private Light _signalLightRight;
-
+        private MaterialPropertyBlock _block;
+        private Vector4 _glow;
+        private Vector4 _glowApplied;
         private Quaternion _wheelRestFrontLeft;
         private Quaternion _wheelRestFrontRight;
         private Quaternion _wheelRestRearLeft;
@@ -91,12 +93,14 @@ namespace WrongLine.Car
                 return;
             }
 
-            ShowSignal(SignalDirection.None, false, null);
-            foreach (Light light in new[] { _headlight, _headlightRight, _headlightGlow, _tailLight })
+            ShowSignal(SignalDirection.None, false);
+            foreach (Light light in new[] { _headlight, _headlightRight, _headlightGlow })
             {
                 light.enabled = false;
             }
 
+            _glow = Vector4.zero;
+            ApplyGlow();
             WreckBody = CarWreck.Break(transform, wreck, settings);
         }
 
@@ -113,14 +117,30 @@ namespace WrongLine.Car
             _wheelRearRight.localRotation = _wheelRestRearRight * spin;
         }
 
-        public void ShowSignal(SignalDirection direction, bool lampOn, LightsSettings lights)
+        public void ShowSignal(SignalDirection direction, bool lampOn)
         {
             bool left = direction == SignalDirection.Left && lampOn;
             bool right = direction == SignalDirection.Right && lampOn;
             SetActive(_leftLamps, left);
             SetActive(_rightLamps, right);
-            ShowSignalLight(_signalLightLeft, left, lights);
-            ShowSignalLight(_signalLightRight, right, lights);
+            _glow.z = left ? 1f : 0f;
+            _glow.w = right ? 1f : 0f;
+            ApplyGlow();
+        }
+
+        /// <summary>Writes the light levels to the body's renderer (a property block: the material is shared), only when they changed.</summary>
+        private void ApplyGlow()
+        {
+            if (_glow == _glowApplied)
+            {
+                return;
+            }
+
+            _glowApplied = _glow;
+            _block ??= new MaterialPropertyBlock();
+            _bodyRenderer.GetPropertyBlock(_block);
+            _block.SetVector(_lightLevelsId, _glow);
+            _bodyRenderer.SetPropertyBlock(_block);
         }
 
         /// <summary>Lights the headlight to <paramref name="level"/> (0 off, 1 full); off lights are disabled, so they cost the renderer nothing.</summary>
@@ -129,7 +149,9 @@ namespace WrongLine.Car
             ShowLamp(_headlight, level, lights.HeadlightColor, lights.HeadlightIntensity, lights.HeadlightRange, lights.HeadlightSpotAngle);
             ShowLamp(_headlightRight, level, lights.HeadlightColor, lights.HeadlightIntensity, lights.HeadlightRange, lights.HeadlightSpotAngle);
             ShowLamp(_headlightGlow, level, lights.HeadlightGlowColor, lights.HeadlightGlowIntensity, lights.HeadlightGlowRange, 0f);
-            ShowLamp(_tailLight, level, lights.TailColor, lights.TailIntensity, lights.TailRange, 0f);
+            _glow.x = level; // The headlight panels.
+            _glow.y = level; // The stop panels (the rear lights glow on the model, no light is cast): lit with the headlights (there is no brake yet).
+            ApplyGlow();
         }
 
         private static void ShowLamp(Light light, float level, Color color, float intensity, float range, float spotAngle)
@@ -141,17 +163,6 @@ namespace WrongLine.Car
             if (spotAngle > 0f)
             {
                 light.spotAngle = spotAngle;
-            }
-        }
-
-        private static void ShowSignalLight(Light light, bool on, LightsSettings lights)
-        {
-            light.enabled = on;
-            if (on)
-            {
-                light.color = lights.SignalColor;
-                light.intensity = lights.SignalIntensity;
-                light.range = lights.SignalRange;
             }
         }
 

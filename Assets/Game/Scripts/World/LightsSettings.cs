@@ -19,7 +19,7 @@ namespace WrongLine.World
 
         [Range(0, LampPoolFalloff.MaxPools)] public int LampPoolCount = 6;
 
-        [Header("Car (real lights: a spot headlight and a point light per turn signal side)")]
+        [Header("Car (real lights: two spot headlights and a glow at the nose; the stop and signal lights glow on the model)")]
         public LightSwitchSettings Headlights = new LightSwitchSettings(0.6f, 0.45f, 0.6f);
 
         public Color HeadlightColor = Color.white;
@@ -36,16 +36,6 @@ namespace WrongLine.World
         public float HeadlightGlowIntensity = 25f;
         public float HeadlightGlowRange = 9f;
 
-        [Tooltip("The tail lights: one red point light at the rear, lit with the headlights.")]
-        public Color TailColor = new Color(1f, 0.06f, 0.03f, 1f);
-
-        public float TailIntensity = 14f;
-        public float TailRange = 7f;
-
-        public Color SignalColor = new Color(1f, 0.55f, 0.05f, 1f);
-        public float SignalIntensity = 6f;
-        public float SignalRange = 3f;
-
         [Header("Night bloom")]
         [Tooltip("Weight of the night bloom volume at full street lamp level (the volume's own settings are in its profile).")]
         [Range(0f, 1f)] public float NightBloomWeight = 1f;
@@ -60,7 +50,7 @@ namespace WrongLine.World
                 throw new ArgumentException("Lamp pool radius and vertical reach must be positive.");
             }
 
-            if (!(LampPoolStrength >= 0f && HeadlightIntensity >= 0f && SignalIntensity >= 0f && HeadlightGlowIntensity >= 0f && TailIntensity >= 0f && HeadlightGlowRange > 0f && TailRange > 0f))
+            if (!(LampPoolStrength >= 0f && HeadlightIntensity >= 0f && HeadlightGlowIntensity >= 0f && HeadlightGlowRange > 0f))
             {
                 throw new ArgumentException("Light strengths must not be negative.");
             }
@@ -70,7 +60,7 @@ namespace WrongLine.World
                 throw new ArgumentException($"LampPoolCount must be between 0 and {LampPoolFalloff.MaxPools}.");
             }
 
-            if (!(HeadlightRange > 0f && SignalRange > 0f && HeadlightSpotAngle > 0f && HeadlightSpotAngle < 180f))
+            if (!(HeadlightRange > 0f && HeadlightSpotAngle > 0f && HeadlightSpotAngle < 180f))
             {
                 throw new ArgumentException("Light ranges must be positive and the spot angle between 0 and 180.");
             }
