@@ -17,6 +17,7 @@ namespace WrongLine.Menu
     /// The main menu: Play opens the driving scene, Settings the settings screen, and the best run is shown. Back (the Android back
     /// key) closes what is open, and with nothing open asks whether to quit.
     /// </summary>
+    [RequireComponent(typeof(UiScreen))]
     public sealed class MenuScreen : MonoBehaviour
     {
         private const float IntroSeconds = 0.45f;
@@ -25,7 +26,7 @@ namespace WrongLine.Menu
         [SerializeField, Required] private Button _play;
         [SerializeField, Required] private Button _settings;
         [SerializeField, Required] private Button _quit;
-        [SerializeField, Required] private GameObject _quitPrompt;
+        [SerializeField, Required] private UiScreen _quitPrompt;
         [SerializeField, Required] private Button _quitYes;
         [SerializeField, Required] private Button _quitNo;
         [SerializeField, Required] private GameObject _bestRow;
@@ -34,6 +35,7 @@ namespace WrongLine.Menu
         [Tooltip("Faded and scaled in one after the other when the menu opens: logo, best run, then the buttons.")]
         [SerializeField] private CanvasGroup[] _intro;
 
+        private UiScreen _screen;
         private ISceneLoader _scenes;
         private InputActionAsset _actions;
         private IBestDistance _best;
@@ -50,10 +52,12 @@ namespace WrongLine.Menu
             _settingsScreen = settingsScreen;
         }
 
+        private void Awake() => _screen = GetComponent<UiScreen>();
+
         private void Start()
         {
+            _settingsScreen.Closed += OnSettingsClosed;
             _backSubscription = _actions.FindAction("UI/Cancel", throwIfNotFound: true).Subscribe(_ => OnBack());
-            _quitPrompt.SetActive(false);
             _bestRow.SetActive(_best.Meters > 0);
             _bestValue.text = _best.Meters.ToString("#,0", CultureInfo.InvariantCulture) + " m";
             PlayIntro();
@@ -77,7 +81,14 @@ namespace WrongLine.Menu
             _quitNo.onClick.RemoveListener(CloseQuitPrompt);
         }
 
-        private void OnDestroy() => _backSubscription?.Dispose();
+        private void OnDestroy()
+        {
+            _backSubscription?.Dispose();
+            if (_settingsScreen != null)
+            {
+                _settingsScreen.Closed -= OnSettingsClosed;
+            }
+        }
 
         private void PlayIntro()
         {
@@ -106,11 +117,17 @@ namespace WrongLine.Menu
 
         private void OnSettings()
         {
-            if (!_loading)
+            if (_loading)
             {
-                _settingsScreen.Show();
+                return;
             }
+
+            // The menu steps back while the settings are up: transparent, no input, and out of the way (UiScreen switches it off).
+            _settingsScreen.Show();
+            _screen.Hide();
         }
+
+        private void OnSettingsClosed() => _screen.Show();
 
         private void OnQuit() => Application.Quit();
 
@@ -118,11 +135,11 @@ namespace WrongLine.Menu
         {
             if (!_loading)
             {
-                _quitPrompt.SetActive(true);
+                _quitPrompt.Show();
             }
         }
 
-        private void CloseQuitPrompt() => _quitPrompt.SetActive(false);
+        private void CloseQuitPrompt() => _quitPrompt.Hide();
 
         private void OnBack()
         {
@@ -131,7 +148,7 @@ namespace WrongLine.Menu
                 return;
             }
 
-            switch (MenuBackRule.Next(_settingsScreen.IsOpen, _quitPrompt.activeSelf))
+            switch (MenuBackRule.Next(_settingsScreen.IsOpen, _quitPrompt.IsOpen))
             {
                 case MenuBack.CloseSettings:
                     _settingsScreen.Hide();

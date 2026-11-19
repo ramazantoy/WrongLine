@@ -13,13 +13,13 @@ using VContainer;
 namespace WrongLine.UI
 {
     /// <summary>
-    /// The settings screen, shared by the menu and the pause menu: three volumes, haptics, language. Values are applied as they
+    /// The settings screen (a <see cref="UiScreen"/> on the game's UI canvas; it grows in and shrinks out), shared by the menu and the pause menu: three volumes, haptics, language. Values are applied as they
     /// change; closing writes the global and device data (<see cref="ISaveService.SaveGlobal"/>), as the framework's settings expect.
     /// </summary>
     public sealed class SettingsScreen : MonoBehaviour
     {
-        [Tooltip("What is shown and hidden: the whole screen except this component's object (which stays active so the scope can find it).")]
-        [SerializeField, Required] private GameObject _panel;
+        [Tooltip("This screen's own fade and grow; the screen is hidden when the scene starts.")]
+        [SerializeField, Required] private UiScreen _screen;
 
         [SerializeField, Required] private Slider _master;
         [SerializeField, Required] private Slider _music;
@@ -44,7 +44,10 @@ namespace WrongLine.UI
             _save = save;
         }
 
-        public bool IsOpen => _panel.activeSelf;
+        /// <summary>Raised when the screen is closed, whoever closed it (the Back button, the menu's Back key).</summary>
+        public event Action Closed;
+
+        public bool IsOpen => _screen.IsOpen;
 
         public void Show()
         {
@@ -53,12 +56,12 @@ namespace WrongLine.UI
                 return;
             }
 
-            _panel.SetActive(true);
             _master.SetValueWithoutNotify(_volumes.Get(AudioChannels.Master));
             _music.SetValueWithoutNotify(_volumes.Get(AudioChannels.Music));
             _sfx.SetValueWithoutNotify(_volumes.Get(AudioChannels.Sfx));
             _haptics.SetIsOnWithoutNotify(_gameplay.Haptics);
             RefreshLanguage();
+            _screen.Show();
         }
 
         public void Hide()
@@ -68,12 +71,11 @@ namespace WrongLine.UI
                 return;
             }
 
-            _panel.SetActive(false);
+            _screen.Hide();
+            Closed?.Invoke();
             // The framework's volumes and language reach the disk now; the game's own settings are in PlayerPrefs already.
             _save.SaveGlobal().Forget();
         }
-
-        private void Awake() => _panel.SetActive(false);
 
         private void OnEnable()
         {

@@ -4,9 +4,11 @@ using UnityEngine.Localization.Tables;
 
 namespace WrongLine.UI.Editor
 {
-    /// <summary>The UI table's keys that the screens use, with their English and Turkish text. Written by the screen builder.</summary>
+    /// <summary>The UI table's keys that the screens use, with their English and Turkish text. Add a key here and run WrongLine/UI/Write UI Strings.</summary>
     internal static class UiStrings
     {
+        private const string TABLE = "UI";
+
         private static readonly (string key, string en, string tr)[] Entries =
         {
             ("menu.play", "PLAY", "OYNA"),
@@ -26,9 +28,10 @@ namespace WrongLine.UI.Editor
             ("settings.back", "BACK", "GERİ"),
         };
 
+        [MenuItem("WrongLine/UI/Write UI Strings")]
         internal static void Write()
         {
-            var collection = LocalizationEditorSettings.GetStringTableCollection(UiFactory.TABLE);
+            var collection = LocalizationEditorSettings.GetStringTableCollection(TABLE);
             var en = collection.GetTable("en") as StringTable;
             var tr = collection.GetTable("tr") as StringTable;
             foreach (var (key, enText, trText) in Entries)
