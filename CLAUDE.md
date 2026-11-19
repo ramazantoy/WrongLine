@@ -5,7 +5,7 @@ aracı takip eder. Oyun mağazaya çıkmaz; amaç public GitHub portföyü ve te
 gelir (DI, GameManager, SceneManager, Save, Audio, Input, Pool, Settings, Localization, Platform, Build).
 
 **Durum:** Oyun bitti ve Android'de iki telefonda denendi (açılış, ses, titreşim, akıcılık sorunsuz); Release APK 0.1.0
-alındı, README (EN/TR) yazıldı. Sıradaki iş ve açık maddeler `decisions/GameOpen.md`'de; tarihçe ve kararlar
+alındı, README (EN/TR) yazıldı. Açık iş listesi tutulmuyor; tarihçe, kararlar ve template'e gidenler
 `decisions/Game.md`'de, framework kararları `decisions/` altında (indeks `README.md`, modül başına dosya). Template tabanı
 `4cd74e6` (`template` remote'u). Yeni milestone başlarken plan moduna geç. Yarım iş varsa `.claude/notes/<konu>/` altındaki
 handoff'a bak.
@@ -24,10 +24,10 @@ cherry-pick'ler çakışmasın diye.
   yakın değil, birebir izlenmez, kodu port edilmez. Path space `(s, x)`, spline'dan yol ve fiziksiz çarpışma gibi teknik
   fikirler alınabilir. Kalıcı karar `decisions/Game.md`'ye yazılır; çelişkide CLAUDE.md ve decisions önce gelir.
 - **Template:** framework burada yamanmaz. Kapsam: `Assets/Framework/`, `.claude/scripts/`, `.claude/decisions/`'ın
-  framework dosyaları ve bu dosyanın WrongLine dışı bölümleri. Bulunan sorun `GameOpen.md` → "Template'e gidenler"e yazılır,
+  framework dosyaları ve bu dosyanın WrongLine dışı bölümleri. Bulunan sorun `decisions/Game.md` sonundaki "Template'e gidenler"e yazılır,
   template'te düzeltilir, sonra `git fetch template` + `git cherry-pick -x <sha>` ile alınır.
 - **Faz = milestone:** her milestone oynanabilir halde biter; sonraki, biri bitip oynanınca yazılır. Dış asset'i (model, ses)
-  bekleyen milestone açılmaz; placeholder'la biter, asset işi `GameOpen.md`'de ayrı madde olur. Commit mesajı kısa, emir
+  bekleyen milestone açılmaz; placeholder'la biter, asset işi ayrı milestone olur. Commit mesajı kısa, emir
   kipinde ve İngilizce.
 - **Oyun kuralları:**
   - Kurallar (yol örnekleme, path space, hareket, çarpışma, puan) saf C# ile yazılır; MonoBehaviour yalnız view içindir.
@@ -43,7 +43,7 @@ cherry-pick'ler çakışmasın diye.
     `OFL.txt` yanında durur. Ücretli paket (Asset Store, Synty) repoya girmez.
 
 ### Milestone'lar
-Hepsi bitti. Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de, açıklar `GameOpen.md`'de.
+Hepsi bitti. Ayrıntı ve "bitti sayılır" ölçüleri `decisions/Game.md`'de.
 
 | # | İçerik | Bitti |
 |---|---|---|
